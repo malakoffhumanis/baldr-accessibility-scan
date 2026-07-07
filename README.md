@@ -170,7 +170,7 @@ pour parcourir les pages, lance un audit **axe-core** — enrichi au besoin par 
 OpenAI).
 
 ```mermaid
-flowchart TB
+flowchart LR
     Client["Client - CLI baldr / HTTP baldrd"]
 
     subgraph BALDR
