@@ -171,28 +171,28 @@ OpenAI).
 
 ```mermaid
 flowchart LR
-    Client["Client<br/>CLI baldr &nbsp;/&nbsp; HTTP baldrd"]
+    Client["Client - CLI baldr / HTTP baldrd"]
 
     subgraph BALDR
         direction TB
-        Orch["Orchestrateur<br/>de parcours"]
-        Browser["Navigateur headless<br/>Puppeteer · Chromium"]
-        Axe["Moteur axe-core<br/>RGAA / WCAG"]
-        LLMClient["Client LLM<br/>OpenAI-compatible"]
-        Report["Générateur de rapport<br/>HTML / JSON / CSV"]
+        Orch["Orchestrateur de parcours"]
+        Browser["Navigateur headless - Puppeteer / Chromium"]
+        Axe["Moteur axe-core - RGAA / WCAG"]
+        LLMClient["Client LLM - OpenAI-compatible"]
+        Report["Générateur de rapport - HTML / JSON / CSV"]
     end
 
     Sites["Sites audités"]
-    LLM["Provider LLM<br/>(OpenAI-compatible)"]
-    Out(["Rapport<br/>HTML / JSON / CSV"])
+    LLM["Provider LLM (OpenAI-compatible)"]
+    Out(["Rapport HTML / JSON / CSV"])
 
     Client -->|"requête : pages + actions"| Orch
     Orch --> Browser
     Orch --> Axe
     Orch --> LLMClient
     Orch --> Report
-    Browser -->|"navigue · exécute les actions<br/>(URL validée anti-SSRF)"| Sites
-    LLMClient -->|"résout les sélecteurs<br/>enrichit l'analyse a11y"| LLM
+    Browser -->|"navigation et exécution des actions"| Sites
+    LLMClient -->|"résolution des sélecteurs et analyse a11y"| LLM
     Report --> Out
     Out -.-> Client
 ```
@@ -202,29 +202,34 @@ Le déroulé d'un audit, page par page :
 ```mermaid
 sequenceDiagram
     actor Client
-    participant Baldr as BALDR
-    participant Browser as Chromium (Puppeteer)
-    participant Site as Site audité
-    participant Axe as axe-core
-    participant LLM as Provider LLM
+    participant BALDR
+    participant Chromium
+    participant Site
+    participant Axe
+    participant LLM
 
-    Client->>Baldr: requête d'audit { pages, actions }
-    loop pour chaque page
-        Baldr->>Browser: ouvre la page (goto, anti-SSRF)
-        Browser->>Site: navigue + auth éventuelle
-        opt action IA (click / fill / ai…)
-            Baldr->>LLM: décrit la cible en langage naturel
-            LLM-->>Baldr: sélecteur CSS
-            Baldr->>Browser: exécute l'action
+    Client->>BALDR: Requête d'audit
+
+    loop Pour chaque page
+        BALDR->>Chromium: Ouvre la page
+        Chromium->>Site: Navigation
+
+        opt Action assistée par IA
+            BALDR->>LLM: Description de la cible
+            LLM-->>BALDR: Sélecteur CSS
+            BALDR->>Chromium: Exécution de l'action
         end
-        Baldr->>Axe: scan RGAA / WCAG
-        Axe-->>Baldr: violations
-        opt analyse IA (intel / full)
-            Baldr->>LLM: enrichit l'analyse a11y
-            LLM-->>Baldr: recommandations
+
+        BALDR->>Axe: Analyse RGAA / WCAG
+        Axe-->>BALDR: Violations détectées
+
+        opt Analyse IA avancée
+            BALDR->>LLM: Enrichissement de l'analyse
+            LLM-->>BALDR: Recommandations
         end
     end
-    Baldr-->>Client: rapport HTML / JSON / CSV
+
+    BALDR-->>Client: Rapport HTML / JSON / CSV
 ```
 
 ## Installation
