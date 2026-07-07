@@ -1,0 +1,143 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.4",
+  "ruleId": "image-captcha-purpose",
+  "title": "Images - Alternative des CAPTCHA et images-test",
+  "description": "Pour chaque image utilisée comme CAPTCHA ou comme image-test, ayant une alternative textuelle, cette alternative permet-elle d'identifier la nature et la fonction de l'image ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.4",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique uniquement aux images utilisées comme CAPTCHA ou comme image-test (test de Turing visuel).",
+    "signals": {
+      "selectors": [
+        "img[alt*='captcha' i]",
+        "img[alt*='vérification' i]",
+        "img[alt*='verification' i]",
+        "[id*='captcha' i]",
+        "[class*='captcha' i]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun CAPTCHA ni image-test présent sur la page"
+    ]
+  },
+  "testScenarios": {
+    "captchaPurpose": {
+      "description": "L'alternative d'un CAPTCHA/image-test doit identifier sa nature et sa fonction (sans dévoiler la réponse au test).",
+      "tests": [
+        {
+          "id": "1.4.1",
+          "rgaaTestRef": "Test 1.4.1",
+          "description": "L'alternative textuelle de chaque image CAPTCHA/image-test identifie-t-elle la nature et la fonction de l'image ?",
+          "methodology": [
+            "Repérer les images utilisées comme CAPTCHA ou image-test",
+            "Vérifier que l'alternative indique la nature (« CAPTCHA », « test de vérification ») et la fonction (ce qu'on attend de l'utilisateur)",
+            "Vérifier que l'alternative ne révèle pas la solution du test"
+          ],
+          "selector": "img[alt*='captcha' i], img[alt*='verification' i], img[alt*='vérification' i]",
+          "expected": "L'alternative doit identifier la nature et la fonction du test, sans en donner la réponse",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectCaptcha": true,
+            "evaluateAlternativePurpose": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img[alt*='captcha' i]",
+          "[id*='captcha' i]",
+          "[class*='captcha' i]"
+        ],
+        "attributes": [
+          "alt",
+          "src",
+          "id",
+          "class",
+          "role",
+          "aria-label"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 300
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Détecter les images utilisées comme CAPTCHA ou image-test (test de Turing visuel : caractères déformés, images à reconnaître).",
+        "Si aucun CAPTCHA ni image-test n'est détecté, conclure non applicable (compliant=true, summary indiquant l'absence de CAPTCHA, findings=[]).",
+        "Pour chaque CAPTCHA/image-test disposant d'une alternative textuelle, vérifier que cette alternative identifie la NATURE de l'image (c'est un test de vérification) ET sa FONCTION (ce que l'utilisateur doit faire), sans révéler la solution.",
+        "Signaler (type=\"violation\") les alternatives qui décrivent l'image littéralement, révèlent la réponse, ou n'indiquent pas qu'il s'agit d'un test.",
+        "Ce critère ne traite pas de la présence d'une solution d'accès alternatif : cela relève du critère 1.5."
+      ],
+      "important": [
+        "Si aucun CAPTCHA détecté : compliant=true, severity='minor', summary='Aucun CAPTCHA ni image-test détecté, critère non applicable', findings=[].",
+        "L'alternative ne doit jamais révéler la réponse au test.",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-captcha-purpose'",
+          "compliant": "boolean - true si conforme ou si aucun CAPTCHA détecté (non applicable)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre de CAPTCHA/images-test détectés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Alternative corrigée identifiant nature et fonction",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.4), spécialisé dans l'évaluation des alternatives textuelles des CAPTCHA et images-test (identification de la nature et de la fonction)."
+  },
+  "automatedChecks": [
+    "Détection de motifs CAPTCHA (alt, id, class contenant « captcha »)"
+  ],
+  "manualChecks": [
+    "Confirmation qu'il s'agit bien d'un CAPTCHA ou d'une image-test",
+    "Vérification que l'alternative identifie la nature et la fonction sans révéler la réponse"
+  ],
+  "commonErrors": [
+    {
+      "error": "Alternative de CAPTCHA décrivant l'image au lieu de sa fonction",
+      "example": "<img src=\"captcha.png\" alt=\"3F7B2\">",
+      "correction": "<img src=\"captcha.png\" alt=\"Test de vérification anti-robot : saisissez les caractères affichés dans le champ ci-dessous\">",
+      "explanation": "L'alternative doit identifier la nature (test de vérification) et la fonction, sans dévoiler la réponse attendue."
+    },
+    {
+      "error": "Alternative absente sur un CAPTCHA",
+      "example": "<img src=\"captcha.png\">",
+      "correction": "<img src=\"captcha.png\" alt=\"Image de vérification anti-robot. Une alternative sonore est disponible ci-dessous.\">",
+      "explanation": "Un CAPTCHA doit au minimum indiquer sa nature et sa fonction ; l'accès alternatif est traité par le critère 1.5."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html",
+    "https://www.w3.org/TR/turingtest/"
+  ]
+}

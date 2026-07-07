@@ -1,0 +1,143 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.9",
+  "ruleId": "image-caption",
+  "title": "Images - Légende liée à l'image",
+  "description": "Pour chaque image (porteuse d'information ou décorative) ayant une légende, cette légende est-elle correctement reliée à l'image correspondante ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.9",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A), 4.1.2 Nom, rôle et valeur (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux images accompagnées d'une légende (texte décrivant ou commentant l'image, visuellement rattaché à celle-ci).",
+    "signals": {
+      "selectors": [
+        "figure",
+        "figcaption"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune image accompagnée d'une légende"
+    ]
+  },
+  "testScenarios": {
+    "captionLink": {
+      "description": "Une image et sa légende doivent former un regroupement explicite et associé.",
+      "tests": [
+        {
+          "id": "1.9.1",
+          "rgaaTestRef": "Test 1.9.1",
+          "description": "Chaque image dotée d'une légende est-elle, avec sa légende, contenue dans un regroupement (par ex. <figure> contenant l'image et un <figcaption>) ?",
+          "methodology": [
+            "Repérer les images visuellement accompagnées d'une légende",
+            "Vérifier que l'image et sa légende sont regroupées (idéalement <figure> + <figcaption>, ou role=\"figure\"/\"group\" + aria-label/aria-labelledby reprenant la légende)",
+            "Vérifier que la légende est bien associée à la bonne image"
+          ],
+          "selector": "figure, figcaption, [role='figure'], [role='group']",
+          "expected": "L'image et sa légende doivent former un regroupement associé (figure/figcaption ou équivalent ARIA)",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectCaption": true,
+            "checkFigureAssociation": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "figure",
+          "figcaption",
+          "img",
+          "[role='figure']",
+          "[role='group']"
+        ],
+        "attributes": [
+          "role",
+          "aria-label",
+          "aria-labelledby",
+          "alt",
+          "src"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 300
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Repérer les images visuellement accompagnées d'une LÉGENDE (texte court décrivant/commentant l'image, placé juste au-dessus ou au-dessous).",
+        "Si aucune image n'a de légende, conclure non applicable (compliant=true, findings=[]).",
+        "Pour chaque image légendée, vérifier que l'image ET sa légende sont REGROUPÉES et associées : idéalement un <figure> contenant l'<img> et un <figcaption> ; à défaut role=\"figure\" ou role=\"group\" avec aria-label/aria-labelledby reprenant la légende.",
+        "Signaler (type=\"violation\") les légendes présentées comme du simple texte adjacent (par ex. <p> ou <div>) non reliées à l'image via un regroupement.",
+        "Vérifier que la légende est associée à la BONNE image (pas de décalage).",
+        "Proposer la correction <figure>/<figcaption> lorsque l'association manque."
+      ],
+      "important": [
+        "Si aucune image légendée détectée : compliant=true, severity='minor', summary='Aucune image avec légende détectée, critère non applicable', findings=[].",
+        "Une légende est un texte rattaché visuellement à l'image, à distinguer de l'alternative textuelle (alt).",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-caption'",
+          "compliant": "boolean - true si toutes les légendes sont correctement reliées (ou aucune légende)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre d'images légendées détectées",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Correction avec <figure>/<figcaption>",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.9), spécialisé dans le rattachement correct des légendes à leurs images (regroupement figure/figcaption ou équivalent ARIA)."
+  },
+  "automatedChecks": [
+    "Présence d'éléments <figure>/<figcaption>",
+    "Présence de role=\"figure\"/\"group\" avec aria-label/aria-labelledby"
+  ],
+  "manualChecks": [
+    "Identification visuelle des images accompagnées d'une légende",
+    "Vérification de l'association image/légende et de l'absence de décalage"
+  ],
+  "commonErrors": [
+    {
+      "error": "Légende en texte adjacent non reliée à l'image",
+      "example": "<img src=\"graphe.png\" alt=\"Graphe\">\n<p>Figure 1 : évolution des ventes</p>",
+      "correction": "<figure>\n  <img src=\"graphe.png\" alt=\"Graphe\">\n  <figcaption>Figure 1 : évolution des ventes</figcaption>\n</figure>",
+      "explanation": "Une image et sa légende doivent former un regroupement explicite via <figure> + <figcaption> (ou équivalent ARIA)."
+    },
+    {
+      "error": "Regroupement ARIA sans nom reprenant la légende",
+      "example": "<div role=\"group\"><img src=\"p.jpg\" alt=\"Portrait\"><span>Marie Curie, 1903</span></div>",
+      "correction": "<div role=\"figure\" aria-label=\"Marie Curie, 1903\"><img src=\"p.jpg\" alt=\"Portrait de Marie Curie\"><span>Marie Curie, 1903</span></div>",
+      "explanation": "Si l'on n'utilise pas <figure>/<figcaption>, le regroupement doit porter role=\"figure\" et un nom accessible reprenant la légende."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.9",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html",
+    "https://developer.mozilla.org/fr/docs/Web/HTML/Element/figure"
+  ]
+}

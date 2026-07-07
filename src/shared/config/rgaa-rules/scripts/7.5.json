@@ -1,0 +1,171 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "7.5",
+  "ruleId": "script-no-auto-reload",
+  "title": "Scripts - Pas de rafraîchissement automatique",
+  "description": "Dans chaque page web, les messages de changement de contexte sont-ils correctement restitués par les technologies d'assistance ?",
+  "rgaaReference": "RGAA 4.1 - Critère 7.5",
+  "wcagReference": "WCAG 2.1 - 3.2.5 Changement à la demande (AAA)",
+  "theme": "Scripts",
+  "level": "AAA",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages avec rafraîchissement ou redirection automatique",
+    "signals": {
+      "selectors": [
+        "meta[http-equiv='refresh']",
+        "[role='timer']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun rafraîchissement automatique",
+      "Aucune redirection automatique"
+    ]
+  },
+  "testScenarios": {
+    "noAutoRefresh": {
+      "description": "Contrôle des rafraîchissements automatiques",
+      "tests": [
+        {
+          "id": "7.5.1",
+          "rgaaTestRef": "Test 7.5.1",
+          "description": "La page ne contient-elle pas de balise meta refresh pour rafraîchissement automatique ?",
+          "methodology": [
+            "Vérifier l'absence de <meta http-equiv=\"refresh\" content=\"5\">",
+            "Si présent, vérifier content=\"0\" (redirection immédiate acceptable) ou >20h",
+            "Ou vérifier présence mécanisme de contrôle utilisateur"
+          ],
+          "selector": "meta[http-equiv='refresh']",
+          "expected": "Pas de rafraîchissement automatique, ou > 20 heures, ou contrôlable par l'utilisateur",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "7.5.2",
+          "rgaaTestRef": "Test 7.5.2",
+          "description": "Les scripts de rafraîchissement (JavaScript) sont-ils contrôlables par l'utilisateur ?",
+          "methodology": [
+            "Détecter usage de setInterval, setTimeout pour rafraîchissement",
+            "Vérifier présence de boutons pause/stop/contrôle",
+            "Vérifier que l'utilisateur peut désactiver le rafraîchissement"
+          ],
+          "selector": null,
+          "expected": "Les rafraîchissements automatiques doivent être contrôlables",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectAutoRefresh": true,
+            "checkUserControl": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 7.5 - Pas de rafraîchissement automatique, WCAG 3.2.5 niveau AAA), spécialisé dans une analyse DÉTERMINISTE fondée sur les signaux du DOM (présence d'une balise meta http-equiv=\"refresh\" et sa valeur content). Tu réserves le verdict ferme aux signaux mécaniques vérifiables (meta refresh avec délai court) et tu émets un warning de vérification manuelle dès que le rafraîchissement relève d'une logique JavaScript (setInterval/setTimeout) non observable de façon certaine dans le DOM.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "meta[http-equiv='refresh']",
+        "script",
+        "[role='timer']",
+        "button",
+        "[aria-live]"
+      ],
+      "attributes": [
+        "http-equiv",
+        "content",
+        "src"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 — Rechercher dans le DOM les SIGNAUX de rafraîchissement/redirection : balise <meta http-equiv=\"refresh\"> et, le cas échéant, role=\"timer\". Si AUCUN signal de rafraîchissement n'est détecté (ni meta refresh, ni indice de minuterie), conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 2 (signal déterministe) — Si une <meta http-equiv=\"refresh\"> est présente, lire l'attribut content et en extraire le délai en secondes (entier avant le point-virgule). Ce signal est mécanique et reproductible.",
+        "ÉTAPE 3 (verdict fondé sur le délai) — Délai compris entre 1 s et 72000 s (20 h) sans mécanisme de contrôle utilisateur exposé : finding type=\"warning\", severity moderate (rafraîchissement/redirection temporisé non maîtrisable, à corriger). Délai = 0 (redirection immédiate) : acceptable, ne pas signaler. Délai > 72000 s : acceptable au regard du critère.",
+        "ÉTAPE 4 (doute → warning) — Le rafraîchissement par JavaScript (setInterval, setTimeout, location.reload, fetch périodique) n'est PAS fiablement observable dans le DOM extrait : ne pas conclure à une violation ferme. Si un indice existe (role=\"timer\", contenu se mettant à jour), émettre un finding type=\"warning\" demandant de vérifier manuellement la présence de contrôles pause/stop.",
+        "ÉTAPE 5 — Quand un rafraîchissement est suspecté, rechercher dans le DOM la présence de contrôles utilisateur (boutons pause/stop/arrêter). Leur absence renforce le warning ; leur présence oriente vers la conformité, à confirmer manuellement.",
+        "ÉTAPE 6 — Pour chaque finding, proposer une alternative accessible : suppression du meta refresh au profit d'un lien/bouton de rafraîchissement manuel, redirection en content=\"0\", ou contrôles pause/stop pour les mises à jour scriptées (polling manuel, Server-Sent Events, WebSockets)."
+      ],
+      "important": [
+        "Déterminisme : la même balise meta refresh et la même valeur content doivent toujours produire le même verdict.",
+        "Verdict ferme réservé au signal OBJECTIF : meta http-equiv=\"refresh\" avec délai court (1 s à 20 h).",
+        "Doute → type=\"warning\" (vérification manuelle) : rafraîchissement par setInterval/setTimeout/location.reload non observable dans le DOM, présence réelle de contrôles utilisateur.",
+        "Non applicable si aucun rafraîchissement ni redirection automatique n'est détecté : compliant=true, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'script-no-auto-reload'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector ou description",
+          "issue": "string<=200",
+          "recommendation": "string avec alternative accessible",
+          "rgaaTestRef": "Test 7.5.1 ou Test 7.5.2",
+          "wcagReference": "3.2.5"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    }
+  },
+  "automatedChecks": [
+    "Détection de meta[http-equiv='refresh']",
+    "Analyse de la valeur content"
+  ],
+  "manualChecks": [
+    "Analyse du code JavaScript pour détecter setInterval/setTimeout",
+    "Vérification de la présence de contrôles utilisateur",
+    "Test du fonctionnement des contrôles"
+  ],
+  "commonErrors": [
+    {
+      "error": "Meta refresh avec délai court",
+      "example": "<meta http-equiv=\"refresh\" content=\"30\">",
+      "correction": "<!-- Supprimer le meta refresh -->\n<!-- Proposer un bouton de rafraîchissement manuel -->\n<button onclick=\"location.reload()\">Rafraîchir la page</button>",
+      "explanation": "Les rafraîchissements automatiques sont problématiques pour les utilisateurs de lecteurs d'écran. Proposer un contrôle manuel."
+    },
+    {
+      "error": "Redirection automatique sans délai suffisant",
+      "example": "<meta http-equiv=\"refresh\" content=\"5; url=nouvelle-page.html\">",
+      "correction": "<p>Cette page a déplacé. <a href=\"nouvelle-page.html\">Cliquez ici pour accéder à la nouvelle page</a>.</p>\n<!-- Si redirection nécessaire, utiliser content=\"0\" -->\n<meta http-equiv=\"refresh\" content=\"0; url=nouvelle-page.html\">",
+      "explanation": "Les redirections automatiques doivent être immédiates (0s) ou proposer un lien manuel"
+    },
+    {
+      "error": "Auto-refresh JavaScript sans contrôle (à vérifier manuellement)",
+      "example": "setInterval(() => {\n  fetchNewData();\n}, 5000);",
+      "correction": "let refreshInterval;\nconst pauseButton = document.getElementById('pause');\nfunction startRefresh() {\n  refreshInterval = setInterval(fetchNewData, 5000);\n}\nfunction stopRefresh() {\n  clearInterval(refreshInterval);\n}\npauseButton.onclick = () => {\n  isRunning ? stopRefresh() : startRefresh();\n};",
+      "explanation": "Un rafraîchissement par setInterval n'est pas visible dans le DOM extrait : à confirmer par une vérification manuelle (warning), puis fournir des contrôles pause/stop."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#7.5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/change-on-request.html"
+  ]
+}

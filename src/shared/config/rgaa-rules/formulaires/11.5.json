@@ -1,0 +1,170 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "11.5",
+  "ruleId": "form-required-field-indication",
+  "title": "Formulaires - Champs obligatoires",
+  "description": "Dans chaque formulaire, les champs obligatoires sont-ils identifiés ?",
+  "rgaaReference": "RGAA 4.1 - Critère 11.5",
+  "wcagReference": "WCAG 2.1 - 3.3.2 Étiquettes ou instructions (A)",
+  "theme": "Formulaires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux formulaires contenant des champs obligatoires",
+    "signals": {
+      "selectors": [
+        "input[required]",
+        "select[required]",
+        "textarea[required]",
+        "[aria-required='true']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun champ obligatoire dans le formulaire"
+    ]
+  },
+  "testScenarios": {
+    "requiredFieldIndication": {
+      "description": "Indication des champs obligatoires",
+      "tests": [
+        {
+          "id": "11.5.1",
+          "rgaaTestRef": "Test 11.5.1",
+          "description": "Les champs obligatoires ont-ils l'attribut required ou aria-required='true' ?",
+          "methodology": [
+            "Identifier tous les champs obligatoires (visuellement marqués par * ou \"obligatoire\")",
+            "Vérifier la présence de l'attribut required ou aria-required='true'",
+            "Vérifier que l'indication visuelle est cohérente avec l'attribut"
+          ],
+          "selector": "input:not([type='hidden']):not([type='submit']):not([type='button']), select, textarea",
+          "expected": "Chaque champ obligatoire doit avoir required ou aria-required='true'",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "11.5.2",
+          "rgaaTestRef": "Test 11.5.2",
+          "description": "La signification de l'indication de champ obligatoire est-elle explicitée ?",
+          "methodology": [
+            "Vérifier la présence d'une légende expliquant le symbole * ou autre indication",
+            "Vérifier que l'explication est placée avant les champs",
+            "Vérifier l'accessibilité de l'explication"
+          ],
+          "selector": "form",
+          "expected": "La signification du symbole de champ obligatoire doit être expliquée",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "input",
+        "select",
+        "textarea",
+        "form",
+        "label",
+        "abbr"
+      ],
+      "attributes": [
+        "required",
+        "aria-required",
+        "title"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier, à partir des attributs RÉELS du DOM, les champs portant required ou aria-required='true', ainsi que les indications visuelles d'obligation présentes dans le texte (symbole *, mention « obligatoire » dans le label voisin). Appliquer ensuite la procédure DANS L'ORDRE.",
+        "ÉTAPE 0 — Si aucun champ obligatoire (ni attribut required/aria-required, ni indication textuelle d'obligation) n'est détecté, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 — Relever les signaux MÉCANIQUES : présence/absence de required et de aria-required='true' sur chaque champ ; présence d'un marqueur textuel d'obligation (* ou « obligatoire ») dans l'étiquette ou son voisinage immédiat extrait.",
+        "ÉTAPE 2 (violation objective) — Champ marqué obligatoire de façon CERTAINE par un signal textuel extrait (* ou « obligatoire » dans l'étiquette) mais SANS attribut required ni aria-required='true' → finding type=\"violation\", severity serious : l'obligation n'est pas restituée programmatiquement.",
+        "ÉTAPE 3 (doute → warning) — Explication de la signification du symbole (« Les champs marqués d'un * sont obligatoires ») : sa présence et son placement avant les champs dépendent d'un contenu éditorial parfois distant. Émettre un finding type=\"warning\" demandant une vérification manuelle dès que l'explication n'est pas trouvée de façon certaine dans le contexte extrait.",
+        "ÉTAPE 4 (doute → warning) — Cohérence entre indication visuelle et attribut (ex. required présent sans marqueur visuel, ou indication par la seule couleur) : signaler en type=\"warning\" car l'appréciation du rendu visuel n'est pas tranchable dans le seul DOM.",
+        "ÉTAPE 5 — Pour chaque finding, proposer une correction concrète (ajout de required + abbr/title explicitant le symbole, ou mention d'obligation accessible)."
+      ],
+      "important": [
+        "Déterminisme : la présence de required/aria-required et d'un marqueur textuel d'obligation se vérifie dans le DOM ; mêmes signaux, même verdict.",
+        "type=\"violation\" est réservé au défaut OBJECTIF : champ certainement marqué obligatoire (signal textuel) mais sans required ni aria-required.",
+        "En cas de doute (explication du symbole distante, indication purement visuelle/couleur) → type=\"warning\" (vérification manuelle), jamais de violation ferme.",
+        "Si aucun champ obligatoire détecté: compliant=true, severity='minor', summary='Aucun champ obligatoire détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; maximum 5 findings, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'form-required-field-indication'",
+          "compliant": "boolean - true si conforme ou si aucun champ de formulaire détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple d'indication correcte",
+          "rgaaTestRef": "Test 11.5.1 ou 11.5.2",
+          "wcagReference": "3.3.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 11.5 - Formulaires), spécialisé dans l'indication des champs obligatoires. Tu appliques une approche déterministe : tu signales en violation un champ certainement marqué obligatoire (signal textuel * ou « obligatoire ») sans required ni aria-required, et tu demandes une vérification manuelle (warning) dès que la conformité dépend d'un contenu distant ou d'une appréciation visuelle (explication du symbole, indication par la couleur)."
+  },
+  "automatedChecks": [
+    "Détection des attributs required et aria-required",
+    "Détection du symbole * dans les labels"
+  ],
+  "manualChecks": [
+    "Cohérence entre indication visuelle et attributs",
+    "Présence d'explication de la signification du symbole",
+    "Accessibilité de l'explication"
+  ],
+  "commonErrors": [
+    {
+      "error": "Champ obligatoire sans attribut required",
+      "example": "<label>Nom *</label>\n<input type=\"text\">",
+      "correction": "<label>Nom <abbr title=\"requis\" aria-label=\"requis\">*</abbr></label>\n<input type=\"text\" required>",
+      "explanation": "Ajouter l'attribut required et expliquer le symbole"
+    },
+    {
+      "error": "Symbole * sans explication (à vérifier manuellement)",
+      "example": "<label>Email *</label>\n<input type=\"email\" required>",
+      "correction": "<p>Les champs marqués d'un <abbr title=\"requis\">*</abbr> sont obligatoires</p>\n<label>Email <abbr title=\"requis\" aria-label=\"requis\">*</abbr></label>\n<input type=\"email\" required>",
+      "explanation": "Expliquer la signification du * en début de formulaire. La présence de cette explication, parfois distante, relève d'une vérification manuelle (warning)."
+    },
+    {
+      "error": "Indication uniquement visuelle (couleur)",
+      "example": "<label style=\"color: red;\">Nom</label>\n<input type=\"text\" required>",
+      "correction": "<label>Nom <abbr title=\"requis\" aria-label=\"requis\">*</abbr></label>\n<input type=\"text\" required>",
+      "explanation": "Ne pas compter uniquement sur la couleur, ajouter un symbole ou texte"
+    },
+    {
+      "error": "aria-required sans indication visuelle",
+      "example": "<label>Prénom</label>\n<input type=\"text\" aria-required=\"true\">",
+      "correction": "<label>Prénom <abbr title=\"requis\" aria-label=\"requis\">*</abbr></label>\n<input type=\"text\" required aria-required=\"true\">",
+      "explanation": "Ajouter une indication visuelle cohérente avec aria-required"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#11.5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html",
+    "https://www.w3.org/WAI/tutorials/forms/instructions/#identifying-required-input"
+  ]
+}

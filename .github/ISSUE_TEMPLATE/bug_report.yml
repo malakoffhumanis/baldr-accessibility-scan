@@ -1,0 +1,50 @@
+name: Bug report
+description: Report a problem with BALDR
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and the expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How are you running BALDR?
+      options:
+        - API (baldrd / HTTP)
+        - CLI (baldr)
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command used
+      description: >-
+        The exact request/command that triggers the bug — the `curl` call in API mode,
+        or the `baldr` command in CLI mode. **Redact API keys, passwords, and any secrets.**
+      render: shell
+      placeholder: |
+        # API mode
+        curl -X POST http://localhost:3000/api/v1/journey \
+          -H "X-API-Key: <redacted>" -H "Content-Type: application/json" \
+          -d '{ "pages": [ { "url": "https://example.com" } ] }'
+
+        # CLI mode
+        baldr run request.json -o report.html
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: BALDR version
+    validations:
+      required: true

@@ -1,0 +1,212 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.13",
+  "ruleId": "media-video-only-transcript",
+  "title": "Multimédia - Transcription textuelle (média temporel seulement vidéo)",
+  "description": "Chaque média temporel pré-enregistré seulement vidéo a-t-il une transcription textuelle ou une audiodescription ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.13",
+  "wcagReference": "WCAG 2.1 - 1.2.1 Contenu seulement audio ou vidéo (pré-enregistré) (Niveau A)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Cette règle s'applique aux éléments vidéo pré-enregistrés ne contenant pas de piste audio (vidéo silencieuse).",
+    "signals": {
+      "selectors": [
+        "video:not(:has(audio))",
+        "video[muted]",
+        "video:not(:has(source[type*='audio']))"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Vidéos avec bande son (audio présent)",
+      "Médias audio uniquement",
+      "Vidéos en direct (non pré-enregistrées)",
+      "Vidéos décoratives ou servant uniquement d'ambiance"
+    ]
+  },
+  "testScenarios": {
+    "media-video-only-alternatives": {
+      "description": "Test de la présence d'une transcription textuelle ou audiodescription pour les vidéos silencieuses",
+      "tests": [
+        {
+          "id": "4.13.1",
+          "rgaaTestRef": "Test 4.13.1",
+          "description": "Chaque média temporel seulement vidéo possède-t-il une transcription textuelle accessible ?",
+          "methodology": [
+            "Identifier les éléments <video> sans piste audio",
+            "Vérifier la présence d'une transcription textuelle à proximité ou via un lien",
+            "Valider que la transcription est accessible (visible ou via lien explicite)",
+            "Vérifier l'association entre la vidéo et sa transcription",
+            "Confirmer que la transcription décrit toutes les informations visuelles pertinentes"
+          ],
+          "selector": "video:not(:has(audio)), video[muted]",
+          "expected": "Présence d'une transcription textuelle accessible décrivant toutes les informations visuelles de la vidéo",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Recherchez à proximité de l'élément vidéo: texte de transcription, lien 'Transcription', bouton d'affichage, élément <details> ou aria-describedby pointant vers une transcription."
+          }
+        },
+        {
+          "id": "4.13.2",
+          "rgaaTestRef": "Test 4.13.2",
+          "description": "À défaut de transcription, la vidéo seulement vidéo possède-t-elle une audiodescription synchronisée ?",
+          "methodology": [
+            "Vérifier la présence d'une piste <track kind='descriptions'>",
+            "Ou vérifier l'existence d'une version alternative avec audiodescription intégrée",
+            "Valider que l'audiodescription est accessible et activable",
+            "Tester la synchronisation de l'audiodescription avec les images"
+          ],
+          "selector": "video:not(:has(audio)) track[kind='descriptions'], video[muted] track[kind='descriptions']",
+          "expected": "Présence d'une piste d'audiodescription synchronisée (track kind='descriptions') ou lien vers version avec audiodescription",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Vérifiez la présence d'un <track kind='descriptions'> ou d'un lien vers une version alternative avec audiodescription."
+          }
+        },
+        {
+          "id": "4.13.3",
+          "rgaaTestRef": "Test 4.13.3",
+          "description": "La transcription textuelle fournie est-elle complète et pertinente ?",
+          "methodology": [
+            "Lire la transcription fournie",
+            "Visionner la vidéo silencieuse",
+            "Comparer les informations visuelles aux descriptions textuelles",
+            "Vérifier que tous les éléments visuels importants sont décrits",
+            "Valider la clarté et la précision des descriptions"
+          ],
+          "selector": null,
+          "expected": "La transcription décrit fidèlement et complètement toutes les informations visuelles pertinentes de la vidéo",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Analysez si la transcription fournie correspond au contenu visuel de la vidéo. Vérifiez la présence de descriptions des actions, personnages, textes à l'écran, expressions, etc."
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.13 - transcription/audiodescription des vidéos pré-enregistrées seulement vidéo, sans piste audio). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (absence d'audio, présence d'une transcription adjacente, d'un track kind='descriptions', d'un lien, d'une relation aria-describedby). Tu réserves la violation aux défauts objectifs (vidéo muette sans aucune alternative détectable) et tu demandes une vérification manuelle (warning) dès que la nature « seulement vidéo », la complétude ou la pertinence de l'alternative dépend d'une appréciation.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video:not(:has(audio))",
+        "video[muted]",
+        "video:not(:has(source[type*='audio']))"
+      ],
+      "steps": [
+        "Identifier les vidéos sans audio (pas de <audio>, attribut muted, pas de source audio)",
+        "Rechercher une transcription textuelle visible à proximité",
+        "Identifier les liens 'Transcription', 'Voir la transcription', etc.",
+        "Détecter les éléments <details> avec summary='Transcription'",
+        "Vérifier la présence de <track kind='descriptions'>",
+        "Analyser les attributs aria-describedby pointant vers du texte"
+      ]
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les vidéos SEULEMENT VIDÉO (pré-enregistrées sans piste audio) : <video> sans <audio> imbriqué, attribut muted, ou absence de <source type*='audio'>. Si AUCUNE vidéo de ce type n'est présente, conclure NON APPLICABLE (compliant=true, severity='minor', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque vidéo candidate, relever : présence d'un bloc transcription adjacent (mots-clés 'transcription' dans id/class ou un titre), d'un lien (a[href*='transcript']) ou d'un <details>/bouton d'affichage, d'une relation aria-describedby vers du texte, ou d'un <track kind='descriptions'>.",
+        "ÉTAPE 2 (violation objective) — Si une vidéo seulement vidéo ne présente AUCUN signal d'alternative (ni transcription adjacente, ni track descriptions, ni lien/aria-describedby), émettre un finding type='violation', severity='serious' : l'absence d'alternative est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 3 (doute → warning) — Si la nature réellement « seulement vidéo » ne peut être confirmée depuis le DOM (présence d'audio incertaine), OU si une alternative EXISTE mais que sa complétude/pertinence dépend du contenu (texte possiblement partiel, fichier .vtt non inspectable, transcription auto-générée non revue), NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les attributs et relations RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque vidéo sans alternative, proposer une correction concrète (bloc transcription relié par aria-describedby, ou track kind='descriptions')."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (absence d'audio, présence de transcription/track/lien) doivent toujours donner le même verdict.",
+        "type='violation' (severity='serious') réservé aux défauts OBJECTIFS : vidéo seulement vidéo sans aucune alternative détectable.",
+        "En cas de doute sur la nature 'seulement vidéo' ou sur la complétude/pertinence d'une alternative : type='warning' (vérification manuelle), jamais de violation.",
+        "Ne pas confondre kind='captions' (sous-titres de paroles) et kind='descriptions' (audiodescription) : pour une vidéo muette, l'alternative attendue est la transcription textuelle ou kind='descriptions'.",
+        "Si aucune vidéo seulement vidéo: compliant=true, severity='minor', findings=[] (non applicable).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "structure": {
+          "ruleId": "string",
+          "compliant": "boolean",
+          "severity": "critical | serious | moderate | minor",
+          "summary": "string (max 200 chars)",
+          "totalElements": "number",
+          "findings": "array (max 5)"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      }
+    },
+    "enabled": true
+  },
+  "automatedChecks": [
+    "Détection des éléments <video> sans audio",
+    "Identification de l'attribut muted",
+    "Recherche de textes de transcription à proximité (via patterns)",
+    "Détection de liens contenant 'transcription'",
+    "Présence de <track kind='descriptions'>",
+    "Vérification de aria-describedby"
+  ],
+  "manualChecks": [
+    "Confirmation que la vidéo ne contient pas d'audio",
+    "Lecture complète de la vidéo",
+    "Lecture de la transcription fournie",
+    "Comparaison vidéo/transcription pour vérifier la complétude",
+    "Test de l'activation de l'audiodescription si présente",
+    "Validation de la synchronisation audiodescription/images"
+  ],
+  "commonErrors": [
+    {
+      "error": "Vidéo silencieuse sans transcription ni audiodescription",
+      "example": "<video src=\"demonstration-silencieuse.mp4\" controls></video>",
+      "correction": "<video src=\"demonstration-silencieuse.mp4\" controls aria-describedby=\"transcript1\"></video>\n<div id=\"transcript1\">\n  <h3>Transcription de la démonstration</h3>\n  <p>La vidéo montre un utilisateur ouvrant l'application...</p>\n  <p>Il clique sur le bouton \"Nouveau document\"...</p>\n</div>",
+      "explanation": "Toute vidéo sans audio doit avoir une alternative textuelle ou sonore décrivant son contenu visuel."
+    },
+    {
+      "error": "Transcription présente mais non accessible",
+      "example": "<video src=\"tutoriel.mp4\" controls></video>\n<!-- Transcription cachée dans un fichier PDF non lié -->",
+      "correction": "<video src=\"tutoriel.mp4\" controls></video>\n<p><a href=\"#transcription-tutoriel\">Voir la transcription textuelle</a></p>\n<div id=\"transcription-tutoriel\" class=\"transcript\">\n  <h3>Transcription du tutoriel</h3>\n  <p>...</p>\n</div>",
+      "explanation": "La transcription doit être facilement accessible via un lien explicite ou visible directement sur la page."
+    },
+    {
+      "error": "Transcription incomplète ou partielle",
+      "example": "<video src=\"animation.mp4\" controls></video>\n<p>Cette vidéo montre une animation.</p>",
+      "correction": "<video src=\"animation.mp4\" controls></video>\n<details>\n  <summary>Transcription de l'animation</summary>\n  <p>Plan 1 (0:00-0:05): Un personnage entre dans une pièce depuis la gauche...</p>\n  <p>Plan 2 (0:05-0:12): Le personnage observe un tableau noir avec des équations...</p>\n  <p>Plan 3 (0:12-0:20): Gros plan sur les mains du personnage écrivant...</p>\n</details>",
+      "explanation": "La transcription doit décrire précisément et complètement toutes les actions, textes à l'écran et informations visuelles pertinentes."
+    },
+    {
+      "error": "Confusion entre transcription et audiodescription",
+      "example": "<video src=\"video-muette.mp4\" controls>\n  <track kind=\"captions\" src=\"captions.vtt\" srclang=\"fr\">\n</video>",
+      "correction": "<video src=\"video-muette.mp4\" controls>\n  <track kind=\"descriptions\" src=\"descriptions.vtt\" srclang=\"fr\">\n</video>\n<!-- OU transcription textuelle visible -->",
+      "explanation": "kind='captions' est pour les sous-titres synchronisés de paroles. Pour une vidéo muette, utiliser kind='descriptions' pour l'audiodescription ou fournir une transcription textuelle."
+    },
+    {
+      "error": "Transcription générée automatiquement sans validation",
+      "example": "<!-- Transcription auto-générée par IA non revue -->\n<p>Personne fait action. Objet bouge. Fin.</p>",
+      "correction": "<!-- Transcription revue et validée par humain -->\n<div class=\"transcript\">\n  <h3>Transcription</h3>\n  <p><strong>00:00-00:15</strong> : Une femme en blouse blanche entre dans un laboratoire. Elle porte des lunettes de protection et des gants...</p>\n</div>",
+      "explanation": "Les transcriptions auto-générées doivent être revues et enrichies par un humain pour garantir précision et complétude."
+    }
+  ],
+  "resources": [
+    "RGAA 4.1.2 - Critère 4.13 : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.13",
+    "WCAG 2.1 - 1.2.1 Audio-only and Video-only (Prerecorded) : https://www.w3.org/WAI/WCAG21/Understanding/audio-only-and-video-only-prerecorded.html",
+    "W3C - Making Audio and Video Media Accessible : https://www.w3.org/WAI/media/av/",
+    "WebAIM - Captions, Transcripts, and Audio Descriptions : https://webaim.org/techniques/captions/",
+    "AcceDe Web - Transcriptions : https://www.accede-web.com/notices/multimedia/transcriptions/"
+  ]
+}

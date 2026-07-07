@@ -1,0 +1,173 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.7",
+  "ruleId": "navigation-skip-link-target",
+  "title": "Navigation - Lien d'évitement présent",
+  "description": "Dans chaque page web, un lien d'évitement ou d'accès rapide à la zone de contenu principal est-il présent (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.7",
+  "wcagReference": "WCAG 2.1 - 2.4.1 Contourner des blocs (A)",
+  "theme": "Navigation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages contenant une navigation répétée et une zone de contenu principal",
+    "signals": {
+      "selectors": [
+        "nav",
+        "header",
+        "main",
+        "[role='main']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Page sans navigation répétée",
+      "Site d'une seule page sans navigation"
+    ]
+  },
+  "testScenarios": {
+    "skipLinkPresence": {
+      "description": "Présence de lien d'évitement",
+      "tests": [
+        {
+          "id": "12.7.1",
+          "rgaaTestRef": "Test 12.7.1",
+          "description": "Un lien d'évitement ou d'accès rapide au contenu principal est-il présent en début de page ?",
+          "methodology": [
+            "Vérifier la présence d'un lien en début de page (premier élément focusable)",
+            "Vérifier que le lien pointe vers le contenu principal (ancre #main, #content, etc.)",
+            "Vérifier que le lien est visible au focus clavier",
+            "Ou vérifier l'utilisation de landmarks ARIA appropriés"
+          ],
+          "selector": "a[href^='#']",
+          "expected": "Un lien d'évitement vers le contenu principal doit être présent",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "12.7.2",
+          "rgaaTestRef": "Test 12.7.2",
+          "description": "Le lien d'évitement est-il fonctionnel ?",
+          "methodology": [
+            "Vérifier que la cible du lien existe (élément avec id correspondant)",
+            "Vérifier que la cible est la zone de contenu principal",
+            "Tester que le focus se déplace correctement"
+          ],
+          "selector": "a[href^='#']",
+          "expected": "Le lien d'évitement doit être fonctionnel",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "a[href^='#']",
+        "main",
+        "[role='main']",
+        "body > *"
+      ],
+      "attributes": [
+        "href",
+        "id",
+        "role"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Si AUCUNE navigation répétée (<nav>) ne précède le contenu, le lien d'évitement est sans objet : conclure NON APPLICABLE (compliant=true, findings=[]). Si un lien d'évitement existe ET que sa cible (id) existe dans le DOM, conclure compliant=true et ne produis AUCUN warning sur la visibilité au focus (non vérifiable en statique).",
+        "Recenser via des signaux mécaniques du DOM la navigation répétée (<nav>, <header>) et la zone de contenu principal (<main> ou role=\"main\"), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — Si ni navigation répétée ni zone de contenu principal ne sont présentes → conclure NON APPLICABLE.",
+        "ÉTAPE 2 (déterministe) — Rechercher un lien d'évitement parmi les PREMIERS éléments focusables (lien interne a[href^=\"#\"] de tête de page pointant vers le contenu principal, ex. #main, #content).",
+        "ÉTAPE 3 (déterministe) — Cible : si un lien d'évitement existe, vérifier mécaniquement que l'élément ciblé (id correspondant à l'ancre) EXISTE dans le DOM. Cible inexistante → finding type=\"violation\", severity serious (lien non fonctionnel).",
+        "ÉTAPE 4 (déterministe) — Absence : si une navigation répétée précède le contenu et qu'AUCUN lien d'évitement ni landmark exploitable n'est présent → finding type=\"violation\", severity serious. Si des landmarks ARIA (nav, main) sont présents comme alternative de contournement, l'indiquer (ils peuvent suffire).",
+        "ÉTAPE 5 (doute → warning) — Visibilité au focus et déplacement EFFECTIF du focus : le fait que le lien d'évitement devienne visible au focus clavier et déplace réellement le focus dépend du rendu CSS et d'un comportement dynamique non observable dans le DOM statique → finding type=\"warning\" pour vérification manuelle, jamais une violation ferme sur ce point."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'navigation-skip-link-target'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de lien d'évitement",
+          "rgaaTestRef": "Test 12.7.1 ou 12.7.2",
+          "wcagReference": "2.4.1"
+        }
+      },
+      "important": [
+        "NON APPLICABLE en l'absence de navigation répétée à contourner (aucun <nav> précédant le contenu) : sans bloc répété, le lien d'évitement n'a pas d'objet — conclure compliant=true, findings=[]. Si un lien d'évitement existe ET que sa cible (id) existe dans le DOM, conclure compliant=true : ne PAS émettre de warning sur la visibilité au focus (non vérifiable en statique).",
+        "Déterminisme : présence du lien d'évitement, existence de sa cible (id), présence de la navigation et de main se lisent dans le DOM ; mêmes signaux, même verdict.",
+        "type=\"violation\" réservé aux défauts OBJECTIFS : absence de lien d'évitement (et de landmark) devant une navigation répétée, ou ancre de lien d'évitement sans cible existante.",
+        "En cas de doute (visibilité au focus, déplacement effectif du focus) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Les landmarks ARIA (nav, main) sont une alternative de contournement acceptable.",
+        "Critère NON APPLICABLE si pas de navigation répétée ni de zone de contenu principal.",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères). Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.7 - lien d'évitement vers le contenu principal). Tu appliques une approche DÉTERMINISTE : présence d'un lien d'évitement de tête de page, existence de sa cible (id), présence d'une navigation répétée et d'un <main> sont vérifiées dans le DOM. Tu signales en violation ferme l'absence de lien (sans landmark) ou une cible inexistante. La visibilité au focus et le déplacement effectif du focus relèvent d'une vérification manuelle (warning), jamais d'une violation. NON APPLICABLE sans navigation répétée ni contenu principal."
+  },
+  "automatedChecks": [
+    "Détection de liens pointant vers ancres en début de page",
+    "Vérification de l'existence des cibles",
+    "Détection de main ou role='main'"
+  ],
+  "manualChecks": [
+    "Test de fonctionnement du lien d'évitement",
+    "Vérification de la visibilité au focus",
+    "Pertinence de la cible"
+  ],
+  "commonErrors": [
+    {
+      "error": "Absence de lien d'évitement",
+      "example": "<body>\n  <nav>Menu long...</nav>\n  <main>Contenu</main>\n</body>",
+      "correction": "<body>\n  <a href=\"#main\" class=\"skip-link\">Aller au contenu principal</a>\n  <nav>Menu long...</nav>\n  <main id=\"main\">Contenu</main>\n</body>\n/* CSS */\n.skip-link { position: absolute; left: -9999px; }\n.skip-link:focus { left: 0; }",
+      "explanation": "Ajouter un lien d'évitement visible au focus en début de page"
+    },
+    {
+      "error": "Lien d'évitement avec cible inexistante",
+      "example": "<a href=\"#content\">Aller au contenu</a>\n...\n<main id=\"main\">Contenu</main> <!-- id ne correspond pas -->",
+      "correction": "<a href=\"#main\">Aller au contenu</a>\n...\n<main id=\"main\">Contenu</main>",
+      "explanation": "L'ancre du lien doit correspondre à l'id de la cible"
+    },
+    {
+      "error": "Lien d'évitement toujours masqué",
+      "example": ".skip-link { display: none; }",
+      "correction": ".skip-link {\n  position: absolute;\n  left: -9999px;\n  z-index: 999;\n}\n.skip-link:focus {\n  left: 10px;\n  top: 10px;\n  background: #000;\n  color: #fff;\n  padding: 10px;\n}",
+      "explanation": "Le lien doit être visible au focus clavier"
+    },
+    {
+      "error": "Lien d'évitement vers mauvaise cible",
+      "example": "<a href=\"#footer\">Aller au contenu</a> <!-- pointe vers le footer -->",
+      "correction": "<a href=\"#main\">Aller au contenu principal</a>\n...\n<main id=\"main\">Contenu</main>",
+      "explanation": "La cible doit être le contenu principal, pas le footer ou autre"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.7",
+    "https://www.w3.org/WAI/WCAG21/Understanding/bypass-blocks.html",
+    "https://webaim.org/techniques/skipnav/"
+  ]
+}

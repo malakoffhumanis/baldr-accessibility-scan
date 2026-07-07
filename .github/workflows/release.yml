@@ -1,0 +1,71 @@
+name: release
+# Tag-driven: bump + tag locally (`npm version patch` → creates vX.Y.Z), then
+# `git push --follow-tags`. Works from any branch (the workflow runs from the
+# tagged commit), so you can test on a dev branch.
+# Pre-release tags (vX.Y.Z-rc.1, v0.0.0-test) = dry-run: build only, no publish.
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+
+      - id: rel
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          dry=false
+          [[ "$version" == *-* ]] && dry=true
+          if [[ "$dry" == false ]]; then
+            pkg="$(node -p "require('./package.json').version")"
+            [[ "$pkg" == "$version" ]] || { echo "::error::tag $GITHUB_REF_NAME != package.json $pkg"; exit 1; }
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "dry=$dry" >> "$GITHUB_OUTPUT"
+
+      - run: npm run check
+      - run: npm run build
+
+      # Fail early (clear message) if a real release is missing its secrets/var.
+      - if: ${{ steps.rel.outputs.dry == 'false' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          : "${NPM_TOKEN:?NPM_TOKEN secret is not set}"
+
+      # npm: --registry overrides publishConfig (Nexus) → public npmjs.
+      # Pre-release tag → --dry-run (packs + validates, publishes nothing).
+      - run: npm publish --registry https://registry.npmjs.org --access public ${{ steps.rel.outputs.dry == 'true' && '--dry-run' || '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Docker Hub publish disabled for now — re-enable to push the image.
+      # Dockerfile is pre-built (COPY dist + node_modules) → ship prod deps only.
+      # - run: npm prune --omit=dev
+      #   env:
+      #     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+      # - if: ${{ steps.rel.outputs.dry == 'false' }}
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # # Pre-release builds the image (validates Dockerfile) but does not push.
+      # - uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     push: ${{ steps.rel.outputs.dry == 'false' }}
+      #     tags: |
+      #       ${{ vars.DOCKERHUB_IMAGE }}:${{ steps.rel.outputs.version }}
+      #       ${{ vars.DOCKERHUB_IMAGE }}:latest
+      #     build-args: |
+      #       VERSION=${{ steps.rel.outputs.version }}
+      #       VCS_REF=${{ github.sha }}
+      #       SOURCE=${{ github.server_url }}/${{ github.repository }}

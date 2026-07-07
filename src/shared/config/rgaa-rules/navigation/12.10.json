@@ -1,0 +1,165 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.10",
+  "ruleId": "navigation-main-content-identification",
+  "title": "Navigation - Identification du contenu principal",
+  "description": "Dans chaque page web, la zone de contenu principal est-elle identifiée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.10",
+  "wcagReference": "WCAG 2.1 - 2.4.1 Contourner des blocs (A) / 1.3.1 Information et relations (A)",
+  "theme": "Navigation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web avec une zone de contenu principal",
+    "signals": {
+      "selectors": [
+        "main",
+        "[role='main']",
+        "body"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": []
+  },
+  "testScenarios": {
+    "mainContentIdentification": {
+      "description": "Identification de la zone de contenu principal",
+      "tests": [
+        {
+          "id": "12.10.1",
+          "rgaaTestRef": "Test 12.10.1",
+          "description": "La zone de contenu principal est-elle balisée avec <main> ou role='main' ?",
+          "methodology": [
+            "Identifier la zone de contenu principal de la page",
+            "Vérifier la présence de la balise <main>",
+            "Ou vérifier l'attribut role='main'",
+            "Vérifier qu'il n'y a qu'un seul <main> ou role='main' par page"
+          ],
+          "selector": "main, [role='main']",
+          "expected": "Une unique zone de contenu principal doit être identifiée avec <main> ou role='main'",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "12.10.2",
+          "rgaaTestRef": "Test 12.10.2",
+          "description": "Il n'y a qu'une seule zone de contenu principal ?",
+          "methodology": [
+            "Compter le nombre de <main> et role='main'",
+            "Vérifier qu'il y a exactement un seul élément",
+            "Détecter les multiples <main> ou role='main'"
+          ],
+          "selector": "main, [role='main']",
+          "expected": "Il ne doit y avoir qu'un seul contenu principal par page",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.10 - identification de la zone de contenu principal). Tu appliques une approche DÉTERMINISTE fondée sur les signaux du DOM : comptage des éléments <main> et role=\"main\". Tu signales en violation ferme les cas objectifs (aucun <main> ou plusieurs <main>). Le fait que le <main> contienne bien tout le contenu principal et soit correctement placé relève d'une appréciation → warning de vérification manuelle plutôt qu'une violation.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "main",
+        "[role='main']",
+        "body > *"
+      ],
+      "attributes": [
+        "role",
+        "id"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser via des signaux mécaniques du DOM les éléments <main> et role=\"main\", puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — Compter les éléments <main> et role=\"main\". Si le compte est ZÉRO → finding type=\"violation\", severity serious (aucune zone de contenu principal identifiée).",
+        "ÉTAPE 2 (déterministe) — Si le compte est SUPÉRIEUR à 1 → finding type=\"violation\", severity serious (il ne doit y avoir qu'une seule zone de contenu principal par page). Lister les éléments en cause.",
+        "ÉTAPE 3 (déterministe) — Placement manifestement incorrect : si l'unique <main> est imbriqué dans un <header> ou un <footer> (signal de structure observable) → finding type=\"violation\", severity serious (le main doit être au niveau racine du document).",
+        "ÉTAPE 4 (doute → warning) — Si exactement UN <main> correctement placé est présent : le fait qu'il contienne BIEN tout le contenu principal (et qu'aucun contenu principal ne soit laissé en dehors) relève d'une appréciation du contenu → conclure conforme et, en cas de doute, émettre au plus un finding type=\"warning\" pour vérification manuelle. Ne pas produire de violation sur ce point.",
+        "ÉTAPE 5 — Ce critère reste APPLICABLE à toute page disposant d'un contenu principal (cas habituel)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'navigation-main-content-identification'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number - Nombre de main trouvés",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de balisage correct",
+          "rgaaTestRef": "Test 12.10.1 ou 12.10.2",
+          "wcagReference": "2.4.1 ou 1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : le comptage des <main>/role=main et leur placement structurel se lisent dans le DOM ; mêmes signaux, même verdict.",
+        "type=\"violation\" réservé aux défauts OBJECTIFS : aucun main, plusieurs main, ou main imbriqué dans header/footer.",
+        "En cas de doute (le main contient-il vraiment tout le contenu principal ?) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Si exactement 1 main correctement placé : conclusion conforme.",
+        "Retourner UNIQUEMENT du JSON valide. Limiter à 5 findings maximum."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de balise <main>",
+    "Détection de role='main'",
+    "Comptage du nombre d'occurrences"
+  ],
+  "manualChecks": [
+    "Vérification que le <main> contient bien le contenu principal",
+    "Vérification de l'emplacement du <main>",
+    "Pertinence du contenu dans <main>"
+  ],
+  "commonErrors": [
+    {
+      "error": "Absence de balise <main>",
+      "example": "<body>\n  <header>En-tête</header>\n  <div class=\"content\">\n    Contenu principal\n  </div>\n  <footer>Pied de page</footer>\n</body>",
+      "correction": "<body>\n  <header>En-tête</header>\n  <main>\n    Contenu principal\n  </main>\n  <footer>Pied de page</footer>\n</body>",
+      "explanation": "Identifier la zone de contenu principal avec <main>"
+    },
+    {
+      "error": "Plusieurs balises <main>",
+      "example": "<body>\n  <main>Zone 1</main>\n  <main>Zone 2</main>\n</body>",
+      "correction": "<body>\n  <main>\n    <section>Zone 1</section>\n    <section>Zone 2</section>\n  </main>\n</body>",
+      "explanation": "Une seule balise <main> par page"
+    },
+    {
+      "error": "<main> mal placé (dans header ou footer)",
+      "example": "<header>\n  <main>Contenu</main>\n</header>",
+      "correction": "<body>\n  <header>En-tête</header>\n  <main>Contenu</main>\n  <footer>Pied de page</footer>\n</body>",
+      "explanation": "<main> doit être au niveau racine du body, pas dans header/footer"
+    },
+    {
+      "error": "Contenu principal en dehors de <main>",
+      "example": "<body>\n  <main>\n    <h1>Titre</h1>\n  </main>\n  <article>Article principal</article> <!-- en dehors -->\n</body>",
+      "correction": "<body>\n  <main>\n    <h1>Titre</h1>\n    <article>Article principal</article>\n  </main>\n</body>",
+      "explanation": "Tout le contenu principal doit être dans <main>"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.10",
+    "https://www.w3.org/WAI/WCAG21/Understanding/bypass-blocks.html",
+    "https://developer.mozilla.org/fr/docs/Web/HTML/Element/main"
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.2",
+  "ruleId": "navigation-skip-links",
+  "title": "Navigation - Liens d'évitement",
+  "description": "Dans chaque ensemble de pages, le menu et les barres de navigation sont-ils toujours à la même place (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.2",
+  "wcagReference": "WCAG 2.1 - 3.2.3 Navigation cohérente (AA)",
+  "theme": "Navigation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique aux sites web avec plusieurs pages contenant des éléments de navigation récurrents",
+    "signals": {
+      "selectors": [
+        "nav",
+        "[role='navigation']",
+        "header",
+        "footer"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Site d'une seule page",
+      "Applications web avec interface dynamique"
+    ]
+  },
+  "testScenarios": {
+    "navigationConsistency": {
+      "description": "Cohérence de la position des menus de navigation",
+      "tests": [
+        {
+          "id": "12.2.1",
+          "rgaaTestRef": "Test 12.2.1",
+          "description": "Les menus et barres de navigation sont-ils à la même place dans l'ensemble des pages ?",
+          "methodology": [
+            "Identifier les éléments de navigation récurrents (menu principal, pied de page)",
+            "Vérifier leur position relative sur plusieurs pages du site",
+            "Vérifier que l'ordre des éléments est cohérent",
+            "Tolérer les variations dues au contexte (ex: fil d'Ariane)"
+          ],
+          "selector": "nav, [role='navigation'], header nav, footer nav",
+          "expected": "Les éléments de navigation récurrents doivent être à la même place sur toutes les pages",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectNavigationElements": true,
+            "checkPositionConsistency": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "nav",
+        "[role='navigation']",
+        "header",
+        "footer"
+      ],
+      "attributes": [
+        "class",
+        "id",
+        "aria-label"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser via des signaux mécaniques du DOM les zones de navigation récurrentes de la page (<nav>, éléments à role=\"navigation\", <header>, <footer> et leurs <nav> internes), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — Extraire pour chaque zone de navigation sa position structurelle dans le DOM (dans header, dans footer, niveau racine) et ses repères d'identification (class, id, aria-label). Ces signaux constituent l'empreinte à comparer entre pages.",
+        "ÉTAPE 2 (doute → warning) — La cohérence de POSITION et d'ORDRE des menus se vérifie d'une PAGE À L'AUTRE : une seule page ne permet pas de trancher. Émettre un finding type=\"warning\" demandant explicitement une vérification inter-pages (même emplacement, même ordre des liens, mêmes sections présentes partout). NE PAS produire de violation ferme à partir d'une page unique.",
+        "ÉTAPE 3 — Ne pas évaluer ici l'identification des menus (critère 12.9) ni leur intitulé : se limiter à la position et à l'ordre.",
+        "ÉTAPE 4 — Le critère est NON APPLICABLE pour un site d'une seule page ou une interface sans navigation récurrente."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'navigation-skip-links'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string - Indiquer que la vérification nécessite plusieurs pages",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string",
+          "rgaaTestRef": "Test 12.2.1",
+          "wcagReference": "3.2.3"
+        }
+      },
+      "important": [
+        "Déterminisme : l'empreinte de chaque zone de navigation (position structurelle, ordre, repères) se lit dans le DOM ; les mêmes signaux donnent le même relevé.",
+        "type=\"violation\" interdit ici sur une page unique : la cohérence inter-pages ne peut pas être tranchée avec une seule page.",
+        "En cas de doute (vérification inter-pages requise) → type=\"warning\" pour vérification manuelle, et l'indiquer dans le summary.",
+        "Critère NON APPLICABLE pour un site d'une seule page ou sans navigation récurrente.",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.2 - cohérence de la navigation entre pages). Tu relèves de façon DÉTERMINISTE l'empreinte des zones de navigation dans le DOM (position structurelle, ordre, repères d'identification). Comme la cohérence se vérifie d'une page à l'autre, tu n'émets jamais de violation ferme sur une page unique : tu produis un warning demandant une vérification manuelle inter-pages."
+  },
+  "automatedChecks": [
+    "Identification des éléments de navigation",
+    "Extraction de la structure de navigation"
+  ],
+  "manualChecks": [
+    "Vérification de la cohérence sur plusieurs pages",
+    "Vérification de l'ordre des éléments de navigation",
+    "Identification des variations contextuelles acceptables"
+  ],
+  "commonErrors": [
+    {
+      "error": "Menu principal à des emplacements différents",
+      "example": "<!-- Page 1: menu en haut -->\n<header>\n  <nav>Menu</nav>\n</header>\n<!-- Page 2: menu à gauche -->\n<aside>\n  <nav>Menu</nav>\n</aside>",
+      "correction": "<!-- Toutes les pages -->\n<header>\n  <nav>Menu</nav>\n</header>",
+      "explanation": "Le menu principal doit être au même emplacement sur toutes les pages"
+    },
+    {
+      "error": "Ordre des éléments de navigation inversé",
+      "example": "<!-- Page 1 -->\n<nav>\n  <a>Accueil</a>\n  <a>Produits</a>\n  <a>Contact</a>\n</nav>\n<!-- Page 2 -->\n<nav>\n  <a>Contact</a>\n  <a>Produits</a>\n  <a>Accueil</a>\n</nav>",
+      "correction": "<!-- Toutes les pages -->\n<nav>\n  <a>Accueil</a>\n  <a>Produits</a>\n  <a>Contact</a>\n</nav>",
+      "explanation": "L'ordre des liens de navigation doit être cohérent"
+    },
+    {
+      "error": "Disparition de sections de navigation",
+      "example": "<!-- Page 1: header + footer navigation -->\n<!-- Page 2: uniquement header navigation -->",
+      "correction": "<!-- Toutes les pages: structure cohérente -->\n<header><nav>Menu principal</nav></header>\n<main>Contenu</main>\n<footer><nav>Liens footer</nav></footer>",
+      "explanation": "Les sections de navigation récurrentes doivent être présentes partout"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/consistent-navigation.html"
+  ]
+}

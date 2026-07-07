@@ -1,0 +1,187 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.3",
+  "ruleId": "media-audio-description",
+  "title": "Multimédia - Audiodescription synchronisée",
+  "description": "Chaque média temporel synchronisé pré-enregistré a-t-il une audiodescription synchronisée pertinente ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.3",
+  "wcagReference": "WCAG 2.1 - 1.2.3 Audiodescription ou version de remplacement pour un média temporel (A) / 1.2.5 Audiodescription (pré-enregistré) (AA)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias temporels synchronisés pré-enregistrés (vidéo avec audio)",
+    "signals": {
+      "selectors": [
+        "video[src]",
+        "video > source",
+        "object[type^='video']",
+        "embed[type^='video']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média vidéo présent",
+      "Vidéo en direct uniquement",
+      "Vidéo sans contenu visuel informatif",
+      "Audio seul sans vidéo"
+    ]
+  },
+  "testScenarios": {
+    "audioDescription": {
+      "description": "Audiodescription pour vidéo synchronisée",
+      "tests": [
+        {
+          "id": "4.3.1",
+          "rgaaTestRef": "Test 4.3.1",
+          "description": "Chaque média temporel synchronisé pré-enregistré a-t-il une audiodescription synchronisée ?",
+          "methodology": [
+            "Identifier les vidéos avec audio synchronisé",
+            "Vérifier la présence d'une piste d'audiodescription (track kind='descriptions')",
+            "Ou vérifier la présence d'une version alternative avec audiodescription",
+            "Tester l'activation de l'audiodescription"
+          ],
+          "selector": "video",
+          "expected": "Une audiodescription synchronisée ou une version alternative avec audiodescription doit être disponible",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectVideoWithAudio": true,
+            "checkAudioDescriptionTrack": true,
+            "checkAlternativeVersion": true
+          }
+        },
+        {
+          "id": "4.3.2",
+          "rgaaTestRef": "Test 4.3.2",
+          "description": "L'audiodescription est-elle pertinente et synchronisée ?",
+          "methodology": [
+            "Activer l'audiodescription",
+            "Vérifier la synchronisation avec la vidéo",
+            "Vérifier que les éléments visuels importants sont décrits",
+            "Vérifier que la description ne chevauche pas les dialogues"
+          ],
+          "selector": "track[kind='descriptions']",
+          "expected": "L'audiodescription doit décrire les éléments visuels importants et être synchronisée",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.3 - audiodescription synchronisée des vidéos pré-enregistrées). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (présence d'un track kind='descriptions', d'une version alternative audiodécrite, d'un contrôle d'audiodescription). Tu réserves la violation aux défauts objectifs (vidéo applicable sans aucun signal d'audiodescription) et tu demandes une vérification manuelle (warning) dès que la pertinence, la synchronisation ou l'existence réelle d'une version alternative ne peut être tranchée depuis le DOM.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "track",
+        "source",
+        "object[type^='video']",
+        "button[aria-label*='description' i]",
+        "a[href*='description' i]"
+      ],
+      "attributes": [
+        "src",
+        "kind",
+        "srclang",
+        "label",
+        "controls",
+        "aria-describedby"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les vidéos synchronisées pré-enregistrées : <video> (avec src ou <source>), <object type^='video'>, <embed type^='video'>. Si AUCUNE vidéo n'est présente, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque vidéo, relever : présence d'un <track kind='descriptions'>, présence d'un contrôle d'audiodescription identifiable (button/lien avec libellé contenant 'description'/'audiodescription'/'AD'), présence d'un lien vers une VERSION alternative audiodécrite (href contenant 'description'/'audiodecrit').",
+        "ÉTAPE 2 (violation objective) — Si une vidéo applicable ne présente AUCUN signal d'audiodescription (ni track kind='descriptions', ni contrôle, ni lien vers version alternative), émettre un finding type='violation' : l'absence est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 3 (doute → warning) — Si un signal EXISTE (track descriptions, lien vers version alternative) mais que sa PERTINENCE, sa SYNCHRONISATION, le non-chevauchement avec les dialogues ou l'existence réelle du contenu distant ne peut être tranchée depuis le DOM (fichier .vtt non inspectable, vidéo distante), NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les attributs et relations RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque vidéo sans audiodescription, proposer une correction concrète (track kind='descriptions' correctement balisé, ou version alternative audiodécrite)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-audio-description'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string - Si non_applicable: 'Aucune vidéo synchronisée détectée'. Sinon résumé",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de code HTML",
+          "rgaaTestRef": "Test 4.3.1 ou Test 4.3.2",
+          "wcagReference": "1.2.3 / 1.2.5"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (track descriptions, lien vers version alternative, contrôle) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : vidéo applicable sans AUCUN signal d'audiodescription dans le DOM.",
+        "Accepter indifféremment un track kind='descriptions' OU une version alternative audiodécrite comme signal de conformité.",
+        "En cas de doute sur la pertinence/synchronisation/existence réelle d'une alternative : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucune vidéo: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection des éléments video",
+    "Présence d'élément track avec kind='descriptions'",
+    "Présence de contrôles d'audiodescription"
+  ],
+  "manualChecks": [
+    "Pertinence de l'audiodescription",
+    "Synchronisation avec la vidéo",
+    "Exhaustivité des descriptions visuelles",
+    "Qualité de l'audiodescription (pas de chevauchement avec dialogues)"
+  ],
+  "commonErrors": [
+    {
+      "error": "Vidéo sans audiodescription",
+      "example": "<video controls src=\"video.mp4\"></video>",
+      "correction": "<video controls src=\"video.mp4\">\n  <track kind=\"descriptions\" src=\"descriptions.vtt\" srclang=\"fr\" label=\"Audiodescription française\">\n</video>",
+      "explanation": "Les vidéos avec contenu visuel informatif doivent avoir une audiodescription pour les personnes aveugles."
+    },
+    {
+      "error": "Track mal configuré",
+      "example": "<video controls src=\"video.mp4\">\n  <track kind=\"captions\" src=\"descriptions.vtt\">\n</video>",
+      "correction": "<video controls src=\"video.mp4\">\n  <track kind=\"descriptions\" src=\"descriptions.vtt\" srclang=\"fr\" label=\"Audiodescription française\">\n</video>",
+      "explanation": "L'audiodescription doit utiliser kind='descriptions', pas 'captions' ou 'subtitles'."
+    },
+    {
+      "error": "Contrôle d'audiodescription non accessible",
+      "example": "<div onclick=\"toggleAudioDescription()\">AD</div>",
+      "correction": "<button type=\"button\" aria-label=\"Activer/désactiver l'audiodescription\" onclick=\"toggleAudioDescription()\">\n  <span aria-hidden=\"true\">AD</span>\n</button>",
+      "explanation": "Les contrôles doivent être accessibles au clavier et aux technologies d'assistance."
+    },
+    {
+      "error": "Version alternative audiodécrite référencée par lien (à vérifier manuellement)",
+      "example": "<video controls src=\"film.mp4\"></video>\n<p><a href=\"film-audiodecrit.mp4\">Version audiodécrite</a></p>",
+      "correction": "<video controls src=\"film.mp4\"></video>\n<p><a href=\"film-audiodecrit.mp4\">Version audiodécrite</a></p>\n<!-- Vérifier manuellement que la version liée contient bien une audiodescription synchronisée et pertinente -->",
+      "explanation": "Le signal DOM (lien vers une version alternative) est présent : ne pas conclure à une violation. La pertinence et la synchronisation réelles de l'audiodescription relèvent d'une vérification manuelle (warning), le contenu distant n'étant pas inspectable."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.3",
+    "https://www.w3.org/WAI/WCAG21/Understanding/audio-description-or-media-alternative-prerecorded.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/audio-description-prerecorded.html"
+  ]
+}

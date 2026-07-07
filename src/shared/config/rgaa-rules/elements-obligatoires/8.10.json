@@ -1,0 +1,153 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "8.10",
+  "ruleId": "mandatory-element-deprecated-tags",
+  "title": "Éléments obligatoires - Balises obsolètes",
+  "description": "Dans chaque page web, les changements du sens de lecture sont-ils signalés ?",
+  "rgaaReference": "RGAA 4.1 - Critère 8.10",
+  "wcagReference": "WCAG 2.1 - 1.3.2 Ordre séquentiel significatif (A)",
+  "theme": "Éléments obligatoires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages contenant des passages de texte dans une langue se lisant dans un sens différent (droite-à-gauche vs gauche-à-droite)",
+    "signals": {
+      "selectors": [
+        "[dir]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Pas de changement de sens de lecture dans la page"
+    ]
+  },
+  "testScenarios": {
+    "textDirection": {
+      "description": "Signalement des changements de sens de lecture",
+      "tests": [
+        {
+          "id": "8.10.1",
+          "rgaaTestRef": "Test 8.10.1",
+          "description": "Les changements du sens de lecture sont-ils signalés par l'attribut dir ?",
+          "methodology": [
+            "Identifier les passages de texte dans une langue se lisant de droite à gauche (arabe, hébreu, etc.)",
+            "Vérifier la présence de l'attribut dir='rtl' sur ces passages",
+            "Pour la langue principale rtl, vérifier dir='rtl' sur html",
+            "Vérifier l'absence d'usage incorrect de dir pour la mise en page"
+          ],
+          "selector": "*[dir]",
+          "expected": "Les changements de sens de lecture doivent être signalés par dir='rtl' ou dir='ltr'",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectRtlContent": true,
+            "verifyDirAttribute": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 8.10 - signalement des changements de sens de lecture), spécialisé dans l'analyse déterministe de l'attribut dir. Tu signales en violation ferme uniquement les défauts objectifs du DOM (valeur de dir invalide, usage de dir détourné pour l'alignement) et tu demandes une vérification manuelle (warning) dès que l'identification d'un passage RTL non balisé dépend d'une lecture du contenu.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "html",
+        "*[dir]",
+        "*[lang]"
+      ],
+      "attributes": [
+        "dir",
+        "lang"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Objectif : vérifier le critère RGAA 8.10 (signalement des changements de sens de lecture via l'attribut dir). S'appuyer sur les attributs RÉELS du DOM extrait ET sur le contenu textuel, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (signal mécanique) — Relever le sens de lecture par défaut (dir sur <html>) puis, pour chaque élément, la présence/absence de dir, sa valeur EXACTE, et la présence d'un attribut lang correspondant à une langue RTL (ar, he, fa, ur, yi, dv, ps).",
+        "ÉTAPE 2 (violation objective) — Pour tout élément dont l'attribut dir porte une valeur INVALIDE (différente de rtl, ltr, auto) → finding type=\"violation\", severity serious : valeur de dir non conforme, défaut vérifiable sans interprétation.",
+        "ÉTAPE 3 (violation objective) — Détecter l'usage DÉTOURNÉ de dir : un élément avec dir=\"rtl\"/\"ltr\" appliqué à un contenu dont la langue (lang) ne correspond PAS au sens déclaré, manifestement employé pour aligner le texte → finding type=\"violation\" (dir réservé au sens de lecture, pas à la mise en page).",
+        "ÉTAPE 4 (violation objective) — Un élément portant lang d'une langue RTL (ar, he, fa, ur…) SANS attribut dir=\"rtl\" associé est un défaut objectif corrélé à un signal mécanique (lang) → finding type=\"violation\", severity serious.",
+        "ÉTAPE 5 (doute → warning) — Identifier des passages qui SEMBLENT être dans une écriture RTL mais SANS attribut lang ni dir : l'identification de la langue du passage relève d'une appréciation du contenu → émettre un finding type=\"warning\" demandant une vérification manuelle, pas une violation ferme.",
+        "ÉTAPE 6 (non applicable) — Si la page ne contient AUCUN passage RTL ni aucun attribut dir, conclure NON APPLICABLE (compliant=true, findings=[]). Ne pas créer de finding si dir est utilisé correctement."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'mandatory-element-deprecated-tags'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML incluant dir",
+          "rgaaTestRef": "Test 8.10.1",
+          "wcagReference": "1.3.2"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (valeur de dir, lang RTL sans dir) doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS : valeur de dir invalide, dir détourné pour l'alignement, lang RTL sans dir associé.",
+        "En cas de doute (passage RTL sans lang ni dir, langue du passage incertaine) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Conclure NON APPLICABLE si aucun passage RTL ni aucun attribut dir n'est présent.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après. Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection d'attributs lang pour langues RTL sans attribut dir",
+    "Validation des valeurs de dir (rtl, ltr, auto)"
+  ],
+  "manualChecks": [
+    "Identification des passages de texte RTL",
+    "Vérification de la pertinence de l'attribut dir",
+    "Test de l'affichage du contenu RTL"
+  ],
+  "commonErrors": [
+    {
+      "error": "Élément en langue RTL sans attribut dir",
+      "example": "<p lang=\"ar\">مرحبا بك</p>",
+      "correction": "<p lang=\"ar\" dir=\"rtl\">مرحبا بك</p>",
+      "explanation": "Un élément portant un lang RTL (ar, he, fa…) sans dir='rtl' associé est un défaut objectif corrélé à un signal du DOM (violation)."
+    },
+    {
+      "error": "Page principale en langue RTL sans dir sur html",
+      "example": "<html lang=\"ar\"><body>...</body></html>",
+      "correction": "<html lang=\"ar\" dir=\"rtl\"><body>...</body></html>",
+      "explanation": "Si la langue principale est RTL (lang='ar'), définir dir='rtl' sur <html> : absence = violation objective."
+    },
+    {
+      "error": "Utilisation de dir pour l'alignement de texte",
+      "example": "<p dir=\"rtl\">Texte français aligné à droite</p>",
+      "correction": "<p class=\"text-right\">Texte français aligné à droite</p>\n/* CSS */\n.text-right { text-align: right; }",
+      "explanation": "Détourner dir (sur un contenu non RTL) pour aligner du texte est un usage incorrect : dir est réservé au sens de lecture (violation). Utiliser CSS."
+    },
+    {
+      "error": "Passage possiblement RTL sans lang ni dir (à vérifier manuellement)",
+      "example": "<p>שלום</p>",
+      "correction": "<p lang=\"he\" dir=\"rtl\">שלום</p>",
+      "explanation": "Identifier la langue d'un passage non balisé relève d'une appréciation du contenu : émettre un warning de vérification manuelle avant de conclure."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#8.10",
+    "https://www.w3.org/International/questions/qa-html-dir",
+    "https://www.w3.org/WAI/WCAG21/Understanding/meaningful-sequence.html"
+  ]
+}

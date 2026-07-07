@@ -1,0 +1,25 @@
+name: license-check
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+jobs:
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run licenses:check
+      - run: npm run notices:generate
+      - name: Verify THIRD_PARTY_NOTICES.md is up to date
+        run: |
+          if ! git diff --quiet -- THIRD_PARTY_NOTICES.md; then
+            echo "::error::THIRD_PARTY_NOTICES.md is out of date. Run 'npm run notices:generate' and commit the result."
+            git --no-pager diff -- THIRD_PARTY_NOTICES.md
+            exit 1
+          fi

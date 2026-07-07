@@ -1,0 +1,188 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.5",
+  "ruleId": "navigation-breadcrumb",
+  "title": "Navigation - Fil d'Ariane",
+  "description": "Dans chaque ensemble de pages, les pages ayant un fil d'Ariane vérifient-elles ces conditions ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.5",
+  "wcagReference": "WCAG 2.1 - 2.4.8 Localisation (AAA)",
+  "theme": "Navigation",
+  "level": "AAA",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages contenant un fil d'Ariane",
+    "signals": {
+      "selectors": [
+        "nav[aria-label*='Ariane' i]",
+        "nav[aria-label*='breadcrumb' i]",
+        "[role='navigation'] ol",
+        ".breadcrumb"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun fil d'Ariane présent",
+      "Site d'une seule page"
+    ]
+  },
+  "testScenarios": {
+    "breadcrumbStructure": {
+      "description": "Structure et pertinence du fil d'Ariane",
+      "tests": [
+        {
+          "id": "12.5.1",
+          "rgaaTestRef": "Test 12.5.1",
+          "description": "Le fil d'Ariane est-il structuré avec des listes ?",
+          "methodology": [
+            "Identifier le fil d'Ariane",
+            "Vérifier qu'il est structuré avec <ol> ou <ul>",
+            "Vérifier que chaque niveau est un <li>",
+            "Vérifier la présence de liens pour les niveaux navigables"
+          ],
+          "selector": "nav[aria-label*='Ariane' i], nav[aria-label*='breadcrumb' i], .breadcrumb",
+          "expected": "Le fil d'Ariane doit utiliser une liste ordonnée",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "12.5.2",
+          "rgaaTestRef": "Test 12.5.2",
+          "description": "Le fil d'Ariane représente-t-il correctement la position de la page ?",
+          "methodology": [
+            "Vérifier que le fil d'Ariane reflète la hiérarchie du site",
+            "Vérifier la présence de tous les niveaux intermédiaires",
+            "Vérifier que le dernier élément est la page courante",
+            "Vérifier l'absence de niveaux inexistants"
+          ],
+          "selector": "nav[aria-label*='Ariane' i] ol, .breadcrumb ol",
+          "expected": "Le fil d'Ariane doit représenter la hiérarchie complète",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.5.3",
+          "rgaaTestRef": "Test 12.5.3",
+          "description": "Le dernier élément du fil d'Ariane est-il la page en cours ?",
+          "methodology": [
+            "Vérifier que le dernier <li> correspond à la page courante",
+            "Vérifier qu'il n'est pas un lien (ou lien désactivé)",
+            "Vérifier la présence d'aria-current='page' si c'est un lien"
+          ],
+          "selector": "nav[aria-label*='Ariane' i] ol li:last-child",
+          "expected": "Le dernier élément doit représenter la page courante",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "nav[aria-label*='Ariane' i]",
+        "nav[aria-label*='breadcrumb' i]",
+        ".breadcrumb",
+        "ol",
+        "ul"
+      ],
+      "attributes": [
+        "aria-label",
+        "aria-current"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Rechercher via des signaux mécaniques du DOM un fil d'Ariane (élément <nav> ayant aria-label contenant 'Ariane' ou 'breadcrumb', conteneur .breadcrumb, ou liste annoncée comme fil d'Ariane), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — Si AUCUN fil d'Ariane n'est détecté dans le DOM → conclure NON APPLICABLE.",
+        "ÉTAPE 2 (déterministe) — Structure : si le fil d'Ariane détecté n'est PAS construit avec une liste (<ol> ou <ul> contenant des <li>) → finding type=\"warning\", severity moderate (structure de liste attendue ; signal mécanique : absence de ol/ul/li).",
+        "ÉTAPE 3 (déterministe) — Dernier élément : vérifier mécaniquement le dernier <li>. S'il est un lien actif (<a href>) sans aria-current=\"page\" → le signaler (la page courante ne devrait pas être un lien actif, ou doit porter aria-current=\"page\").",
+        "ÉTAPE 4 (doute → warning) — La représentativité de la hiérarchie (tous les niveaux intermédiaires présents, correspondance avec l'architecture réelle du site, libellés pertinents) dépend d'une appréciation éditoriale et de pages distantes : émettre un finding type=\"warning\" pour vérification manuelle, jamais une violation ferme.",
+        "ÉTAPE 5 — Ne pas confondre avec le menu principal : se limiter au fil d'Ariane détecté."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'navigation-breadcrumb'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de structure correcte",
+          "rgaaTestRef": "Test 12.5.1, 12.5.2 ou 12.5.3",
+          "wcagReference": "2.4.8"
+        }
+      },
+      "important": [
+        "Déterminisme : détection du fil d'Ariane et de sa structure (ol/ul/li, dernier li lien ou non, aria-current) via signaux DOM ; même signal, même verdict.",
+        "type=\"violation\" est réservé aux défauts strictement objectifs ; pour la structure de liste manquante, utiliser type=\"warning\" severity=\"moderate\" comme prévu par les tests.",
+        "En cas de doute (représentativité de la hiérarchie, pertinence des libellés, niveaux distants) → type=\"warning\" pour vérification manuelle.",
+        "Critère NON APPLICABLE si aucun fil d'Ariane n'est présent.",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.5 - fil d'Ariane). Tu appliques une approche DÉTERMINISTE fondée sur les signaux du DOM (présence du fil d'Ariane, structure ol/ul/li, état du dernier élément, aria-current). Tu signales les défauts de structure objectifs et, dès que la conformité dépend d'une appréciation (représentativité de la hiérarchie, pertinence des libellés, niveaux distants), tu émets un warning de vérification manuelle plutôt qu'une violation. NON APPLICABLE si aucun fil d'Ariane n'est présent."
+  },
+  "automatedChecks": [
+    "Détection de fil d'Ariane",
+    "Vérification de la structure (ol/ul)",
+    "Vérification du dernier élément"
+  ],
+  "manualChecks": [
+    "Pertinence de la hiérarchie",
+    "Correspondance avec l'architecture du site",
+    "Test des liens du fil d'Ariane"
+  ],
+  "commonErrors": [
+    {
+      "error": "Fil d'Ariane sans structure de liste",
+      "example": "<nav aria-label=\"Fil d'Ariane\">\n  <a href=\"/\">Accueil</a> &gt;\n  <a href=\"/produits\">Produits</a> &gt;\n  <span>Détail produit</span>\n</nav>",
+      "correction": "<nav aria-label=\"Fil d'Ariane\">\n  <ol>\n    <li><a href=\"/\">Accueil</a></li>\n    <li><a href=\"/produits\">Produits</a></li>\n    <li aria-current=\"page\">Détail produit</li>\n  </ol>\n</nav>",
+      "explanation": "Utiliser une liste ordonnée pour structurer le fil d'Ariane"
+    },
+    {
+      "error": "Page courante avec lien cliquable",
+      "example": "<ol>\n  <li><a href=\"/\">Accueil</a></li>\n  <li><a href=\"/produits\">Produits</a></li>\n  <li><a href=\"/produits/detail\">Page actuelle</a></li>\n</ol>",
+      "correction": "<ol>\n  <li><a href=\"/\">Accueil</a></li>\n  <li><a href=\"/produits\">Produits</a></li>\n  <li aria-current=\"page\">Page actuelle</li>\n</ol>",
+      "explanation": "Le dernier élément ne doit pas être un lien ou avoir aria-current='page'"
+    },
+    {
+      "error": "Hiérarchie incomplète",
+      "example": "<!-- URL: /categorie/sous-categorie/produit -->\n<ol>\n  <li><a href=\"/\">Accueil</a></li>\n  <li>Produit</li> <!-- manque la catégorie et sous-catégorie -->\n</ol>",
+      "correction": "<ol>\n  <li><a href=\"/\">Accueil</a></li>\n  <li><a href=\"/categorie\">Catégorie</a></li>\n  <li><a href=\"/categorie/sous-categorie\">Sous-catégorie</a></li>\n  <li aria-current=\"page\">Produit</li>\n</ol>",
+      "explanation": "Inclure tous les niveaux de la hiérarchie"
+    },
+    {
+      "error": "Absence d'aria-label sur la navigation",
+      "example": "<nav>\n  <ol>\n    <li><a href=\"/\">Accueil</a></li>\n    ...\n  </ol>\n</nav>",
+      "correction": "<nav aria-label=\"Fil d'Ariane\">\n  <ol>\n    <li><a href=\"/\">Accueil</a></li>\n    ...\n  </ol>\n</nav>",
+      "explanation": "Identifier la navigation comme fil d'Ariane avec aria-label"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/location.html",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/"
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "11.9",
+  "ruleId": "form-error-identification",
+  "title": "Formulaires - Identification des erreurs",
+  "description": "Dans chaque formulaire, l'intitulé de chaque bouton est-il pertinent (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 11.9",
+  "wcagReference": "WCAG 2.1 - 2.4.4 Fonction du lien (selon le contexte) (A)",
+  "theme": "Formulaires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les boutons de formulaire",
+    "signals": {
+      "selectors": [
+        "button",
+        "input[type='submit']",
+        "input[type='button']",
+        "input[type='reset']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun bouton dans le formulaire"
+    ]
+  },
+  "testScenarios": {
+    "buttonLabel": {
+      "description": "Pertinence des intitulés de boutons",
+      "tests": [
+        {
+          "id": "11.9.1",
+          "rgaaTestRef": "Test 11.9.1",
+          "description": "L'intitulé de chaque bouton est-il pertinent ?",
+          "methodology": [
+            "Identifier tous les boutons du formulaire",
+            "Vérifier que chaque bouton a un intitulé explicite",
+            "Pour <button>: vérifier le contenu textuel",
+            "Pour <input type='submit/button'>: vérifier l'attribut value",
+            "Vérifier que l'intitulé décrit clairement l'action",
+            "Détecter les intitulés génériques (\"OK\", \"Valider\", \"Cliquer ici\")"
+          ],
+          "selector": "button, input[type='submit'], input[type='button'], input[type='reset']",
+          "expected": "Chaque bouton doit avoir un intitulé clair décrivant son action",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractButtonLabels": true,
+            "evaluateLabelRelevance": true,
+            "detectGenericLabels": true
+          }
+        },
+        {
+          "id": "11.9.2",
+          "rgaaTestRef": "Test 11.9.2",
+          "description": "Les boutons de même nature ont-ils des intitulés cohérents ?",
+          "methodology": [
+            "Repérer les boutons de soumission dans différents formulaires",
+            "Vérifier la cohérence des intitulés",
+            "Détecter les variations injustifiées"
+          ],
+          "selector": "button, input[type='submit']",
+          "expected": "Les intitulés doivent être cohérents à travers le site",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "button",
+        "input[type='submit']",
+        "input[type='button']",
+        "input[type='reset']"
+      ],
+      "attributes": [
+        "value",
+        "aria-label",
+        "aria-labelledby",
+        "title"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier tous les boutons de formulaire à partir du DOM extrait : <button>, <input type='submit'>, <input type='button'>, <input type='reset'>. Appliquer ensuite la procédure DANS L'ORDRE.",
+        "ÉTAPE 0 — Si aucun bouton n'est présent, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 — Relever pour chaque bouton les signaux MÉCANIQUES de l'intitulé accessible : contenu textuel pour <button>, attribut value pour <input>, aria-label non vide, aria-labelledby pointant vers un id EXISTANT, title non vide. Extraire le TEXTE effectif de l'intitulé.",
+        "ÉTAPE 2 (violation objective) — Bouton SANS aucun intitulé accessible : <button> sans texte ni aria-label/aria-labelledby (ex. uniquement une icône à alt vide), ou <input type='submit'/'button'> sans value ni aria-label, ou aria-labelledby vers un id inexistant → finding type=\"violation\", severity serious : le bouton n'a pas de nom restitué.",
+        "ÉTAPE 3 (doute → warning) — Bouton doté d'un intitulé NON vide mais GÉNÉRIQUE ou peu explicite hors contexte (« OK », « Valider », « Cliquer ici », « Envoyer ») : la pertinence dépend du contexte et d'une appréciation éditoriale → finding type=\"warning\" demandant une vérification manuelle, sans violation ferme.",
+        "ÉTAPE 4 (doute → recommendation) — Cohérence des intitulés entre boutons de même nature, ou plusieurs boutons submit portant le même libellé pour des actions différentes : signaler en type=\"recommendation\" (ou warning), sans violation.",
+        "ÉTAPE 5 — Pour chaque finding, proposer un intitulé explicite et adapté à l'action (ex. « Envoyer le message », « S'inscrire »)."
+      ],
+      "important": [
+        "Déterminisme : la présence d'un intitulé accessible (texte, value, aria-label, aria-labelledby valide, title) se vérifie dans le DOM ; mêmes signaux, même verdict.",
+        "type=\"violation\" est réservé au défaut OBJECTIF : bouton sans aucun intitulé accessible ou aria-labelledby cassé.",
+        "En cas de doute sur la pertinence d'un intitulé non vide (libellé générique, ambiguïté hors contexte) → type=\"warning\" (vérification manuelle), jamais de violation ferme.",
+        "Si aucun bouton détecté: compliant=true, severity='minor', summary='Aucun bouton de formulaire détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; maximum 5 findings, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'form-error-identification'",
+          "compliant": "boolean - true si conforme ou si aucun formulaire détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple d'intitulé pertinent",
+          "rgaaTestRef": "Test 11.9.1 ou 11.9.2",
+          "wcagReference": "2.4.4"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 11.9 - Formulaires), spécialisé dans la pertinence des intitulés de boutons. Tu appliques une approche déterministe fondée sur les signaux du DOM : tu signales en violation un bouton sans aucun intitulé accessible (ou aria-labelledby cassé), et tu demandes une vérification manuelle (warning) dès que la conformité dépend de la pertinence d'un intitulé non vide ou de sa cohérence."
+  },
+  "automatedChecks": [
+    "Détection de boutons sans intitulé",
+    "Détection d'intitulés génériques (OK, Valider, etc.)"
+  ],
+  "manualChecks": [
+    "Évaluation de la clarté des intitulés",
+    "Compréhension hors contexte",
+    "Cohérence entre boutons similaires"
+  ],
+  "commonErrors": [
+    {
+      "error": "Bouton sans intitulé accessible",
+      "example": "<button type=\"submit\"><img src=\"icon.svg\" alt=\"\"></button>",
+      "correction": "<button type=\"submit\" aria-label=\"Envoyer le formulaire\">\n  <img src=\"icon.svg\" alt=\"\" aria-hidden=\"true\">\n</button>\n<!-- OU avec texte visible -->\n<button type=\"submit\">\n  <img src=\"icon.svg\" alt=\"\" aria-hidden=\"true\">\n  Envoyer\n</button>",
+      "explanation": "Un bouton à icône sans texte, value, aria-label ni aria-labelledby valide n'a aucun nom accessible : c'est une violation objective. Ajouter un aria-label ou un texte visible."
+    },
+    {
+      "error": "Intitulé générique (à vérifier manuellement)",
+      "example": "<button type=\"submit\">OK</button>",
+      "correction": "<button type=\"submit\">Envoyer le formulaire de contact</button>",
+      "explanation": "L'intitulé doit décrire précisément l'action. Un intitulé présent mais générique (« OK », « Valider ») n'est pas une violation mécanique : sa pertinence relève d'une vérification manuelle (warning)."
+    },
+    {
+      "error": "Intitulé non spécifique",
+      "example": "<button type=\"submit\">Envoyer</button> <!-- dans plusieurs formulaires différents -->",
+      "correction": "<!-- Formulaire contact -->\n<button type=\"submit\">Envoyer le message</button>\n<!-- Formulaire inscription -->\n<button type=\"submit\">S'inscrire</button>",
+      "explanation": "Adapter l'intitulé au contexte du formulaire"
+    },
+    {
+      "error": "Plusieurs boutons submit identiques",
+      "example": "<button type=\"submit\" name=\"action\" value=\"save\">Valider</button>\n<button type=\"submit\" name=\"action\" value=\"publish\">Valider</button>",
+      "correction": "<button type=\"submit\" name=\"action\" value=\"save\">Enregistrer le brouillon</button>\n<button type=\"submit\" name=\"action\" value=\"publish\">Publier l'article</button>",
+      "explanation": "Différencier clairement les actions de chaque bouton"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#11.9",
+    "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html",
+    "https://www.w3.org/WAI/tutorials/forms/instructions/#in-buttons"
+  ]
+}

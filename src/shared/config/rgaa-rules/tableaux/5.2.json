@@ -1,0 +1,172 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "5.2",
+  "ruleId": "table-caption",
+  "title": "Tableaux - Titre de tableau",
+  "description": "Pour chaque tableau de données, le titre (balise <caption>) est-il pertinent ?",
+  "rgaaReference": "RGAA 4.1 - Critère 5.2",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Tableaux",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux tableaux de données (balise <table> utilisée pour présenter des données)",
+    "signals": {
+      "selectors": [
+        "table"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun tableau présent",
+      "Tableaux uniquement de mise en forme (deprecated)"
+    ]
+  },
+  "testScenarios": {
+    "tableCaptionPresence": {
+      "description": "Présence et pertinence du titre de tableau",
+      "tests": [
+        {
+          "id": "5.2.1",
+          "rgaaTestRef": "Test 5.2.1",
+          "description": "Chaque tableau de données a-t-il un titre (<caption>) ?",
+          "methodology": [
+            "Repérer tous les tableaux de données (<table>)",
+            "Vérifier la présence d'une balise <caption> en premier enfant de <table>",
+            "Si pas de <caption>, vérifier présence d'aria-label ou aria-labelledby sur table"
+          ],
+          "selector": "table:not(:has(caption)):not([aria-label]):not([aria-labelledby])",
+          "expected": "Chaque tableau de données doit avoir un titre via <caption>, aria-label ou aria-labelledby",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "5.2.2",
+          "rgaaTestRef": "Test 5.2.2",
+          "description": "Le titre du tableau est-il pertinent ?",
+          "methodology": [
+            "Lire le contenu du <caption> ou de aria-label",
+            "Vérifier que le titre décrit le contenu ou l'objectif du tableau",
+            "S'assurer que le titre n'est pas générique (\"tableau\", \"données\")"
+          ],
+          "selector": "table caption, table[aria-label], table[aria-labelledby]",
+          "expected": "Le titre doit décrire clairement le sujet du tableau",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractCaption": true,
+            "analyzeTableContent": true,
+            "evaluateTitleRelevance": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "table",
+        "caption",
+        "th",
+        "td"
+      ],
+      "attributes": [
+        "aria-label",
+        "aria-labelledby",
+        "role",
+        "summary"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser tous les tableaux : balises <table> du DOM extrait. Pour chacun, relever les SIGNAUX MÉCANIQUES : présence d'au moins un <th>/<caption>/scope (=> tableau de données), présence et valeur exacte d'un <caption>, d'un aria-label ou d'un aria-labelledby. Appliquer ensuite les étapes DANS L'ORDRE.",
+        "ÉTAPE 1 (non applicable) — Si la page ne contient aucun tableau de données (aucune <table>, ou uniquement des tableaux de mise en page sans <th>/<caption>/scope), conclure NON APPLICABLE (compliant=true, severity='minor', summary='Aucun tableau de données détecté, critère non applicable', findings=[]).",
+        "ÉTAPE 2 (présence — défaut objectif) — Pour chaque tableau de DONNÉES, vérifier mécaniquement la présence d'un titre ACCESSIBLE et NON VIDE : <caption> non vide, ou à défaut aria-label / aria-labelledby. Si aucun de ces signaux n'est présent (ou caption vide), émettre un finding type=\"violation\", severity='serious' : le tableau n'a pas de titre.",
+        "ÉTAPE 3 (pertinence — appréciation → warning) — Si un titre est présent, évaluer sa PERTINENCE relève d'une appréciation éditoriale : ne jamais conclure à une violation sur ce seul motif. En présence d'un titre manifestement générique ou redondant (\"tableau\", \"données\", \"table\"), émettre un finding type=\"warning\", severity='moderate' invitant à une vérification manuelle, avec une proposition de titre plus descriptif fondée sur les en-têtes et le contenu.",
+        "ÉTAPE 4 (doute → warning) — Si la nature du tableau (données vs mise en page) ne peut être tranchée avec certitude par les signaux DOM, ne pas conclure fermement : émettre au plus un finding type=\"warning\" pour vérification manuelle.",
+        "ÉTAPE 5 — Ne pas évaluer ici les en-têtes ni le résumé (critères 5.3 et 5.5) : se limiter à la présence et à la pertinence du titre."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'table-caption'",
+          "compliant": "boolean - true si conforme ou si aucun tableau de données détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML de caption",
+          "rgaaTestRef": "Test 5.2.1 ou Test 5.2.2",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence/absence de <caption>, aria-label, aria-labelledby) donnent toujours le même verdict.",
+        "type='violation' est réservé au défaut OBJECTIF : tableau de données SANS titre accessible (caption/aria-label/aria-labelledby absent ou vide), severity='serious'.",
+        "La PERTINENCE d'un titre dépend d'une appréciation → type='warning' (vérification manuelle), severity='moderate', jamais de violation.",
+        "Si aucun tableau de données détecté: compliant=true, severity='minor', summary='Aucun tableau de données détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères) ; toujours proposer un titre pertinent basé sur le contenu.",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 5.2 - Titre de tableau), spécialisé dans la vérification déterministe de la présence d'un titre de tableau. Tu te fondes sur les signaux mécaniques du DOM (présence et valeur de <caption>, aria-label, aria-labelledby) : la violation est réservée à l'absence objective de titre, et tu demandes une vérification manuelle (warning) dès que le verdict dépend d'une appréciation de la pertinence du titre."
+  },
+  "automatedChecks": [
+    "Présence de <caption> dans <table>",
+    "Présence d'aria-label ou aria-labelledby sur <table>",
+    "Détection de titres vides ou génériques"
+  ],
+  "manualChecks": [
+    "Distinction tableau de données vs tableau de mise en forme",
+    "Pertinence du titre par rapport au contenu",
+    "Clarté et concision du titre"
+  ],
+  "commonErrors": [
+    {
+      "error": "Tableau de données sans titre",
+      "example": "<table>\n  <tr><th>Nom</th><th>Âge</th></tr>\n  <tr><td>Alice</td><td>30</td></tr>\n</table>",
+      "correction": "<table>\n  <caption>Liste des employés</caption>\n  <tr><th>Nom</th><th>Âge</th></tr>\n  <tr><td>Alice</td><td>30</td></tr>\n</table>",
+      "explanation": "Chaque tableau de données doit avoir un titre via <caption>"
+    },
+    {
+      "error": "Titre générique",
+      "example": "<table>\n  <caption>Tableau</caption>\n  <tr><th>Produit</th><th>Prix</th></tr>\n</table>",
+      "correction": "<table>\n  <caption>Tarifs des produits 2026</caption>\n  <tr><th>Produit</th><th>Prix</th></tr>\n</table>",
+      "explanation": "Le titre doit être descriptif et explicite"
+    },
+    {
+      "error": "Titre absent mais aria-label présent avec valeur générique",
+      "example": "<table aria-label=\"table\">\n  <tr><th>Date</th><th>Montant</th></tr>\n</table>",
+      "correction": "<table aria-label=\"Historique des transactions\">\n  <tr><th>Date</th><th>Montant</th></tr>\n</table>",
+      "explanation": "Si aria-label est utilisé, il doit être pertinent"
+    },
+    {
+      "error": "Titre présent dont la pertinence est à confirmer (à vérifier manuellement)",
+      "example": "<table>\n  <caption>Résultats</caption>\n  <tr><th scope=\"col\">Trimestre</th><th scope=\"col\">Chiffre d'affaires</th></tr>\n</table>",
+      "correction": "<table>\n  <caption>Chiffre d'affaires par trimestre 2026</caption>\n  <tr><th scope=\"col\">Trimestre</th><th scope=\"col\">Chiffre d'affaires</th></tr>\n</table>",
+      "explanation": "Le titre est présent : sa pertinence relève d'une appréciation éditoriale. Ne pas conclure à une violation, signaler en warning pour vérification manuelle et proposer un titre plus descriptif."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#5.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+  ]
+}

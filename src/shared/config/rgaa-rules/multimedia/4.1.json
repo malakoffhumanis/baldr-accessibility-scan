@@ -1,0 +1,213 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.1",
+  "ruleId": "media-transcript",
+  "title": "Multimédia - Transcription textuelle",
+  "description": "Chaque média temporel pré-enregistré a-t-il, si nécessaire, une transcription textuelle ou une audiodescription ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.1",
+  "wcagReference": "WCAG 2.1 - 1.2.1 Contenu seulement audio ou vidéo (A)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias temporels pré-enregistrés (audio seul, vidéo seule)",
+    "signals": {
+      "selectors": [
+        "audio",
+        "video:not([controls*='false'])",
+        "object[type^='audio']",
+        "object[type^='video']",
+        "embed[type^='audio']",
+        "embed[type^='video']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média temporel présent sur la page",
+      "Média en direct uniquement",
+      "Média servant de décoration ou d'ambiance"
+    ]
+  },
+  "testScenarios": {
+    "audioOnlyTranscript": {
+      "description": "Transcription pour média audio seul",
+      "tests": [
+        {
+          "id": "4.1.1",
+          "rgaaTestRef": "Test 4.1.1",
+          "description": "Chaque média temporel seulement audio pré-enregistré a-t-il une transcription textuelle ?",
+          "methodology": [
+            "Repérer les médias audio seuls",
+            "Vérifier la présence d'une transcription textuelle accessible",
+            "Vérifier que la transcription est pertinente et complète"
+          ],
+          "selector": "audio, object[type^='audio'], embed[type^='audio']",
+          "expected": "Une transcription textuelle accessible doit être présente, contenant tous les éléments sonores importants",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectMediaType": "audio-only",
+            "checkTranscriptPresence": true,
+            "verifyAccessibility": true
+          }
+        }
+      ]
+    },
+    "videoOnlyAlternative": {
+      "description": "Alternative pour vidéo seule",
+      "tests": [
+        {
+          "id": "4.1.2",
+          "rgaaTestRef": "Test 4.1.2",
+          "description": "Chaque média temporel seulement vidéo pré-enregistré a-t-il une alternative (transcription ou audiodescription) ?",
+          "methodology": [
+            "Repérer les vidéos sans piste audio",
+            "Vérifier la présence d'une transcription textuelle ou d'une audiodescription",
+            "Vérifier que l'alternative est pertinente"
+          ],
+          "selector": "video:not([audio])",
+          "expected": "Une transcription textuelle ou une audiodescription doit être présente",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "videoWithAudioAlternative": {
+      "description": "Alternative pour vidéo avec audio",
+      "tests": [
+        {
+          "id": "4.1.3",
+          "rgaaTestRef": "Test 4.1.3",
+          "description": "Chaque média temporel synchronisé pré-enregistré a-t-il une transcription textuelle ou une audiodescription ?",
+          "methodology": [
+            "Repérer les vidéos avec piste audio synchronisée",
+            "Vérifier la présence d'une transcription textuelle ou d'une audiodescription",
+            "Vérifier la pertinence de l'alternative"
+          ],
+          "selector": "video",
+          "expected": "Une transcription textuelle complète ou une audiodescription synchronisée doit être disponible",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.1 - transcription/audiodescription des médias temporels pré-enregistrés). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (présence d'un élément audio/vidéo, d'un track, d'un texte ou lien de transcription adjacent). Tu réserves la violation aux défauts objectifs (média sans aucune alternative détectable) et tu demandes une vérification manuelle (warning) dès que la conformité dépend de la pertinence ou de l'exhaustivité d'une alternative, ou d'un contenu distant non vérifiable.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "audio",
+        "video",
+        "track",
+        "object[type^='audio']",
+        "object[type^='video']",
+        "embed[type^='audio']",
+        "embed[type^='video']",
+        "[id*='transcript']",
+        "[class*='transcript']"
+      ],
+      "attributes": [
+        "src",
+        "type",
+        "controls",
+        "aria-label",
+        "aria-describedby",
+        "id",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 500,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter les médias temporels pré-enregistrés via le DOM : <audio>, <video>, <object type^='audio'/'video'>, <embed type^='audio'/'video'>. Si AUCUN n'est présent, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque média, relever des signaux REPRODUCTIBLES du DOM : type (audio seul / vidéo seule / synchronisé d'après la balise et le type), présence d'un élément <track kind='descriptions'> ou <track kind='captions'>, présence d'un attribut aria-describedby/aria-labelledby pointant vers un bloc, et présence d'un texte/lien/bouton de transcription IMMÉDIATEMENT adjacent (mots-clés 'transcription', 'audiodescription', 'verbatim').",
+        "ÉTAPE 2 (violation objective) — Si un média applicable ne présente AUCUN signal d'alternative (pas de track descriptions, pas de bloc transcription adjacent, pas de lien/aria-describedby vers une alternative), émettre un finding type='violation' : l'absence d'alternative est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 3 (doute → warning) — Si une alternative EXISTE (track, bloc texte, lien) mais que sa PERTINENCE ou son EXHAUSTIVITÉ ne peut être tranchée depuis le DOM (qualité éditoriale, contenu distant derrière un lien, fichier .vtt/.pdf non inspectable, transcription possiblement partielle), NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 4 (déterminisme) — Fonder le verdict uniquement sur les attributs et relations RÉELLEMENT présents dans le DOM, jamais sur une supposition. Les mêmes signaux doivent toujours produire le même verdict.",
+        "ÉTAPE 5 — Pour chaque média sans alternative, proposer une correction concrète (bloc transcription relié par aria-describedby, ou track kind='descriptions')."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-transcript'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string - Si non_applicable: 'Aucun média temporel détecté'. Sinon résumé",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de code HTML",
+          "rgaaTestRef": "Test 4.1.1 ou Test 4.1.2 ou Test 4.1.3",
+          "wcagReference": "1.2.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence/absence de track, de transcription, de lien) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : média applicable sans AUCUNE alternative détectable dans le DOM.",
+        "En cas de doute sur la pertinence/l'exhaustivité d'une alternative existante ou sur un contenu distant non vérifiable : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun média temporel: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection des éléments audio et video",
+    "Présence d'élément track avec kind='descriptions' ou kind='captions'",
+    "Présence de texte adjacent contenant 'transcription'"
+  ],
+  "manualChecks": [
+    "Pertinence et exhaustivité de la transcription",
+    "Synchronisation de l'audiodescription",
+    "Accessibilité du mécanisme d'accès à l'alternative"
+  ],
+  "commonErrors": [
+    {
+      "error": "Audio sans transcription textuelle",
+      "example": "<audio controls src=\"podcast.mp3\"></audio>",
+      "correction": "<audio controls src=\"podcast.mp3\" aria-describedby=\"transcript-1\"></audio>\n<div id=\"transcript-1\">\n  <h3>Transcription</h3>\n  <p>[Texte complet de l'audio...]</p>\n</div>",
+      "explanation": "Un média audio doit avoir une transcription textuelle accessible pour les personnes sourdes ou malentendantes."
+    },
+    {
+      "error": "Vidéo seule sans alternative",
+      "example": "<video controls src=\"animation.mp4\"></video>",
+      "correction": "<video controls src=\"animation.mp4\" aria-describedby=\"desc-1\"></video>\n<div id=\"desc-1\">\n  <h3>Description de la vidéo</h3>\n  <p>[Description détaillée de l'action visible...]</p>\n</div>",
+      "explanation": "Une vidéo muette doit avoir une alternative textuelle ou une audiodescription."
+    },
+    {
+      "error": "Transcription non accessible",
+      "example": "<video controls src=\"video.mp4\"></video>\n<a href=\"transcript.pdf\">Transcription</a>",
+      "correction": "<video controls src=\"video.mp4\" aria-describedby=\"transcript-1\"></video>\n<details id=\"transcript-1\">\n  <summary>Afficher la transcription</summary>\n  <p>[Texte complet...]</p>\n</details>",
+      "explanation": "La transcription doit être dans un format accessible (HTML préférable à PDF)."
+    },
+    {
+      "error": "Transcription présente mais possiblement partielle (à vérifier manuellement)",
+      "example": "<audio controls src=\"interview.mp3\" aria-describedby=\"t1\"></audio>\n<div id=\"t1\"><h3>Transcription</h3><p>Bonjour et bienvenue.</p></div>",
+      "correction": "<audio controls src=\"interview.mp3\" aria-describedby=\"t1\"></audio>\n<div id=\"t1\"><h3>Transcription</h3><p>[Texte intégral de l'interview, dialogues et informations sonores compris...]</p></div>",
+      "explanation": "Le signal DOM (bloc relié par aria-describedby) est présent : ne pas conclure à une violation. L'exhaustivité de la transcription relève d'une vérification manuelle (warning) car elle ne peut être tranchée depuis le seul DOM."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.1",
+    "https://www.w3.org/WAI/WCAG21/Understanding/audio-only-and-video-only-prerecorded.html"
+  ]
+}

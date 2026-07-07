@@ -1,0 +1,184 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "13.1",
+  "ruleId": "consultation-time-limit-adjustment",
+  "title": "Consultation - Limite de temps modifiable",
+  "description": "Pour chaque page web, l'utilisateur a-t-il le contrôle de chaque limite de temps modifiant le contenu (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 13.1",
+  "wcagReference": "WCAG 2.1 - 2.2.1 Réglage du délai (A)",
+  "theme": "Consultation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages avec des limites de temps modifiant le contenu",
+    "signals": {
+      "selectors": [
+        "meta[http-equiv='refresh']",
+        "[data-timeout]",
+        "[data-timer]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune limite de temps",
+      "Limite de temps > 20 heures",
+      "Événements en temps réel (enchères, jeux)",
+      "Limite de temps essentielle pour sécurité"
+    ]
+  },
+  "testScenarios": {
+    "timeLimitControl": {
+      "description": "Contrôle des limites de temps",
+      "tests": [
+        {
+          "id": "13.1.1",
+          "rgaaTestRef": "Test 13.1.1",
+          "description": "L'utilisateur peut-il supprimer, prolonger ou ajuster la limite de temps ?",
+          "methodology": [
+            "Identifier les limites de temps (sessions, notifications, rafraîchissements)",
+            "Vérifier la présence d'un mécanisme de contrôle AVANT l'expiration",
+            "Vérifier la possibilité de:",
+            "  - Supprimer la limite",
+            "  - Prolonger au moins 10 fois",
+            "  - Ajuster avant utilisation"
+          ],
+          "selector": "body",
+          "expected": "L'utilisateur doit pouvoir contrôler les limites de temps",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectTimeLimits": true,
+            "checkControlMechanism": true
+          }
+        },
+        {
+          "id": "13.1.2",
+          "rgaaTestRef": "Test 13.1.2",
+          "description": "L'utilisateur est-il averti de l'existence de la limite de temps ?",
+          "methodology": [
+            "Vérifier qu'un avertissement est présenté",
+            "Vérifier que l'avertissement indique la durée",
+            "Vérifier la présence d'options de contrôle"
+          ],
+          "selector": "body",
+          "expected": "L'utilisateur doit être informé de la limite de temps et des options",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 13.1 - Réglage du délai), spécialisé dans l'analyse déterministe des limites de temps modifiant le contenu. Tu fondes ton verdict sur des signaux mécaniques du DOM (meta refresh, attributs de timeout, scripts) et tu réserves la violation aux défauts objectifs. Dès que le contrôle dépend d'un comportement JavaScript non observable ou d'une appréciation, tu demandes une vérification manuelle via un finding type=warning.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "meta[http-equiv]",
+        "script",
+        "[data-timeout]",
+        "[data-timer]"
+      ],
+      "attributes": [
+        "http-equiv",
+        "content",
+        "data-timeout"
+      ],
+      "context": {
+        "surroundingText": 500,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 (signaux DOM) — Relever les signaux MÉCANIQUES de limite de temps : présence d'une balise <meta http-equiv=\"refresh\"> et sa valeur content (durée en secondes, présence ou non d'une URL de redirection), présence d'attributs data-timeout / data-timer, présence dans les scripts inline de setTimeout / setInterval associés à une déconnexion, redirection ou modification de contenu.",
+        "ÉTAPE 2 (non applicable) — Si AUCUN de ces signaux n'est présent (pas de meta refresh, pas d'attribut de timeout, pas de minuterie détectable dans le DOM extrait), conclure NON APPLICABLE : conclusion='non_applicable', findings=[].",
+        "ÉTAPE 3 (violation objective) — <meta http-equiv=\"refresh\"> avec un délai modifiant le contenu (rechargement ou redirection automatique) et SANS mécanisme de contrôle observable dans le DOM → finding type='violation', severity='serious' : la limite de temps n'est ni supprimable ni ajustable par l'utilisateur. C'est un défaut objectif vérifiable dans le balisage.",
+        "ÉTAPE 4 (doute → warning) — Pour toute limite de temps reposant sur du JavaScript (setTimeout de déconnexion, expiration de session, fermeture automatique de notification, minuterie data-*) : le contrôle (bouton prolonger, avertissement préalable, paramètre de réglage) peut exister dans du code non observable. NE PAS conclure à une violation ferme ; émettre un finding type='warning' demandant une vérification manuelle (l'utilisateur est-il averti avant l'expiration et peut-il prolonger, ajuster ou supprimer la limite ?).",
+        "ÉTAPE 5 (cas particuliers) — Ne pas conclure à une violation si la limite relève d'un cas particulier RGAA (délai > 20 heures, événement en temps réel comme une enchère ou un jeu, limite essentielle pour la sécurité) : ces situations sortent du périmètre du critère ; les signaler en warning pour confirmation manuelle.",
+        "ÉTAPE 6 — Pour chaque limite signalée, proposer un mécanisme concret de contrôle (avertissement préalable affichant la durée + boutons prolonger/désactiver) dans le champ recommendation."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (meta refresh, attributs de timeout, minuteries JS) doivent toujours produire le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS du DOM (meta refresh modifiant le contenu sans contrôle observable).",
+        "En cas de doute (contrôle reposant sur du JavaScript non observable, cas particulier) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Si aucune limite de temps détectée : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'consultation-time-limit-adjustment'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de mécanisme de contrôle",
+          "rgaaTestRef": "Test 13.1.1 ou 13.1.2",
+          "wcagReference": "2.2.1"
+        }
+      }
+    }
+  },
+  "automatedChecks": [
+    "Détection de meta refresh",
+    "Détection d'attributs de timeout"
+  ],
+  "manualChecks": [
+    "Test réel des limites de temps",
+    "Vérification des mécanismes de contrôle",
+    "Test de prolongation et d'ajustement",
+    "Analyse du code JavaScript pour timeouts"
+  ],
+  "commonErrors": [
+    {
+      "error": "Session expirée sans avertissement ni prolongation",
+      "example": "// Déconnexion automatique après 15 minutes\nsetTimeout(logout, 900000);",
+      "correction": "// Avertir 2 minutes avant expiration\nsetTimeout(showWarning, 780000);\n\nfunction showWarning() {\n  alert('Votre session expire dans 2 minutes. Voulez-vous prolonger ?');\n  // Boutons: Prolonger / Déconnexion\n}",
+      "explanation": "Avertir l'utilisateur et permettre de prolonger avant expiration"
+    },
+    {
+      "error": "Rafraîchissement automatique sans contrôle",
+      "example": "<meta http-equiv=\"refresh\" content=\"60\">",
+      "correction": "<!-- Pas de refresh automatique -->\n<!-- Ou bouton manuel -->\n<button onclick=\"location.reload()\">Rafraîchir</button>",
+      "explanation": "Permettre à l'utilisateur de contrôler les rafraîchissements"
+    },
+    {
+      "error": "Notification disparaissant automatiquement",
+      "example": "showNotification('Message');\nsetTimeout(hideNotification, 5000); // 5 secondes",
+      "correction": "showNotification('Message');\n// Pas de fermeture automatique\n// Bouton de fermeture manuel",
+      "explanation": "Ne pas fermer automatiquement, laisser l'utilisateur contrôler"
+    },
+    {
+      "error": "Limite de temps sans options avant utilisation",
+      "example": "// Quiz avec 30 minutes, pas de préférence",
+      "correction": "<!-- Avant le quiz -->\n<form>\n  <label>\n    <input type=\"radio\" name=\"duration\" value=\"30\"> 30 minutes\n  </label>\n  <label>\n    <input type=\"radio\" name=\"duration\" value=\"60\"> 60 minutes\n  </label>\n  <label>\n    <input type=\"checkbox\" name=\"no-limit\"> Sans limite\n  </label>\n</form>",
+      "explanation": "Permettre d'ajuster ou supprimer la limite avant l'activité"
+    },
+    {
+      "error": "Limite de temps pilotée par JavaScript (à vérifier manuellement)",
+      "example": "setInterval(refreshDashboard, 30000); // rafraîchissement périodique du contenu",
+      "correction": "<!-- Vérifier qu'un avertissement et un contrôle (pause/prolonger) existent -->\n<button onclick=\"toggleAutoRefresh()\" aria-pressed=\"true\">Mettre en pause l'actualisation</button>",
+      "explanation": "Le contrôle d'une minuterie JavaScript n'est pas toujours observable dans le DOM : confirmer manuellement la présence d'un avertissement et d'un mécanisme de prolongation ou de désactivation avant de conclure."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#13.1",
+    "https://www.w3.org/WAI/WCAG21/Understanding/timing-adjustable.html"
+  ]
+}

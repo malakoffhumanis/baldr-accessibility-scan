@@ -1,0 +1,154 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "10.3",
+  "ruleId": "presentation-linearized-content",
+  "title": "Présentation - Linéarisation du contenu",
+  "description": "Dans chaque page web, l'information reste-t-elle compréhensible lorsque les feuilles de styles sont désactivées ?",
+  "rgaaReference": "RGAA 4.1 - Critère 10.3",
+  "wcagReference": "WCAG 2.1 - 1.3.2 Ordre séquentiel significatif (A)",
+  "theme": "Présentation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web",
+    "signals": {
+      "selectors": [
+        "*"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": []
+  },
+  "testScenarios": {
+    "contentComprehension": {
+      "description": "Compréhension du contenu sans CSS",
+      "tests": [
+        {
+          "id": "10.3.1",
+          "rgaaTestRef": "Test 10.3.1",
+          "description": "L'information reste-t-elle compréhensible lorsque les feuilles de styles sont désactivées ?",
+          "methodology": [
+            "Désactiver toutes les feuilles de styles",
+            "Vérifier que l'ordre de lecture est logique",
+            "Vérifier que les relations entre contenus sont compréhensibles",
+            "Vérifier que le sens du contenu est préservé"
+          ],
+          "selector": "body",
+          "expected": "Le contenu doit rester compréhensible dans l'ordre DOM sans CSS",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "analyzeContentOrder": true,
+            "evaluateComprehension": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 10.3 - information compréhensible sans feuilles de styles), spécialisé dans l'analyse déterministe de l'ordre de lecture. Comme la compréhension du contenu linéarisé relève d'une appréciation éditoriale, tu privilégies le warning (vérification manuelle, CSS désactivé) et tu réserves la violation aux pertes de sens objectivement constatables dans le DOM.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "body",
+        "main",
+        "article",
+        "section",
+        "nav",
+        "header",
+        "footer"
+      ],
+      "attributes": [
+        "style",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 500,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Évaluer si l'information reste compréhensible une fois les feuilles de styles désactivées, à partir des SIGNAUX MÉCANIQUES du DOM (ordre des éléments, relations de structure), en appliquant les étapes ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux DOM déterministes : ordre réel des sections structurantes (<header>, <nav>, <main>, <article>, <section>, <aside>, <footer>), présence de réordonnancement visuel via CSS (order, flex-direction:*-reverse, grid-template-areas, position:absolute), et références textuelles à une position ou une couleur (« ci-dessus », « à droite », « le bouton vert »).",
+        "ÉTAPE 2 — Défaut OBJECTIF → finding type=\"violation\", severity serious : une instruction renvoyant à un repère purement VISUEL absent du texte linéarisé (ex. « cliquez sur le bouton vert ci-dessus ») sans intitulé textuel équivalent — la perte de sens, CSS désactivé, est mécaniquement établie par le DOM.",
+        "ÉTAPE 3 — DOUTE vers warning (vérification manuelle) : un ordre DOM possiblement illogique (contenu principal placé après une longue navigation ou une sidebar, réordonnancement par CSS order) dont le caractère réellement gênant dépend d'une lecture éditoriale. Émettre un finding type=\"warning\" demandant le test réel feuilles de styles désactivées.",
+        "ÉTAPE 4 — NE PAS produire de violation sur la seule présence d'un <aside> avant le <main> ou d'un order CSS : sans confirmation de perte de sens, ces écarts relèvent du warning. Réserver type=\"violation\" aux pertes d'information objectivement vérifiables (étape 2).",
+        "ÉTAPE 5 — Ce critère s'applique à toute page ; ne conclure 'non_applicable' que si le <body> ne contient aucun contenu structurant."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'presentation-linearized-content'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec restructuration DOM suggérée",
+          "rgaaTestRef": "Test 10.3.1",
+          "wcagReference": "1.3.2"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (ordre des éléments, références visuelles) doivent toujours donner le même verdict.",
+        "type='violation' (severity='serious') réservé aux pertes de sens OBJECTIVES, CSS désactivé (instruction renvoyant à un repère purement visuel sans équivalent textuel).",
+        "En cas de doute (ordre DOM possiblement illogique, réordonnancement CSS) → type='warning' pour vérification manuelle, feuilles de styles désactivées.",
+        "Non applicable uniquement si la page ne contient aucun contenu structurant.",
+        "Retourner UNIQUEMENT du JSON valide.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Analyse de l'ordre DOM",
+    "Détection de positionnement CSS complexe"
+  ],
+  "manualChecks": [
+    "Test réel avec CSS désactivé",
+    "Évaluation de la compréhension du contenu linéarisé",
+    "Vérification des relations logiques entre sections"
+  ],
+  "commonErrors": [
+    {
+      "error": "Contenu réorganisé uniquement par CSS",
+      "example": "<!-- DOM -->\n<div class=\"col2\">Étape 2</div>\n<div class=\"col1\">Étape 1</div>\n/* CSS place col1 à gauche */",
+      "correction": "<!-- Ordre logique dans le DOM -->\n<div>Étape 1</div>\n<div>Étape 2</div>",
+      "explanation": "L'ordre DOM doit être logique indépendamment de CSS"
+    },
+    {
+      "error": "Sidebar dans le DOM avant le contenu principal",
+      "example": "<aside>Sidebar</aside>\n<main>Contenu principal</main>",
+      "correction": "<main>Contenu principal</main>\n<aside>Sidebar</aside>\n/* CSS pour placer visuellement */",
+      "explanation": "Le contenu principal devrait apparaître avant dans le DOM"
+    },
+    {
+      "error": "Instructions visuelles dépendant de CSS",
+      "example": "<p>Cliquez sur le bouton vert ci-dessus</p>",
+      "correction": "<button>Valider</button>\n<p>Cliquez sur le bouton Valider ci-dessus</p>",
+      "explanation": "Les instructions ne doivent pas dépendre uniquement de la couleur ou position visuelle"
+    },
+    {
+      "error": "Ordre visuel obtenu par CSS order (à vérifier manuellement)",
+      "example": "<div style=\"display:flex\">\n  <div style=\"order:2\">Résumé</div>\n  <div style=\"order:1\">Titre</div>\n</div>",
+      "correction": "<!-- Vérifier CSS désactivé : si l'ordre DOM Résumé puis Titre reste compréhensible, conforme ;\n     sinon réordonner le HTML -->\n<div>\n  <div>Titre</div>\n  <div>Résumé</div>\n</div>",
+      "explanation": "Un order CSS qui découple ordre visuel et ordre DOM ne casse pas forcément le sens : émettre un warning et confirmer manuellement, feuilles de styles désactivées, que la lecture reste logique."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#10.3",
+    "https://www.w3.org/WAI/WCAG21/Understanding/meaningful-sequence.html"
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "13.8",
+  "ruleId": "consultation-no-content-change",
+  "title": "Consultation - Pas de changement de contexte",
+  "description": "Dans chaque page web, chaque contenu en mouvement ou clignotant est-il contrôlable par l'utilisateur ?",
+  "rgaaReference": "RGAA 4.1 - Critère 13.8",
+  "wcagReference": "WCAG 2.1 - 2.2.2 Mettre en pause, arrêter, masquer (A)",
+  "theme": "Consultation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique au contenu en mouvement, clignotant ou défilant automatiquement",
+    "signals": {
+      "selectors": [
+        "[autoplay]",
+        ".carousel",
+        ".slider",
+        ".marquee",
+        "[data-autoplay]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun contenu en mouvement ou clignotant",
+      "Contenu en mouvement < 5 secondes"
+    ]
+  },
+  "testScenarios": {
+    "movingContentControl": {
+      "description": "Contrôle du contenu en mouvement",
+      "tests": [
+        {
+          "id": "13.8.1",
+          "rgaaTestRef": "Test 13.8.1",
+          "description": "Le contenu en mouvement ou clignotant peut-il être mis en pause, arrêté ou masqué ?",
+          "methodology": [
+            "Identifier les contenus en mouvement automatique > 5 secondes",
+            "Identifier les carrousels, sliders, animations",
+            "Vérifier la présence de contrôles (pause, stop, masquer)",
+            "Vérifier que les contrôles sont accessibles au clavier",
+            "Tester le fonctionnement des contrôles"
+          ],
+          "selector": "[autoplay], .carousel, .slider, video, audio",
+          "expected": "L'utilisateur doit pouvoir contrôler le mouvement (pause/stop/masquer)",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectMovingContent": true,
+            "checkControls": true
+          }
+        },
+        {
+          "id": "13.8.2",
+          "rgaaTestRef": "Test 13.8.2",
+          "description": "Les vidéos et sons en lecture automatique peuvent-ils être mis en pause ?",
+          "methodology": [
+            "Identifier les éléments <video> et <audio> avec autoplay",
+            "Vérifier la présence de l'attribut controls",
+            "Ou vérifier la présence de contrôles personnalisés accessibles"
+          ],
+          "selector": "video[autoplay], audio[autoplay]",
+          "expected": "Vidéos et sons en autoplay doivent avoir des contrôles",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 13.8 - Mettre en pause, arrêter, masquer), spécialisé dans l'analyse déterministe du contenu en mouvement ou clignotant et de son contrôle. Tu fondes ton verdict sur des signaux mécaniques du DOM (autoplay, attribut controls, boutons de contrôle voisins). Tu réserves la violation aux défauts objectifs (media autoplay sans controls) et tu demandes une vérification manuelle via un finding type=warning dès que le contrôle dépend d'un script ou de la durée réelle du mouvement.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "audio",
+        "[autoplay]",
+        ".carousel",
+        ".slider",
+        "[data-autoplay]",
+        "button"
+      ],
+      "attributes": [
+        "autoplay",
+        "controls",
+        "loop",
+        "data-autoplay",
+        "aria-label"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 (signaux DOM) — Relever les signaux MÉCANIQUES de contenu en mouvement : éléments <video>/<audio> portant l'attribut autoplay, présence ou ABSENCE de l'attribut controls sur ces médias, conteneurs marqués comme carrousels/sliders (.carousel, .slider, data-autoplay, role/aria associés), élément <marquee>. Repérer aussi la présence de boutons de contrôle dans le même conteneur (pause/stop/lecture, aria-label correspondant).",
+        "ÉTAPE 2 (non applicable) — Si AUCUN de ces signaux n'est présent, conclure NON APPLICABLE : conclusion='non_applicable', findings=[].",
+        "ÉTAPE 3 (violation objective) — <video autoplay> ou <audio autoplay> SANS attribut controls et sans bouton de contrôle observable dans le conteneur → finding type='violation', severity='critical' : le média démarre seul et ne peut être mis en pause ni arrêté. C'est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 4 (violation objective) — Carrousel/slider en rotation automatique (autoplay, data-autoplay='true', <marquee>) SANS aucun bouton de contrôle (pause/stop) observable dans le conteneur → finding type='violation', severity='serious'.",
+        "ÉTAPE 5 (doute → warning) — Si un bouton de contrôle EST présent à proximité mais que son fonctionnement réel, son accessibilité clavier ou la persistance de l'état de pause ne peuvent être confirmés depuis le DOM, OU si la durée du mouvement (seuil des 5 secondes) ne peut être déterminée, OU si le contrôle repose sur du JavaScript non observable : NE PAS conclure à une violation ferme ; émettre un finding type='warning' demandant un test réel du contrôle au clavier.",
+        "ÉTAPE 6 — Pour chaque contenu signalé, recommander un contrôle concret : attribut controls sur les médias, bouton pause/stop accessible au clavier (aria-label explicite) pour les carrousels et animations."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (autoplay, présence/absence de controls, présence d'un bouton de contrôle) produisent toujours le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : video/audio autoplay sans controls (critical), carrousel/marquee auto sans bouton de contrôle (serious).",
+        "En cas de doute (fonctionnement réel du contrôle, accessibilité clavier, durée du mouvement, contrôle JS non observable) → type='warning' pour vérification manuelle.",
+        "Si aucun contenu en mouvement détecté : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'consultation-no-content-change'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de contrôles",
+          "rgaaTestRef": "Test 13.8.1 ou 13.8.2",
+          "wcagReference": "2.2.2"
+        }
+      }
+    }
+  },
+  "automatedChecks": [
+    "Détection de autoplay sans controls",
+    "Détection de carrousels/sliders",
+    "Recherche de boutons pause/stop"
+  ],
+  "manualChecks": [
+    "Test de fonctionnement des contrôles",
+    "Test d'accessibilité clavier des contrôles",
+    "Vérification de la durée du mouvement",
+    "Test de la persistance de l'état (pause maintenue)"
+  ],
+  "commonErrors": [
+    {
+      "error": "Vidéo en autoplay sans contrôles",
+      "example": "<video src=\"video.mp4\" autoplay loop></video>",
+      "correction": "<video src=\"video.mp4\" autoplay loop controls>\n  <track kind=\"captions\" src=\"captions.vtt\" srclang=\"fr\" label=\"Français\">\n</video>",
+      "explanation": "Ajouter l'attribut controls pour permettre pause/stop"
+    },
+    {
+      "error": "Carrousel automatique sans bouton pause",
+      "example": "<div class=\"carousel\" data-autoplay=\"true\">\n  <!-- slides -->\n</div>",
+      "correction": "<div class=\"carousel\" data-autoplay=\"true\">\n  <button onclick=\"carousel.pause()\" aria-label=\"Mettre en pause le carrousel\">❚❚</button>\n  <!-- slides -->\n</div>",
+      "explanation": "Ajouter un bouton pause accessible au clavier"
+    },
+    {
+      "error": "Texte défilant (marquee) sans contrôle",
+      "example": "<marquee>Texte défilant...</marquee>",
+      "correction": "<div class=\"scrolling-text\">\n  <button onclick=\"toggleScroll()\" aria-pressed=\"false\">Pause</button>\n  <div>Texte défilant...</div>\n</div>\n/* Utiliser CSS animations avec animation-play-state */",
+      "explanation": "Éviter <marquee>, utiliser CSS avec contrôle JavaScript"
+    },
+    {
+      "error": "Animation CSS sans contrôle",
+      "example": "@keyframes spin {\n  to { transform: rotate(360deg); }\n}\n.loading { animation: spin 2s linear infinite; }",
+      "correction": ".loading { animation: spin 2s linear infinite; }\n.loading.paused { animation-play-state: paused; }\n\n<div class=\"loading\" aria-live=\"polite\">Chargement...</div>\n<button onclick=\"toggleAnimation()\">Pause</button>",
+      "explanation": "Fournir un moyen d'arrêter les animations > 5 secondes"
+    },
+    {
+      "error": "Carrousel avec bouton de contrôle dont le fonctionnement n'est pas vérifiable (à vérifier manuellement)",
+      "example": "<div class=\"slider\" data-autoplay=\"true\">\n  <button class=\"pause\">Pause</button>\n  <!-- slides -->\n</div>",
+      "correction": "<!-- Tester au clavier que le bouton met réellement la rotation en pause -->\n<button class=\"pause\" aria-label=\"Mettre en pause le défilement\" aria-pressed=\"false\">Pause</button>",
+      "explanation": "La présence d'un bouton dans le DOM ne garantit pas qu'il fonctionne, qu'il est atteignable au clavier ni que l'état de pause persiste : confirmer par un test réel avant de conclure."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#13.8",
+    "https://www.w3.org/WAI/WCAG21/Understanding/pause-stop-hide.html"
+  ]
+}

@@ -1,0 +1,286 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "9.1",
+  "ruleId": "heading-hierarchy",
+  "title": "Structure de l'information - Hiérarchie des titres",
+  "description": "Dans chaque page web, la hiérarchie des titres est-elle pertinente ?",
+  "rgaaReference": "RGAA 4.1 - Critère 9.1",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A), 2.4.6 En-têtes et étiquettes (AA)",
+  "theme": "Structuration",
+  "level": "A",
+  "testScenarios": {
+    "headingPresence": {
+      "description": "Présence et utilisation des titres",
+      "tests": [
+        {
+          "id": "9.1.1",
+          "description": "La page contient-elle au moins un titre de niveau h1 ?",
+          "selector": "h1",
+          "expected": "Chaque page doit avoir au moins un titre h1 principal",
+          "severity": "critical",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkH1Presence": true,
+            "countH1": true,
+            "extractH1Content": true
+          }
+        },
+        {
+          "id": "9.1.2",
+          "description": "La page contient-elle un seul titre h1 (recommandé) ?",
+          "selector": "h1",
+          "expected": "Il est recommandé d'avoir un seul h1 par page pour identifier le contenu principal",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "9.1.3",
+          "description": "Les titres sont-ils présents sous forme de balises HTML (h1 à h6) et non en CSS ?",
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "expected": "Utiliser les balises sémantiques HTML pour les titres",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "headingHierarchy": {
+      "description": "Respect de la hiérarchie des titres",
+      "tests": [
+        {
+          "id": "9.1.4",
+          "description": "La hiérarchie des titres est-elle cohérente (pas de saut de niveau) ?",
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "expected": "Les niveaux de titres doivent suivre un ordre logique sans sauter de niveau",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractAllHeadings": true,
+            "checkHierarchyOrder": true,
+            "detectSkippedLevels": true
+          }
+        },
+        {
+          "id": "9.1.5",
+          "description": "Les titres de même niveau ont-ils une importance équivalente ?",
+          "selector": "h2, h3, h4, h5, h6",
+          "expected": "Les titres de même niveau doivent structurer des sections de même importance",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "headingContent": {
+      "description": "Contenu des titres",
+      "tests": [
+        {
+          "id": "9.1.6",
+          "description": "Les titres sont-ils pertinents et décrivent-ils le contenu de la section ?",
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "expected": "Chaque titre doit décrire clairement le contenu de sa section",
+          "severity": "moderate",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractHeadingText": true,
+            "evaluateRelevance": true,
+            "checkSectionContext": true
+          }
+        },
+        {
+          "id": "9.1.7",
+          "description": "Les titres ne sont-ils pas vides ou contenant uniquement des espaces ?",
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "expected": "Chaque titre doit contenir du texte significatif",
+          "severity": "critical",
+          "aiAnalysis": true
+        },
+        {
+          "id": "9.1.8",
+          "description": "Les titres sont-ils uniques et non répétitifs (sauf structure répétée volontaire) ?",
+          "selector": "h1, h2, h3, h4, h5, h6",
+          "expected": "Éviter les titres identiques qui ne permettent pas de distinguer les sections",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "ariaHeadings": {
+      "description": "Utilisation d'ARIA pour les titres",
+      "tests": [
+        {
+          "id": "9.1.9",
+          "description": "Les éléments avec role=\"heading\" ont-ils un attribut aria-level approprié ?",
+          "selector": "[role='heading']",
+          "expected": "Si role=\"heading\" est utilisé, aria-level doit définir le niveau",
+          "severity": "serious",
+          "aiAnalysis": true
+        },
+        {
+          "id": "9.1.10",
+          "description": "Les titres ARIA respectent-ils également la hiérarchie logique ?",
+          "selector": "[role='heading']",
+          "expected": "La hiérarchie des aria-level doit être cohérente",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "landmarksWithHeadings": {
+      "description": "Association titres et landmarks",
+      "tests": [
+        {
+          "id": "9.1.11",
+          "description": "Les zones principales (main, nav, aside) commencent-elles par un titre ?",
+          "selector": "main, nav, aside, [role='main'], [role='navigation'], [role='complementary']",
+          "expected": "Chaque zone de contenu principale devrait avoir un titre identifiant son contenu",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "headings": {
+        "selectors": [
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "[role='heading']"
+        ],
+        "attributes": [
+          "id",
+          "class",
+          "role",
+          "aria-level",
+          "aria-label",
+          "aria-labelledby"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": false,
+          "surroundingContext": 200
+        },
+        "contextExtraction": {
+          "parentElements": 2,
+          "siblingElements": true,
+          "textContent": true,
+          "nearbyText": 100,
+          "documentPosition": true
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Extraire DANS L'ORDRE D'APPARITION tous les titres du DOM : balises h1 à h6 et éléments porteurs de role=\"heading\". Pour chacun, relever le niveau (h1=1 … h6=6 ; pour role=\"heading\", lire aria-level), le texte (textContent) et la présence des attributs (role, aria-level). Si aucun de ces éléments n'est présent, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 (signal mécanique — présence de h1) : si AUCUN h1 (ni élément role=\"heading\" aria-level=\"1\") n'existe dans le DOM, émettre un finding type=\"violation\" severity=critical. La page n'a pas de titre principal identifiable.",
+        "ÉTAPE 2 (signal mécanique — sauts de niveau) : parcourir la suite ordonnée des niveaux. Tout passage d'un niveau N à un niveau strictement supérieur à N+1 sans niveau intermédiaire (ex. h2 directement suivi de h4) est un saut de niveau OBJECTIF → finding type=\"violation\" severity=serious, en indiquant le couple de titres concerné.",
+        "ÉTAPE 3 (signal mécanique — titre vide) : tout titre dont le texte accessible est vide ou ne contient que des espaces/caractères invisibles → finding type=\"violation\" severity=critical (le titre n'apporte aucune information).",
+        "ÉTAPE 4 (signal mécanique — role=\"heading\" sans aria-level) : tout élément role=\"heading\" dépourvu d'attribut aria-level (ou avec aria-level non numérique) → finding type=\"violation\" severity=serious : le niveau n'est pas déterminable par les technologies d'assistance.",
+        "ÉTAPE 5 (multiplicité des h1) : la présence de plusieurs h1 n'est PAS une violation ferme (HTML5/sectionnement). La signaler au plus en type=\"recommendation\" severity=minor (un h1 unique est recommandé).",
+        "ÉTAPE 6 (doute → warning) : dès que le verdict dépend d'une APPRÉCIATION ÉDITORIALE non tranchable mécaniquement — pertinence/qualité d'un libellé de titre, adéquation titre/contenu de section, titres identiques répétés, titre purement visuel simulé en CSS (<div>/<span> stylé en gros et gras sans balise de titre), présence d'un titre en tête d'une zone main/nav/aside — NE PAS produire de violation : émettre au plus un finding type=\"warning\" demandant une vérification manuelle.",
+        "ÉTAPE 7 : pour chaque finding, proposer une correction concrète (niveau de titre rectifié, ajout de aria-level, remplacement d'un faux titre CSS par une balise hN). Réserver type=\"violation\" aux défauts OBJECTIFS des étapes 1 à 4.",
+        "ÉTAPE 8 : rappeler dans le summary la hiérarchie observée des titres (ex. h1 > h2 > h2 > h3) pour rendre le verdict traçable."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence de h1, suite des niveaux, texte vide, role/aria-level) doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS et vérifiables dans le DOM : absence totale de h1, saut de niveau, titre vide, role=\"heading\" sans aria-level.",
+        "En cas de doute (pertinence d'un libellé, faux titre visuel, titres répétés, adéquation titre/section) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Si aucun titre (h1-h6 ni role=\"heading\") n'est présent : NON APPLICABLE, compliant=true, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'heading-hierarchy'",
+          "compliant": "boolean",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre total de titres analysés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis ou description du titre",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec exemple de correction",
+          "wcagReference": "string - Ex: 1.3.1, 2.4.6"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 9.1 - Hiérarchie des titres). Tu appliques une approche DÉTERMINISTE fondée sur les signaux mécaniques du DOM (présence de h1, suite ordonnée des niveaux, texte de titre vide, role=\"heading\"/aria-level) : tu réserves les violations aux défauts objectifs (absence de h1, saut de niveau, titre vide, role=\"heading\" sans aria-level) et tu demandes une vérification manuelle (warning) dès que le verdict dépend d'une appréciation éditoriale (pertinence d'un libellé, faux titre visuel, adéquation titre/section)."
+  },
+  "automatedChecks": [
+    "Présence d'au moins un h1",
+    "Nombre de h1 (recommandé : 1)",
+    "Détection des sauts de niveau dans la hiérarchie",
+    "Titres vides ou contenant uniquement des espaces",
+    "Présence d'aria-level sur les role=\"heading\"",
+    "Ordre séquentiel des niveaux de titres"
+  ],
+  "manualChecks": [
+    "Pertinence et clarté des titres",
+    "Cohérence de la structure documentaire",
+    "Association logique entre titres et contenu",
+    "Utilisation appropriée des niveaux de titre"
+  ],
+  "commonErrors": [
+    {
+      "error": "Absence de titre h1",
+      "example": "<h2>Bienvenue</h2>\n<h3>Notre mission</h3>",
+      "correction": "<h1>Bienvenue sur notre site</h1>\n<h2>Notre mission</h2>",
+      "explanation": "Chaque page doit avoir au moins un titre h1 identifiant le contenu principal"
+    },
+    {
+      "error": "Plusieurs h1 sur la même page",
+      "example": "<h1>Titre principal</h1>\n<section>\n  <h1>Autre titre</h1>\n</section>",
+      "correction": "<h1>Titre principal</h1>\n<section>\n  <h2>Sous-section</h2>\n</section>",
+      "explanation": "Il est recommandé d'avoir un seul h1 par page pour identifier clairement le sujet principal"
+    },
+    {
+      "error": "Saut de niveau dans la hiérarchie",
+      "example": "<h1>Titre principal</h1>\n<h3>Sous-titre</h3>",
+      "correction": "<h1>Titre principal</h1>\n<h2>Sous-titre</h2>",
+      "explanation": "Ne pas sauter de niveau : après h1 vient h2, après h2 vient h3, etc."
+    },
+    {
+      "error": "Titre vide",
+      "example": "<h2></h2>\n<h3>   </h3>",
+      "correction": "<h2>Description de la section</h2>\n<h3>Sous-section détaillée</h3>",
+      "explanation": "Chaque titre doit contenir du texte significatif décrivant la section"
+    },
+    {
+      "error": "Utilisation de CSS au lieu de balises sémantiques",
+      "example": "<div class=\"title\" style=\"font-size: 24px; font-weight: bold;\">Titre</div>",
+      "correction": "<h2>Titre</h2>",
+      "explanation": "Utiliser les balises HTML h1-h6 pour structurer sémantiquement le document"
+    },
+    {
+      "error": "role=\"heading\" sans aria-level",
+      "example": "<div role=\"heading\">Mon titre</div>",
+      "correction": "<div role=\"heading\" aria-level=\"2\">Mon titre</div>",
+      "explanation": "Si role=\"heading\" est utilisé, l'attribut aria-level doit définir le niveau hiérarchique"
+    },
+    {
+      "error": "Titre potentiellement non pertinent (à vérifier manuellement)",
+      "example": "<h2>Section 1</h2>\n<h2>Section 2</h2>",
+      "correction": "<h2>Nos services</h2>\n<h2>Notre équipe</h2>",
+      "explanation": "La pertinence d'un libellé de titre relève d'une appréciation éditoriale : signaler en warning (vérification manuelle) plutôt qu'en violation ferme, car la balise est techniquement correcte."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#9",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/headings-and-labels.html",
+    "https://www.w3.org/WAI/tutorials/page-structure/headings/"
+  ]
+}

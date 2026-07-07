@@ -1,0 +1,197 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "10.14",
+  "ruleId": "presentation-hidden-content",
+  "title": "Présentation - Contenu masqué",
+  "description": "Dans chaque page web, les contenus cachés ont-ils vocation à être ignorés par les technologies d'assistance ?",
+  "rgaaReference": "RGAA 4.1 - Critère 10.14",
+  "wcagReference": "WCAG 2.1 - 4.1.2 Nom, rôle et valeur (A)",
+  "theme": "Présentation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux contenus masqués visuellement",
+    "signals": {
+      "selectors": [
+        "[hidden]",
+        "[aria-hidden]",
+        "*[style*='display:none']",
+        "*[style*='visibility:hidden']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun contenu masqué dans la page"
+    ]
+  },
+  "testScenarios": {
+    "hiddenContentAccessibility": {
+      "description": "Cohérence du masquage visuel et technique",
+      "tests": [
+        {
+          "id": "10.14.1",
+          "rgaaTestRef": "Test 10.14.1",
+          "description": "Les contenus cachés visuellement sont-ils correctement masqués aux technologies d'assistance ?",
+          "methodology": [
+            "Identifier les contenus masqués (display:none, visibility:hidden, hidden)",
+            "Vérifier que les contenus informatifs ne sont pas masqués sans raison",
+            "Vérifier que aria-hidden='true' n'est pas sur du contenu visible",
+            "Vérifier que les contenus masqués n'ont pas le focus"
+          ],
+          "selector": "[hidden], [aria-hidden], *[style*='display:none'], *[style*='visibility:hidden']",
+          "expected": "Les contenus masqués visuellement doivent aussi être masqués aux AT, et inversement",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "10.14.2",
+          "rgaaTestRef": "Test 10.14.2",
+          "description": "Les contenus visibles ne sont-ils pas masqués aux technologies d'assistance ?",
+          "methodology": [
+            "Identifier les éléments avec aria-hidden='true'",
+            "Vérifier qu'ils sont aussi masqués visuellement",
+            "Détecter les incohérences (visible mais aria-hidden)"
+          ],
+          "selector": "[aria-hidden='true']",
+          "expected": "aria-hidden='true' ne doit être utilisé que sur du contenu visuellement masqué ou purement décoratif",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "10.14.3",
+          "rgaaTestRef": "Test 10.14.3",
+          "description": "Les techniques de masquage accessibles uniquement aux AT sont-elles appropriées ?",
+          "methodology": [
+            "Identifier les classes .sr-only ou équivalent",
+            "Vérifier qu'elles sont utilisées pour du contenu utile aux AT",
+            "Vérifier la technique de masquage (clip, position:absolute avec left:-9999px)"
+          ],
+          "selector": ".sr-only, .visually-hidden, .screen-reader-only",
+          "expected": "Le contenu masqué visuellement mais accessible aux AT doit être pertinent",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "[hidden]",
+        "[aria-hidden]",
+        "*[style*='display']",
+        "*[style*='visibility']",
+        ".sr-only",
+        ".visually-hidden"
+      ],
+      "attributes": [
+        "hidden",
+        "aria-hidden",
+        "style",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Évaluer la cohérence entre masquage visuel et masquage pour les technologies d'assistance, à partir des SIGNAUX MÉCANIQUES du DOM/CSS extraits, en appliquant les étapes ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux DOM/CSS déterministes : éléments avec aria-hidden='true', avec attribut hidden, avec style display:none / visibility:hidden, classes de masquage visuel accessible (.sr-only, .visually-hidden, .screen-reader-only), et caractère FOCUSABLE des descendants (a, button, input, select, textarea, [tabindex] hors -1).",
+        "ÉTAPE 2 — Défaut OBJECTIF → finding type=\"violation\", severity serious : un conteneur portant aria-hidden='true' qui ENGLOBE un élément focusable au clavier (lien, bouton, champ avec tabindex >= 0). Ce contradiction (retiré de l'arbre d'accessibilité mais atteignable au clavier) est mécaniquement constatable dans le DOM, indépendamment du rendu.",
+        "ÉTAPE 3 — DOUTE vers warning (vérification manuelle) : (a) aria-hidden='true' sans display:none/visibility:hidden et sans focusable, où l'on ne peut établir avec certitude si le contenu est visible et informatif (risque de masquer aux AT un contenu vu à l'écran) ; (b) un contenu masqué visuellement (visibility:hidden, display:none) dont les descendants pourraient rester focusables ; (c) incohérence présumée entre masquage visuel et masquage AT. Émettre un finding type=\"warning\" demandant la vérification au lecteur d'écran.",
+        "ÉTAPE 4 — Classes .sr-only / .visually-hidden : la PERTINENCE du contenu réservé aux AT relève d'une appréciation éditoriale → finding type=\"recommendation\" ou \"warning\", jamais de violation. Si la technique de masquage est manifestement défaillante (ex. font-size:0, display:none qui supprimerait aussi pour les AT), le signaler en warning.",
+        "ÉTAPE 5 — NE PAS produire de violation sur un aria-hidden='true' accompagné de display:none/visibility:hidden et sans descendant focusable : le masquage est alors cohérent (conforme), ne rien signaler. Réserver type=\"violation\" au cas de l'étape 2.",
+        "ÉTAPE 6 — Conclure conclusion='non_applicable' si la page ne contient AUCUN contenu masqué."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'presentation-hidden-content'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec technique de masquage appropriée",
+          "rgaaTestRef": "Test 10.14.1, 10.14.2 ou 10.14.3",
+          "wcagReference": "4.1.2"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (aria-hidden, hidden, display/visibility, focusabilité) doivent toujours donner le même verdict.",
+        "type='violation' (severity='serious') réservé au défaut OBJECTIF : aria-hidden='true' englobant un élément focusable au clavier.",
+        "En cas de doute (aria-hidden sans masquage visuel confirmé, contenu masqué possiblement focusable, incohérence présumée) → type='warning' (severity='moderate') pour vérification au lecteur d'écran.",
+        "Pertinence du contenu .sr-only : type='recommendation' ou 'warning', jamais de violation.",
+        "Si aucun contenu masqué: conclusion='non_applicable'.",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 10.14 - contenus cachés ayant vocation à être ignorés par les technologies d'assistance), spécialisé dans l'analyse déterministe de la cohérence masquage visuel / masquage AT. Tu ne signales en violation ferme que les contradictions objectivement vérifiables dans le DOM (aria-hidden='true' englobant un élément focusable) et tu demandes une vérification manuelle au lecteur d'écran (warning) dès que la conformité dépend du rendu visible ou de la pertinence du contenu."
+  },
+  "automatedChecks": [
+    "Détection d'aria-hidden sur du contenu visible",
+    "Détection de contenu masqué mais focusable",
+    "Vérification des techniques de masquage"
+  ],
+  "manualChecks": [
+    "Vérification de la pertinence du masquage",
+    "Test avec lecteur d'écran",
+    "Vérification du contenu .sr-only"
+  ],
+  "commonErrors": [
+    {
+      "error": "aria-hidden sur contenu visible et informatif",
+      "example": "<div aria-hidden=\"true\">\n  <p>Information importante visible</p>\n</div>",
+      "correction": "<div>\n  <p>Information importante visible</p>\n</div>\n<!-- Ou si élément décoratif parent -->\n<div aria-hidden=\"true\" role=\"presentation\">Déco</div>",
+      "explanation": "Ne pas utiliser aria-hidden sur du contenu visible et informatif"
+    },
+    {
+      "error": "Contenu masqué visuellement mais sans masquage AT",
+      "example": "<div style=\"visibility:hidden\">\n  <button>Fermer</button>\n</div>",
+      "correction": "<div style=\"visibility:hidden\" aria-hidden=\"true\">\n  <button tabindex=\"-1\">Fermer</button>\n</div>",
+      "explanation": "Masquer aussi aux AT et retirer du tabindex"
+    },
+    {
+      "error": "Contenu focusable mais masqué",
+      "example": "<button style=\"display:none\">Action</button>",
+      "correction": "<button hidden>Action</button>\n<!-- Ou ajouter tabindex=\"-1\" si display:none nécessaire -->",
+      "explanation": "Les éléments masqués ne doivent pas être focusables"
+    },
+    {
+      "error": "Mauvaise technique .sr-only",
+      "example": ".sr-only { font-size: 0; }",
+      "correction": ".sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}",
+      "explanation": "Utiliser la technique standard pour masquer visuellement mais pas aux AT"
+    },
+    {
+      "error": "aria-hidden sans masquage visuel confirmé (à vérifier manuellement)",
+      "example": "<span aria-hidden=\"true\">10 % de réduction</span>",
+      "correction": "<!-- Vérifier au rendu : si ce texte est VISIBLE et informatif, retirer aria-hidden ;\n     s'il est purement décoratif/redondant, aria-hidden est acceptable -->",
+      "explanation": "Sans display:none/visibility:hidden, le DOM ne dit pas si le contenu est visible à l'écran : émettre un warning et confirmer au lecteur d'écran que de l'information visible n'est pas masquée aux technologies d'assistance."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#10.14",
+    "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html",
+    "https://www.a11yproject.com/posts/how-to-hide-content/"
+  ]
+}

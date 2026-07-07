@@ -1,0 +1,184 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "7.3",
+  "ruleId": "script-keyboard-focus-visible",
+  "title": "Scripts - Focus visible",
+  "description": "Chaque script est-il contrôlable par le clavier et par tout dispositif de pointage (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 7.3",
+  "wcagReference": "WCAG 2.1 - 2.4.7 Focus visible (AA)",
+  "theme": "Scripts",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les éléments interactifs",
+    "signals": {
+      "selectors": [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "[tabindex]",
+        "[role='button']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun élément focusable"
+    ]
+  },
+  "testScenarios": {
+    "focusVisibility": {
+      "description": "Visibilité du focus clavier",
+      "tests": [
+        {
+          "id": "7.3.1",
+          "rgaaTestRef": "Test 7.3.1",
+          "description": "Le focus clavier est-il visible sur tous les éléments interactifs ?",
+          "methodology": [
+            "Naviguer au clavier (Tab) sur tous les éléments focusables",
+            "Vérifier qu'un indicateur visuel apparaît (outline, border, background)",
+            "Vérifier que le CSS n'a pas outline: none sans alternative",
+            "Contraste de l'indicateur de focus >= 3:1"
+          ],
+          "selector": "a, button, input, select, textarea, [tabindex], [role='button'], [role='link']",
+          "expected": "Tous les éléments focusables doivent avoir un indicateur de focus visible",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectOutlineNone": true,
+            "checkFocusStyles": true,
+            "evaluateContrast": true
+          }
+        },
+        {
+          "id": "7.3.2",
+          "rgaaTestRef": "Test 7.3.2",
+          "description": "L'indicateur de focus respecte-t-il un ratio de contraste de 3:1 minimum ?",
+          "methodology": [
+            "Mesurer le contraste entre l'indicateur de focus et l'arrière-plan",
+            "Vérifier ratio >= 3:1 selon WCAG 2.1 (niveau AA)",
+            "Tester sur différents états (normal, hover, focus)"
+          ],
+          "selector": "a:focus, button:focus, input:focus, [tabindex]:focus",
+          "expected": "Le contraste du focus doit être >= 3:1",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 7.3 - Focus visible, WCAG 2.4.7 niveau AA), spécialisé dans une analyse DÉTERMINISTE de la visibilité du focus clavier. Tu te fondes sur les signaux mécaniques des styles (suppression explicite de l'outline, présence d'un style :focus alternatif) : tu réserves la violation à la suppression objective du focus sans alternative et tu émets un warning pour tout ce qui relève d'une appréciation visuelle (contraste réel, visibilité effective) non décidable de façon certaine.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "[tabindex]",
+        "[role='button']",
+        "style"
+      ],
+      "attributes": [
+        "style",
+        "class",
+        "tabindex"
+      ],
+      "context": {
+        "surroundingText": 100,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Si AUCUN outline:none / outline:0 sur :focus n'est effectivement visible dans les styles fournis, l'indicateur de focus natif du navigateur est présumé présent : conclure IMMÉDIATEMENT compliant=true, conclusion='conforme', findings=[]. Ne produis NI warning NI violation au motif que le CSS :focus n'est pas fourni ou pas visible.",
+        "ÉTAPE 1 — Recenser les éléments focusables (a[href], button, input, select, textarea, [tabindex], rôles interactifs). Si AUCUN élément focusable n'est présent, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 2 (signal déterministe) — Détecter dans les styles extraits la SUPPRESSION explicite de l'indicateur de focus : règles outline:none / outline:0 (notamment via *, :focus, a:focus, button:focus, *:focus) ou style inline équivalent. Relever, dans le même périmètre, la présence éventuelle d'un style de focus ALTERNATIF (box-shadow, border, background, outline non nul sur :focus ou :focus-visible).",
+        "ÉTAPE 3 (violation objective) — Si l'outline est supprimé (outline:none/0) sur les éléments focusables OU globalement, ET qu'AUCUN style de focus alternatif n'est défini dans les styles extraits : finding type=\"violation\", severity serious — le focus clavier n'a aucun indicateur visible.",
+        "ÉTAPE 4 (conforme) — Si un style :focus / :focus-visible définit un indicateur non nul (outline, box-shadow, border, background), considérer le signal de visibilité comme présent : ne pas créer de violation au titre de l'absence d'indicateur.",
+        "ÉTAPE 5 (doute → warning) — La VISIBILITÉ EFFECTIVE et le CONTRASTE (>= 3:1) de l'indicateur relèvent d'une appréciation visuelle et de couleurs calculées non toujours déterminables à partir du seul DOM/CSS extrait. Lorsque l'indicateur existe mais que son contraste ou sa perceptibilité ne peuvent être tranchés avec certitude : émettre un finding type=\"warning\", severity moderate, demandant une vérification manuelle (mesure de contraste, test visuel au clavier).",
+        "ÉTAPE 6 — Ne pas conclure à partir d'une capture d'écran seule à l'absence de focus : un screenshot statique ne montre pas l'état :focus. En l'absence de preuve dans les styles, préférer le warning à la violation.",
+        "ÉTAPE 7 — Pour chaque violation ou warning, proposer un style CSS de focus accessible (par ex. :focus-visible { outline: 2px solid #005fcc; outline-offset: 2px; } ou box-shadow équivalent au contraste suffisant)."
+      ],
+      "important": [
+        "CONFORME PAR DÉFAUT : si AUCUNE suppression d'indicateur (outline:none / outline:0 sur :focus) n'est effectivement visible dans les styles fournis, l'indicateur de focus natif du navigateur est présumé présent — conclure compliant=true, findings=[]. Ne PAS émettre de warning ni de violation au seul motif que le CSS :focus n'est pas fourni ou pas visible.",
+        "Déterminisme : les mêmes signaux de style (outline:none, présence d'un :focus alternatif) doivent toujours produire le même verdict.",
+        "Violation réservée au défaut OBJECTIF : suppression de l'outline sans aucun style de focus alternatif défini.",
+        "Doute → type=\"warning\" (vérification manuelle) : contraste >= 3:1 et visibilité effective de l'indicateur, non décidables avec certitude à partir du DOM/CSS extrait.",
+        "Non applicable si aucun élément focusable n'est détecté : compliant=true, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'script-keyboard-focus-visible'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple CSS de focus accessible",
+          "rgaaTestRef": "Test 7.3.1 ou Test 7.3.2",
+          "wcagReference": "2.4.7"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    }
+  },
+  "automatedChecks": [
+    "Détection de outline: none ou outline: 0 dans CSS",
+    "Présence de styles :focus dans CSS",
+    "Calcul de contraste si couleurs définies"
+  ],
+  "manualChecks": [
+    "Test visuel de navigation clavier",
+    "Vérification visibilité sur tous les éléments",
+    "Mesure manuelle du contraste"
+  ],
+  "commonErrors": [
+    {
+      "error": "Suppression globale du focus sans alternative",
+      "example": "* { outline: none; }\n:focus { outline: none; }",
+      "correction": "*:focus-visible {\n  outline: 2px solid #005fcc;\n  outline-offset: 2px;\n}\n/* Ou alternative avec box-shadow */\nbutton:focus {\n  box-shadow: 0 0 0 3px rgba(0, 95, 204, 0.5);\n}",
+      "explanation": "Ne jamais supprimer outline sans fournir un indicateur alternatif visible avec bon contraste"
+    },
+    {
+      "error": "Focus peu visible (contraste insuffisant)",
+      "example": "button:focus {\n  outline: 1px solid #ccc; /* Contraste ~2:1 insuffisant */\n}",
+      "correction": "button:focus {\n  outline: 2px solid #0056b3; /* Contraste >= 3:1 */\n  outline-offset: 2px;\n}",
+      "explanation": "L'indicateur de focus doit avoir un contraste >= 3:1 avec l'arrière-plan"
+    },
+    {
+      "error": "Indicateur de focus présent mais contraste à vérifier (warning)",
+      "example": "a:focus {\n  outline: 2px solid #9aa0a6; /* couleur claire sur fond clair : contraste incertain */\n}",
+      "correction": "<!-- Vérification manuelle : mesurer le contraste de l'indicateur par rapport au fond adjacent (>= 3:1) -->\na:focus {\n  outline: 2px solid #0056b3;\n  outline-offset: 2px;\n}",
+      "explanation": "Un indicateur de focus est bien défini (signal CSS présent), mais son contraste réel dépend des couleurs effectives du contexte : à confirmer par une mesure manuelle (warning) plutôt qu'une violation ferme."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#7.3",
+    "https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html"
+  ]
+}

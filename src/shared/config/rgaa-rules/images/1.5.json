@@ -1,0 +1,147 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.5",
+  "ruleId": "image-captcha",
+  "title": "Images - Solution d'accès alternatif au CAPTCHA",
+  "description": "Pour chaque image utilisée comme CAPTCHA, une solution d'accès alternatif au contenu ou à la fonction du CAPTCHA est-elle présente ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.5",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique uniquement aux images utilisées comme CAPTCHA.",
+    "signals": {
+      "selectors": [
+        "img[alt*='captcha' i]",
+        "[id*='captcha' i]",
+        "[class*='captcha' i]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun CAPTCHA présent sur la page"
+    ]
+  },
+  "testScenarios": {
+    "captchaAlternative": {
+      "description": "Une solution d'accès alternatif (autre modalité sensorielle ou autre méthode) doit être proposée pour chaque CAPTCHA.",
+      "tests": [
+        {
+          "id": "1.5.1",
+          "rgaaTestRef": "Test 1.5.1",
+          "description": "Pour chaque image CAPTCHA, existe-t-il une solution d'accès alternatif au contenu ou à la fonction (CAPTCHA sonore, autre modalité, autre méthode d'authentification) ?",
+          "methodology": [
+            "Repérer les images utilisées comme CAPTCHA",
+            "Vérifier la présence d'une alternative reposant sur une autre modalité sensorielle (par ex. CAPTCHA sonore) ou d'une autre méthode",
+            "Vérifier que l'alternative est réellement disponible et accessible"
+          ],
+          "selector": "img[alt*='captcha' i], [id*='captcha' i], [class*='captcha' i]",
+          "expected": "Une solution d'accès alternatif doit être proposée pour chaque CAPTCHA",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectCaptcha": true,
+            "checkAlternativePresence": true,
+            "verifyAccessibility": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img[alt*='captcha' i]",
+          "[id*='captcha' i]",
+          "[class*='captcha' i]",
+          "audio",
+          "button"
+        ],
+        "attributes": [
+          "alt",
+          "src",
+          "id",
+          "class",
+          "role",
+          "aria-label"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 300
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Détecter les images utilisées comme CAPTCHA (image, canvas, iframe de vérification).",
+        "Si aucun CAPTCHA n'est détecté, conclure non applicable (compliant=true, findings=[]).",
+        "Pour chaque CAPTCHA, vérifier la présence d'une SOLUTION D'ACCÈS ALTERNATIF : CAPTCHA reposant sur une autre modalité sensorielle (sonore), bouton « écouter », ou autre méthode d'authentification accessible.",
+        "Vérifier que l'alternative est réellement présente et utilisable (visible, activable au clavier), pas seulement mentionnée.",
+        "Signaler (type=\"violation\", severity critical) tout CAPTCHA visuel ne proposant aucune solution d'accès alternatif.",
+        "Proposer une solution concrète et conforme lorsque l'alternative manque."
+      ],
+      "important": [
+        "Si aucun CAPTCHA détecté : compliant=true, severity='minor', summary='Aucun CAPTCHA détecté, critère non applicable', findings=[].",
+        "Une alternative seulement mentionnée mais non disponible/activable reste non conforme.",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-captcha'",
+          "compliant": "boolean - true si conforme ou si aucun CAPTCHA détecté (non applicable)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre de CAPTCHA détectés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution d'accès alternatif avec exemple de code",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.5), spécialisé dans la vérification des solutions d'accès alternatif aux CAPTCHA."
+  },
+  "automatedChecks": [
+    "Détection de motifs CAPTCHA (alt, id, class contenant « captcha »)",
+    "Présence d'un élément audio ou d'un bouton d'alternative associé"
+  ],
+  "manualChecks": [
+    "Confirmation qu'il s'agit bien d'un CAPTCHA",
+    "Disponibilité et fonctionnement effectif de la solution d'accès alternatif",
+    "Utilisabilité de l'alternative par les personnes en situation de handicap"
+  ],
+  "commonErrors": [
+    {
+      "error": "CAPTCHA uniquement visuel sans accès alternatif",
+      "example": "<img src=\"captcha.png\" alt=\"Code de vérification\">",
+      "correction": "<img src=\"captcha.png\" alt=\"Code de vérification\">\n<button type=\"button\" onclick=\"playCaptchaAudio()\">Écouter le code (alternative sonore)</button>",
+      "explanation": "Un CAPTCHA purement visuel exclut les personnes aveugles. Une alternative sonore ou une autre méthode d'authentification est obligatoire."
+    },
+    {
+      "error": "Alternative mentionnée mais non disponible/accessible",
+      "example": "<div style=\"display:none\">Alternative audio</div>",
+      "correction": "<button type=\"button\" aria-label=\"Écouter une version audio du CAPTCHA\">Alternative audio</button>",
+      "explanation": "La solution d'accès alternatif doit être réellement présente, visible et activable au clavier."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html",
+    "https://www.w3.org/TR/turingtest/"
+  ]
+}

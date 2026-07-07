@@ -1,0 +1,181 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "13.11",
+  "ruleId": "consultation-user-settings-storage",
+  "title": "Consultation - Sauvegarde des préférences",
+  "description": "Dans chaque page web, les contenus additionnels apparaissant via les styles CSS uniquement peuvent-ils être rendus visibles au clavier et par tout dispositif de pointage ?",
+  "rgaaReference": "RGAA 4.1 - Critère 13.11",
+  "wcagReference": "WCAG 2.1 - 1.4.13 Contenu au survol ou au focus (AA)",
+  "theme": "Consultation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique aux contenus additionnels apparaissant au survol CSS",
+    "signals": {
+      "selectors": [
+        "*:hover",
+        "[title]",
+        ".tooltip"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun contenu additionnel au survol CSS"
+    ]
+  },
+  "testScenarios": {
+    "cssHoverContent": {
+      "description": "Accessibilité du contenu au survol CSS",
+      "tests": [
+        {
+          "id": "13.11.1",
+          "rgaaTestRef": "Test 13.11.1",
+          "description": "Les contenus apparaissant au survol CSS sont-ils accessibles au clavier ?",
+          "methodology": [
+            "Identifier les contenus apparaissant uniquement au :hover",
+            "Vérifier qu'ils apparaissent aussi au :focus",
+            "Tester la navigation au clavier (Tab)",
+            "Vérifier que tout le contenu est accessible"
+          ],
+          "selector": "*:hover",
+          "expected": "Le contenu au :hover doit aussi apparaître au :focus",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectHoverOnlyContent": true,
+            "checkFocusEquivalent": true
+          }
+        },
+        {
+          "id": "13.11.2",
+          "rgaaTestRef": "Test 13.11.2",
+          "description": "Les sous-menus au survol sont-ils accessibles au clavier ?",
+          "methodology": [
+            "Identifier les menus déroulants/survol",
+            "Tester la navigation au clavier",
+            "Vérifier que les sous-menus s'ouvrent au focus",
+            "Vérifier la navigation avec flèches si approprié"
+          ],
+          "selector": "nav ul li:hover ul, .dropdown:hover .dropdown-menu",
+          "expected": "Les sous-menus doivent être accessibles au clavier",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "*",
+        "nav",
+        "ul",
+        "li",
+        ".dropdown",
+        ".submenu"
+      ],
+      "attributes": [
+        "class",
+        "tabindex"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 (signaux DOM/CSS) — Relever les signaux MÉCANIQUES dans les feuilles de style : règles révélant un contenu au :hover (display:none → :hover { display:block }, opacity:0 → :hover { opacity:1 }, visibility) et présence ou ABSENCE de la règle équivalente sur :focus / :focus-within sur le même sélecteur. Repérer aussi les patterns de sous-menus de navigation (nav li ul masqué affiché au :hover) et la présence éventuelle de gestionnaires onmouseover/onmouseout sans gestion clavier.",
+        "ÉTAPE 2 (non applicable) — Si AUCUN contenu additionnel révélé au :hover (ni sous-menu déroulant au survol) n'est détecté, conclure NON APPLICABLE : compliant=true, severity='minor', summary='Aucun contenu au survol/focus détecté, critère non applicable', findings=[].",
+        "ÉTAPE 3 (violation objective) — Règle :hover révélant un contenu SANS règle :focus / :focus-within équivalente sur le même sélecteur → finding type='violation', severity='serious' : le contenu est inaccessible au clavier. Pour un sous-menu de navigation au survol sans équivalent clavier (focus / focus-within) → finding type='violation', severity='critical'. Ce sont des défauts objectifs lisibles dans le CSS.",
+        "ÉTAPE 4 (doute → warning) — Si un équivalent :focus/:focus-within EST présent mais que la complétude du contenu révélé, le caractère focusable de l'élément (tabindex), ou la gestion clavier d'un menu piloté par JavaScript (onmouseover) ne peuvent être confirmés depuis les styles extraits : NE PAS conclure à une violation ferme ; émettre un finding type='warning' demandant un test réel au clavier (Tab, flèches).",
+        "ÉTAPE 5 — Pour chaque cas signalé, recommander concrètement d'ajouter :focus / :focus-within (et de rendre l'élément focusable via tabindex si besoin), ou d'adopter un pattern de menu accessible (bouton + aria-expanded/aria-haspopup + gestion clavier)."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux CSS (règle :hover avec ou sans équivalent :focus/:focus-within) produisent toujours le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : :hover révélant un contenu sans :focus équivalent (serious), sous-menu au survol sans équivalent clavier (critical).",
+        "En cas de doute (complétude du contenu, élément focusable, menu JS non observable) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Si aucun contenu au survol/focus détecté : compliant=true, severity='minor', summary='Aucun contenu au survol/focus détecté, critère non applicable', findings=[].",
+        "Indiquer qu'un test clavier réel est nécessaire.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'consultation-user-settings-storage'",
+          "compliant": "boolean - true si conforme ou si aucun contenu au survol/focus détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple CSS incluant :focus",
+          "rgaaTestRef": "Test 13.11.1 ou 13.11.2",
+          "wcagReference": "1.4.13"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 13.11 - Contenu au survol ou au focus), spécialisé dans l'analyse déterministe de l'accessibilité au clavier des contenus révélés au survol CSS. Tu fondes ton verdict sur des signaux mécaniques des feuilles de style (règle :hover avec ou sans équivalent :focus/:focus-within) et tu réserves la violation aux défauts objectifs lisibles dans le CSS. Dès que la conformité dépend d'un test clavier réel ou d'un comportement JavaScript non observable, tu demandes une vérification manuelle via un finding type=warning."
+  },
+  "automatedChecks": [
+    "Détection de :hover dans les CSS",
+    "Vérification de :focus correspondant"
+  ],
+  "manualChecks": [
+    "Test réel de navigation au clavier",
+    "Vérification de l'apparition du contenu au focus",
+    "Test des menus déroulants au clavier",
+    "Vérification de la complétude du contenu accessible"
+  ],
+  "commonErrors": [
+    {
+      "error": "Sous-menu uniquement au survol",
+      "example": "nav li ul { display: none; }\nnav li:hover ul { display: block; }",
+      "correction": "nav li ul { display: none; }\nnav li:hover ul,\nnav li:focus-within ul { display: block; }",
+      "explanation": "Ajouter :focus-within pour accessibilité clavier"
+    },
+    {
+      "error": "Tooltip uniquement au survol",
+      "example": ".tooltip { display: none; }\n.icon:hover .tooltip { display: block; }",
+      "correction": ".tooltip { display: none; }\n.icon:hover .tooltip,\n.icon:focus .tooltip { display: block; }",
+      "explanation": "Le tooltip doit aussi apparaître au focus clavier"
+    },
+    {
+      "error": "Contenu révélé au survol sans équivalent focus",
+      "example": ".card .details { opacity: 0; }\n.card:hover .details { opacity: 1; }",
+      "correction": ".card .details { opacity: 0; }\n.card:hover .details,\n.card:focus-within .details { opacity: 1; }\n/* ET rendre la card focusable */\n.card { tabindex: 0; }",
+      "explanation": "Utiliser :focus-within et rendre l'élément focusable"
+    },
+    {
+      "error": "Menu dropdown sans gestion clavier JavaScript",
+      "example": "<!-- HTML -->\n<div class=\"dropdown\" onmouseover=\"show()\" onmouseout=\"hide()\">\n  Menu\n  <div class=\"menu\">Items</div>\n</div>",
+      "correction": "<div class=\"dropdown\">\n  <button aria-expanded=\"false\" aria-haspopup=\"true\"\n    onclick=\"toggle()\" onkeydown=\"handleKeys(event)\">\n    Menu\n  </button>\n  <ul role=\"menu\" hidden>\n    <li role=\"menuitem\">Item 1</li>\n  </ul>\n</div>\n/* CSS avec :focus */\nbutton:focus + ul { display: block; }",
+      "explanation": "Utiliser un pattern accessible avec button et aria"
+    },
+    {
+      "error": ":focus présent mais accessibilité clavier réelle non confirmée (à vérifier manuellement)",
+      "example": ".menu:hover .submenu,\n.menu:focus-within .submenu { display: block; } /* élément déclencheur focusable ? */",
+      "correction": "/* Vérifier au clavier (Tab) que le déclencheur reçoit le focus */\n.menu a, .menu button { /* élément nativement focusable */ }\n/* Ajouter tabindex=\"0\" uniquement si le déclencheur n'est pas un élément interactif natif */",
+      "explanation": "Une règle :focus-within ne suffit pas si le déclencheur n'est pas atteignable au clavier ou si le contenu révélé est incomplet : confirmer par un test clavier réel plutôt que de conclure automatiquement à la conformité."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#13.11",
+    "https://www.w3.org/WAI/WCAG21/Understanding/content-on-hover-or-focus.html",
+    "https://css-tricks.com/striking-a-balance-between-native-and-custom-select-elements/"
+  ]
+}

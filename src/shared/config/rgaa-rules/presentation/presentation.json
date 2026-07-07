@@ -1,0 +1,528 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "10.1",
+  "ruleId": "presentation-information",
+  "title": "Présentation de l'information",
+  "description": "Dans le site web, des feuilles de styles sont-elles utilisées pour contrôler la présentation de l'information ?",
+  "rgaaReference": "RGAA 4.1 - Critère 10.1",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A), 1.4.1 Utilisation de la couleur (A), 1.4.8 Présentation visuelle (AAA), 1.4.10 Redistribution (AA), 1.4.12 Espacement du texte (AA), 1.4.13 Contenu au survol ou au focus (AA)",
+  "theme": "Présentation",
+  "level": "A",
+  "testScenarios": {
+    "cssUsage": {
+      "description": "Utilisation de CSS pour la présentation",
+      "tests": [
+        {
+          "id": "10.1.1",
+          "description": "La présentation de l'information est-elle contrôlée par des feuilles de styles CSS ?",
+          "selector": "style, link[rel='stylesheet'], [style]",
+          "expected": "Utiliser CSS plutôt que des balises de présentation obsolètes",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectCSSUsage": true,
+            "detectObsoleteTags": true,
+            "verifyStylesheets": true
+          }
+        },
+        {
+          "id": "10.1.2",
+          "description": "Les balises de présentation obsolètes sont-elles évitées (font, center, u, s, strike, big, small, basefont) ?",
+          "selector": "font, center, u, s, strike, big, small, basefont",
+          "expected": "Ne pas utiliser de balises de présentation HTML obsolètes",
+          "severity": "serious",
+          "aiAnalysis": true
+        },
+        {
+          "id": "10.1.3",
+          "description": "Les attributs de présentation obsolètes sont-ils évités (align, bgcolor, border sur img, color, width, height sur td/th) ?",
+          "selector": "[align], [bgcolor], img[border], [color], td[width], td[height], th[width], th[height]",
+          "expected": "Utiliser CSS plutôt que des attributs HTML de présentation",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "colorInformation": {
+      "description": "Information véhiculée par la couleur",
+      "tests": [
+        {
+          "id": "10.2.1",
+          "description": "L'information donnée par la couleur est-elle également disponible par un autre moyen (texte, forme, position) ?",
+          "selector": "*",
+          "expected": "Ne pas donner d'information uniquement par la couleur",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectColorOnlyInformation": true,
+            "verifyAlternatives": true,
+            "checkFormValidation": true
+          }
+        },
+        {
+          "id": "10.2.2",
+          "description": "Les liens sont-ils identifiables visuellement sans dépendre uniquement de la couleur ?",
+          "selector": "a",
+          "expected": "Les liens doivent être soulignés ou avoir un indicateur visuel autre que la couleur",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "textSizing": {
+      "description": "Taille du texte et unités relatives",
+      "tests": [
+        {
+          "id": "10.3.1",
+          "description": "Les tailles de texte utilisent-elles des unités relatives (em, rem, %, vw) plutôt qu'absolues (px, pt) ?",
+          "selector": "*",
+          "expected": "Privilégier les unités relatives pour permettre le redimensionnement",
+          "severity": "moderate",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "analyzeCSSUnits": true,
+            "detectAbsoluteUnits": true,
+            "checkFontSizes": true
+          }
+        },
+        {
+          "id": "10.3.2",
+          "description": "Le contenu est-il lisible avec un zoom texte à 200% sans perte d'information ?",
+          "selector": "body",
+          "expected": "Le contenu doit rester accessible avec un agrandissement à 200%",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "textSpacing": {
+      "description": "Espacement du texte (WCAG 1.4.12)",
+      "tests": [
+        {
+          "id": "10.4.1",
+          "description": "Le contenu reste-t-il lisible avec les espacements suivants : line-height 1.5, paragraph spacing 2em, letter-spacing 0.12em, word-spacing 0.16em ?",
+          "selector": "p, div, span",
+          "expected": "Le contenu doit supporter les espacements personnalisés",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkTextSpacing": true,
+            "detectFixedHeights": true,
+            "verifyOverflow": true
+          }
+        },
+        {
+          "id": "10.4.2",
+          "description": "Les hauteurs de lignes et d'éléments permettent-elles l'augmentation de l'espacement ?",
+          "selector": "[style*='height'], [style*='line-height']",
+          "expected": "Éviter les hauteurs fixes qui empêchent l'espacement",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "reflow": {
+      "description": "Redistribution du contenu (WCAG 1.4.10)",
+      "tests": [
+        {
+          "id": "10.5.1",
+          "description": "Le contenu s'adapte-t-il sans défilement horizontal à 320px de largeur (zoom 400%) ?",
+          "selector": "body",
+          "expected": "Le contenu doit être responsive et éviter le défilement horizontal",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkResponsiveness": true,
+            "detectFixedWidths": true,
+            "verifyViewport": true
+          }
+        },
+        {
+          "id": "10.5.2",
+          "description": "Les largeurs fixes (width en px) sont-elles évitées pour permettre l'adaptation ?",
+          "selector": "*",
+          "expected": "Utiliser des largeurs relatives (%, max-width, flex, grid)",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "focusVisible": {
+      "description": "Visibilité du focus",
+      "tests": [
+        {
+          "id": "10.6.1",
+          "description": "Le focus clavier est-il visible sur tous les éléments interactifs ?",
+          "selector": "a, button, input, select, textarea, [tabindex]:not([tabindex='-1'])",
+          "expected": "Le focus doit avoir un indicateur visuel clair",
+          "severity": "critical",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkFocusStyles": true,
+            "detectOutlineRemoval": true,
+            "verifyFocusIndicators": true
+          }
+        },
+        {
+          "id": "10.6.2",
+          "description": "Les styles outline:none ou :focus{outline:0} sont-ils compensés par un indicateur visible ?",
+          "selector": "*",
+          "expected": "Si outline est supprimé, fournir un indicateur alternatif (border, box-shadow, background)",
+          "severity": "critical",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "hoverContent": {
+      "description": "Contenu au survol ou au focus (WCAG 1.4.13)",
+      "tests": [
+        {
+          "id": "10.7.1",
+          "description": "Le contenu additionnel apparaissant au survol/focus peut-il être masqué (Echap) ?",
+          "selector": "[title], [role='tooltip'], .tooltip",
+          "expected": "Les tooltips et contenus au survol doivent pouvoir être fermés",
+          "severity": "moderate",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectTooltips": true,
+            "checkDismissibility": true,
+            "verifyHoverContent": true
+          }
+        },
+        {
+          "id": "10.7.2",
+          "description": "Le contenu au survol peut-il être survolé sans disparaître ?",
+          "selector": "[title], [role='tooltip']",
+          "expected": "L'utilisateur doit pouvoir interagir avec le contenu au survol",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "10.7.3",
+          "description": "Le contenu au survol reste-t-il visible tant que le survol/focus est maintenu ?",
+          "selector": "[title], [role='tooltip']",
+          "expected": "Le contenu ne doit pas disparaître automatiquement",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "semanticPresentation": {
+      "description": "Utilisation sémantique des balises",
+      "tests": [
+        {
+          "id": "10.8.1",
+          "description": "Les éléments de présentation (gras, italique) utilisent-ils les balises appropriées (strong, em) ?",
+          "selector": "b, i, strong, em",
+          "expected": "Utiliser strong/em pour l'emphase sémantique, pas b/i pour la présentation",
+          "severity": "minor",
+          "aiAnalysis": true
+        },
+        {
+          "id": "10.8.2",
+          "description": "Les listes utilisent-elles les balises appropriées (ul, ol, dl) ?",
+          "selector": "ul, ol, dl",
+          "expected": "Structurer les listes avec les bonnes balises sémantiques",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "10.8.3",
+          "description": "Les citations utilisent-elles les balises appropriées (blockquote, cite, q) ?",
+          "selector": "blockquote, cite, q",
+          "expected": "Marquer les citations avec les balises sémantiques",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "hiddenContent": {
+      "description": "Contenu caché et accessible",
+      "tests": [
+        {
+          "id": "10.9.1",
+          "description": "Le contenu caché visuellement (display:none, visibility:hidden) est-il également masqué aux technologies d'assistance ?",
+          "selector": "[style*='display: none'], [style*='display:none'], [style*='visibility: hidden'], [style*='visibility:hidden'], [hidden]",
+          "expected": "Cohérence entre masquage visuel et masquage pour les lecteurs d'écran",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "10.9.2",
+          "description": "Le contenu visuellement caché mais accessible (sr-only) utilise-t-il les bonnes techniques CSS ?",
+          "selector": ".sr-only, .visually-hidden, .screen-reader-text",
+          "expected": "Utiliser position:absolute; clip; width:1px pour masquer visuellement",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "printStyles": {
+      "description": "Feuilles de style d'impression",
+      "tests": [
+        {
+          "id": "10.10.1",
+          "description": "Une feuille de style d'impression est-elle fournie pour améliorer la lisibilité ?",
+          "selector": "link[media='print'], style[media='print']",
+          "expected": "Fournir des styles optimisés pour l'impression",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "imageText": {
+      "description": "Images de texte",
+      "tests": [
+        {
+          "id": "10.11.1",
+          "description": "Les images de texte sont-elles évitées (sauf logo, graphique indispensable) ?",
+          "selector": "img",
+          "expected": "Privilégier le texte HTML stylé avec CSS plutôt que des images de texte",
+          "severity": "moderate",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectTextImages": true,
+            "analyzeImageContent": true,
+            "verifyNecessity": true
+          }
+        }
+      ]
+    },
+    "orientationContent": {
+      "description": "Orientation du contenu",
+      "tests": [
+        {
+          "id": "10.12.1",
+          "description": "Le contenu s'adapte-t-il aux orientations portrait et paysage ?",
+          "selector": "body",
+          "expected": "Le contenu doit être accessible dans les deux orientations",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "10.12.2",
+          "description": "L'orientation n'est-elle pas verrouillée (sauf nécessité essentielle) ?",
+          "selector": "meta[name='viewport']",
+          "expected": "Éviter orientation=portrait ou orientation=landscape sauf si essentiel",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "presentationElements": {
+        "selectors": [
+          "style",
+          "link[rel='stylesheet']",
+          "[style]",
+          "font",
+          "center",
+          "u",
+          "s",
+          "strike",
+          "big",
+          "small",
+          "basefont",
+          "[align]",
+          "[bgcolor]",
+          "a",
+          "button",
+          "input",
+          "img",
+          "p",
+          "div",
+          "span",
+          "[title]",
+          "[role='tooltip']",
+          "strong",
+          "em",
+          "b",
+          "i",
+          "ul",
+          "ol",
+          "blockquote"
+        ],
+        "attributes": [
+          "style",
+          "class",
+          "align",
+          "bgcolor",
+          "color",
+          "width",
+          "height",
+          "border",
+          "rel",
+          "media",
+          "href",
+          "role",
+          "aria-label",
+          "title",
+          "tabindex"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": false,
+          "surroundingContext": 150
+        },
+        "contextExtraction": {
+          "parentElements": 2,
+          "computedStyles": true,
+          "cssRules": true
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Analyser la présentation de l'information à partir des SIGNAUX MÉCANIQUES du DOM extrait (balises présentes, attributs de présentation, valeurs de style inline), en appliquant les étapes ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux DOM déterministes : balises de présentation obsolètes présentes (<font>, <center>, <u>, <s>, <strike>, <big>, <small>, <basefont>), attributs de présentation présents (align, bgcolor, border sur img, color, width/height sur td/th), présence de feuilles de styles (<link rel=\"stylesheet\">, <style>) et de styles inline, présence de balises <b>/<i> vs <strong>/<em>.",
+        "ÉTAPE 2 — Défauts OBJECTIFS vérifiables dans le DOM → finding type=\"violation\" : une balise de présentation obsolète présente (<font>, <center>, <u>, <s>, <strike>, <big>, <small>, <basefont>) ; un attribut de présentation obsolète présent (align, bgcolor, border sur <img>, color, width/height sur <td>/<th>). Ces présences sont mécaniquement constatables, donc fermes.",
+        "ÉTAPE 3 — Emploi non sémantique présumé : <b> ou <i> employés là où <strong>/<em> seraient attendus relève d'une appréciation éditoriale (présentation vs emphase). NE PAS conclure à une violation ferme : émettre un finding type=\"warning\" invitant à vérifier manuellement l'intention sémantique.",
+        "ÉTAPE 4 — DOUTE vers warning (vérification manuelle) : tout ce qui dépend du RENDU visuel ou d'une appréciation et ne peut être tranché par les seuls attributs du DOM — information véhiculée par la couleur seule, identification visuelle des liens, lisibilité au zoom 200% / reflow 320px, espacement du texte, visibilité effective du focus, comportement des contenus au survol/focus, caractère « nécessaire » d'une image de texte. Émettre au plus un finding type=\"warning\" par sujet, sans violation ferme.",
+        "ÉTAPE 5 — NE PAS produire de violation sur la base d'une supposition de rendu : réserver type=\"violation\" aux présences de balises/attributs obsolètes objectivement détectées à l'étape 2.",
+        "ÉTAPE 6 — Le critère 10.1 porte sur l'usage de CSS pour la présentation : si la page n'emploie AUCUNE balise ni aucun attribut de présentation et qu'aucun élément ciblé n'est présent, considérer le point comme conforme et NE RIEN signaler. Conclure NON APPLICABLE si la page ne contient aucun des éléments ciblés."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'presentation-information'",
+          "compliant": "boolean",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre d'éléments de présentation analysés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec exemple CSS/HTML",
+          "wcagReference": "string - Ex: 1.3.1, 1.4.1, 1.4.12"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (balises et attributs présents) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS du DOM : balise de présentation obsolète présente (<font>, <center>, <u>...), attribut de présentation obsolète présent (align, bgcolor, color, border sur img...).",
+        "En cas de doute (information par la couleur, lisibilité au zoom, espacement, focus visible, image de texte « nécessaire », emphase sémantique <b>/<i>) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Non applicable si aucun élément ciblé n'est présent dans la page.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après ; descriptions concises (max 200 caractères).",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 10.1 - Présentation de l'information), spécialisé dans l'analyse déterministe de l'usage des feuilles de styles et des balises/attributs de présentation. Tu ne signales en violation ferme que les balises ou attributs de présentation obsolètes objectivement présents dans le DOM, et tu demandes une vérification manuelle (warning) dès que la conformité dépend du rendu visuel ou d'une appréciation (couleur, zoom, espacement, focus, image de texte)."
+  },
+  "automatedChecks": [
+    "Présence de feuilles de styles (link, style)",
+    "Détection de balises obsolètes (font, center, u, s)",
+    "Détection d'attributs de présentation (align, bgcolor)",
+    "Présence d'indicateurs de focus (:focus styles)",
+    "Détection de outline:none sans alternative",
+    "Utilisation d'unités relatives pour font-size",
+    "Présence de meta viewport responsive",
+    "Détection d'images de texte"
+  ],
+  "manualChecks": [
+    "Information véhiculée par la couleur a des alternatives",
+    "Liens identifiables visuellement sans couleur seule",
+    "Contenu lisible avec zoom 200%",
+    "Contenu lisible avec espacements augmentés",
+    "Pas de défilement horizontal à 320px",
+    "Tooltips dismissible, hoverable et persistent",
+    "Adaptation aux orientations portrait/paysage"
+  ],
+  "commonErrors": [
+    {
+      "error": "Utilisation de balises de présentation obsolètes",
+      "example": "<font color=\"red\" size=\"5\">Texte important</font>",
+      "correction": "<p class=\"important\">Texte important</p>\n<!-- CSS -->\n.important { color: red; font-size: 1.5rem; }",
+      "explanation": "Utiliser CSS pour la présentation plutôt que des balises HTML obsolètes"
+    },
+    {
+      "error": "Attributs de présentation HTML",
+      "example": "<table border=\"1\" bgcolor=\"#cccccc\">\n  <tr><td align=\"center\">Contenu</td></tr>\n</table>",
+      "correction": "<table class=\"data-table\">\n  <tr><td>Contenu</td></tr>\n</table>\n<!-- CSS -->\n.data-table { border: 1px solid #ccc; background-color: #ccc; }\n.data-table td { text-align: center; }",
+      "explanation": "Déplacer les attributs de présentation vers CSS"
+    },
+    {
+      "error": "Information donnée uniquement par la couleur",
+      "example": "<p>Les champs en <span style=\"color:red\">rouge</span> sont obligatoires</p>",
+      "correction": "<p>Les champs marqués d'un <span class=\"required\" aria-label=\"obligatoire\">*</span> sont obligatoires</p>\n<!-- CSS -->\n.required { color: red; font-weight: bold; }",
+      "explanation": "Ajouter un indicateur visuel autre que la couleur (astérisque, texte)"
+    },
+    {
+      "error": "Liens non identifiables sans couleur",
+      "example": "a { color: blue; text-decoration: none; }",
+      "correction": "a { color: blue; text-decoration: underline; }\n/* Ou */\na { color: blue; border-bottom: 1px solid blue; }",
+      "explanation": "Les liens doivent être soulignés ou avoir un indicateur visuel autre que la couleur"
+    },
+    {
+      "error": "Tailles de texte en pixels",
+      "example": "body { font-size: 16px; }\nh1 { font-size: 32px; }",
+      "correction": "body { font-size: 100%; } /* ou 1rem */\nh1 { font-size: 2rem; } /* ou 2em */",
+      "explanation": "Utiliser des unités relatives (rem, em, %) pour permettre le redimensionnement"
+    },
+    {
+      "error": "Focus invisible (outline supprimé)",
+      "example": "button:focus { outline: none; }",
+      "correction": "button:focus {\n  outline: 2px solid #005fcc;\n  outline-offset: 2px;\n}\n/* Ou */\nbutton:focus {\n  outline: none;\n  box-shadow: 0 0 0 3px rgba(0, 95, 204, 0.5);\n}",
+      "explanation": "Si outline est supprimé, fournir un indicateur de focus alternatif visible"
+    },
+    {
+      "error": "Hauteur fixe empêchant l'espacement du texte",
+      "example": "p { height: 50px; line-height: 20px; }",
+      "correction": "p { min-height: 50px; line-height: 1.5; }",
+      "explanation": "Utiliser min-height et line-height relative pour permettre l'espacement"
+    },
+    {
+      "error": "Largeur fixe empêchant l'adaptation mobile",
+      "example": ".container { width: 1200px; }",
+      "correction": ".container {\n  max-width: 1200px;\n  width: 100%;\n  padding: 0 1rem;\n}",
+      "explanation": "Utiliser max-width et width:100% pour l'adaptation responsive"
+    },
+    {
+      "error": "Tooltip non dismissible",
+      "example": "<span title=\"Information importante\">Texte</span>",
+      "correction": "<button aria-describedby=\"tooltip1\">Texte</button>\n<div id=\"tooltip1\" role=\"tooltip\" hidden>\n  Information importante\n  <button onclick=\"hideTooltip()\">Fermer</button>\n</div>",
+      "explanation": "Les tooltips doivent pouvoir être fermés (Echap ou bouton)"
+    },
+    {
+      "error": "Image de texte non nécessaire",
+      "example": "<img src=\"titre-stylise.png\" alt=\"Bienvenue sur notre site\">",
+      "correction": "<h1 class=\"styled-title\">Bienvenue sur notre site</h1>\n<!-- CSS -->\n.styled-title {\n  font-family: 'CustomFont', sans-serif;\n  font-size: 3rem;\n  color: #333;\n  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);\n}",
+      "explanation": "Utiliser du texte HTML stylé avec CSS plutôt qu'une image de texte"
+    },
+    {
+      "error": "Orientation verrouillée sans nécessité",
+      "example": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, orientation=portrait\">",
+      "correction": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+      "explanation": "Ne pas verrouiller l'orientation sauf si absolument nécessaire"
+    },
+    {
+      "error": "Utilisation de <b> et <i> pour la présentation",
+      "example": "<p><b>Attention:</b> <i>information importante</i></p>",
+      "correction": "<p><strong>Attention:</strong> <em>information importante</em></p>",
+      "explanation": "Utiliser <strong> et <em> pour l'emphase sémantique, pas <b> et <i>"
+    },
+    {
+      "error": "Information potentiellement véhiculée par la couleur seule (à vérifier manuellement)",
+      "example": "<span style=\"color:red\">Solde négatif</span> <span style=\"color:green\">Solde positif</span>",
+      "correction": "<span style=\"color:red\">Solde négatif (-)</span> <span style=\"color:green\">Solde positif (+)</span>",
+      "explanation": "Le DOM seul ne permet pas de trancher si la couleur est l'unique vecteur d'information : émettre un warning et vérifier manuellement qu'un signe, un texte ou une forme double la couleur (critère 10.2 couleur / WCAG 1.4.1)."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#10",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/text-spacing.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/reflow.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/content-on-hover-or-focus.html"
+  ]
+}

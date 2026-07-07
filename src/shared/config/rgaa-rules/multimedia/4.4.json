@@ -1,0 +1,157 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.4",
+  "ruleId": "media-synchronized-captions",
+  "title": "Multimédia - Sous-titres synchronisés",
+  "description": "Chaque média temporel synchronisé pré-enregistré a-t-il des sous-titres synchronisés ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.4",
+  "wcagReference": "WCAG 2.1 - 1.2.2 Sous-titres (pré-enregistré) (A)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias temporels synchronisés pré-enregistrés (vidéo avec audio)",
+    "signals": {
+      "selectors": [
+        "video[src]",
+        "video > source",
+        "object[type^='video']",
+        "embed[type^='video']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média vidéo avec audio",
+      "Vidéo en direct (voir critère 4.2)",
+      "Vidéo muette sans audio"
+    ]
+  },
+  "testScenarios": {
+    "captions": {
+      "description": "Sous-titres synchronisés",
+      "tests": [
+        {
+          "id": "4.4.1",
+          "rgaaTestRef": "Test 4.4.1",
+          "description": "Chaque média temporel synchronisé pré-enregistré a-t-il des sous-titres synchronisés ?",
+          "methodology": [
+            "Identifier les vidéos avec audio",
+            "Vérifier la présence de sous-titres (track kind='captions' ou 'subtitles')",
+            "Activer les sous-titres",
+            "Vérifier la synchronisation avec l'audio"
+          ],
+          "selector": "video",
+          "expected": "Des sous-titres synchronisés doivent être disponibles",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectVideoWithAudio": true,
+            "checkCaptionsTracks": true,
+            "verifyControls": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.4 - sous-titres synchronisés des vidéos pré-enregistrées). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (présence d'un track kind='captions'/'subtitles', contrôles de sous-titrage). Tu réserves la violation aux défauts objectifs (vidéo applicable sans aucun track de sous-titres) et tu demandes une vérification manuelle (warning) dès que la pertinence ou la synchronisation des sous-titres dépend d'un contenu non inspectable.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "track",
+        "source",
+        "button[aria-label*='captions' i]",
+        "button[aria-label*='subtitles' i]",
+        "button[aria-label*='sous-titre' i]"
+      ],
+      "attributes": [
+        "src",
+        "kind",
+        "srclang",
+        "label",
+        "controls"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les vidéos synchronisées pré-enregistrées : <video> (avec src ou <source>), <object type^='video'>, <embed type^='video'>. Si AUCUNE vidéo n'est présente, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque vidéo, relever la présence d'un <track kind='captions'> ou <track kind='subtitles'> et d'un contrôle de sous-titrage identifiable (button avec aria-label contenant 'captions'/'subtitles'/'sous-titre').",
+        "ÉTAPE 2 (violation objective) — Si une vidéo applicable ne présente AUCUN track de sous-titres (kind='captions' ou 'subtitles') ni contrôle détectable, émettre un finding type='violation', severity='critical' : l'absence de sous-titres est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 3 (doute → warning) — Si un track de sous-titres EXISTE mais que sa pertinence, son exhaustivité ou sa synchronisation ne peut être tranchée depuis le DOM (fichier .vtt non inspectable), NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle (voir aussi critère 4.9 pour la pertinence). De même pour une vidéo en direct (relève du critère 4.2).",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les attributs et relations RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque vidéo sans sous-titres, proposer une correction concrète (track kind='captions' avec srclang et label)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-synchronized-captions'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de code HTML",
+          "rgaaTestRef": "Test 4.4.1",
+          "wcagReference": "1.2.2"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence/absence de track captions/subtitles) doivent toujours donner le même verdict.",
+        "type='violation' (severity='critical') réservé aux défauts OBJECTIFS : vidéo applicable sans aucun track de sous-titres détectable.",
+        "En cas de doute sur la pertinence/synchronisation d'un track existant : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucune vidéo: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Présence d'élément track avec kind='captions' ou 'subtitles'"
+  ],
+  "manualChecks": [
+    "Qualité et pertinence des sous-titres",
+    "Synchronisation avec l'audio",
+    "Identification des locuteurs si nécessaire"
+  ],
+  "commonErrors": [
+    {
+      "error": "Vidéo sans sous-titres",
+      "example": "<video controls src=\"video.mp4\"></video>",
+      "correction": "<video controls src=\"video.mp4\">\n  <track kind=\"captions\" src=\"captions-fr.vtt\" srclang=\"fr\" label=\"Français\" default>\n</video>",
+      "explanation": "Les vidéos avec audio doivent avoir des sous-titres pour l'accessibilité."
+    },
+    {
+      "error": "Track de sous-titres mal typé (kind incorrect)",
+      "example": "<video controls src=\"video.mp4\">\n  <track kind=\"metadata\" src=\"captions-fr.vtt\" srclang=\"fr\">\n</video>",
+      "correction": "<video controls src=\"video.mp4\">\n  <track kind=\"captions\" src=\"captions-fr.vtt\" srclang=\"fr\" label=\"Français\" default>\n</video>",
+      "explanation": "Les sous-titres synchronisés doivent utiliser kind='captions' (ou 'subtitles' pour une traduction), pas un autre type qui ne sera pas restitué comme sous-titres."
+    },
+    {
+      "error": "Sous-titres présents dont l'exhaustivité reste à vérifier manuellement",
+      "example": "<video controls src=\"reunion.mp4\">\n  <track kind=\"captions\" src=\"captions-fr.vtt\" srclang=\"fr\" label=\"Français\" default>\n</video>",
+      "correction": "<video controls src=\"reunion.mp4\">\n  <track kind=\"captions\" src=\"captions-fr.vtt\" srclang=\"fr\" label=\"Français\" default>\n</video>\n<!-- Vérifier manuellement que le .vtt couvre l'intégralité des dialogues et sons importants (critère 4.9) -->",
+      "explanation": "Le signal DOM (track captions présent) est satisfait : ne pas conclure à une violation. La complétude et la synchronisation du fichier .vtt relèvent d'une vérification manuelle (warning)."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/captions-prerecorded.html"
+  ]
+}

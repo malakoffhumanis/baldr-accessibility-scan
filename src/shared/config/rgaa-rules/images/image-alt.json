@@ -1,0 +1,256 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.1",
+  "ruleId": "image-alt",
+  "title": "Images - Alternative textuelle",
+  "description": "Chaque image porteuse d'information a-t-elle une alternative textuelle, et chaque image décorative est-elle correctement laissée sans alternative ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.1",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique dès qu'au moins une image est présente : <img>, <input type=\"image\">, <area>, <svg>, <canvas>, <object type=\"image/…\"> ou tout élément ayant role=\"img\".",
+    "signals": {
+      "selectors": [
+        "img",
+        "input[type='image']",
+        "area",
+        "svg",
+        "canvas",
+        "[role='img']",
+        "object[type^='image/']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune image présente sur la page"
+    ]
+  },
+  "testScenarios": {
+    "informativeImage": {
+      "description": "Image porteuse d'information : elle doit disposer d'une alternative textuelle non vide et pertinente.",
+      "tests": [
+        {
+          "id": "1.1.1",
+          "rgaaTestRef": "Test 1.1.1",
+          "description": "Chaque image OBJECTIVEMENT porteuse d'information (texte dans l'image, image-lien/bouton, graphique/données, sujet du contenu) a-t-elle une alternative textuelle non vide (alt, aria-label, aria-labelledby ou title) ?",
+          "methodology": [
+            "Classer l'image selon la procédure de décision (respecter les déclarations décoratives explicites)",
+            "Pour une image objectivement informative, vérifier la présence d'une alternative textuelle non vide",
+            "Vérifier que l'alternative est portée par alt, aria-label, aria-labelledby ou title"
+          ],
+          "selector": "img, [role='img']",
+          "expected": "Toute image objectivement porteuse d'information doit avoir une alternative textuelle non vide",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "classifyImage": true,
+            "respectExplicitDecorative": true,
+            "extractImageSrc": true,
+            "extractAltText": true,
+            "extractSurroundingContext": true,
+            "contextRadius": 200
+          }
+        },
+        {
+          "id": "1.1.2",
+          "rgaaTestRef": "Test 1.1.1",
+          "description": "L'attribut alt est-il présent sur chaque <img> (vide si décorative, renseigné si informative) ?",
+          "methodology": [
+            "Distinguer alt absent du balisage et alt=\"\" (vide)",
+            "Un alt absent doit être complété : alt=\"\" si l'image est décorative, alt descriptif si elle est informative"
+          ],
+          "selector": "img:not([alt])",
+          "expected": "Tout <img> doit posséder un attribut alt (vide pour une image décorative, renseigné pour une image informative)",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "1.1.3",
+          "rgaaTestRef": "Test 1.1.3",
+          "description": "Chaque <input type=\"image\"> a-t-il une alternative textuelle (alt ou aria-label) ?",
+          "methodology": [
+            "Repérer les boutons image de formulaire",
+            "Vérifier la présence d'une alternative décrivant la fonction du bouton"
+          ],
+          "selector": "input[type='image']:not([alt]):not([aria-label]):not([aria-labelledby])",
+          "expected": "Chaque bouton image doit décrire sa fonction via alt ou aria-label",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "1.1.5",
+          "rgaaTestRef": "Test 1.1.5",
+          "description": "Chaque <svg> porteur d'information a-t-il role=\"img\" et une alternative (aria-label, aria-labelledby ou <title>) ?",
+          "methodology": [
+            "Identifier les SVG porteurs d'information (non décoratifs)",
+            "Vérifier role=\"img\" et la présence d'une alternative textuelle accessible"
+          ],
+          "selector": "svg",
+          "expected": "Un SVG informatif doit avoir role=\"img\" et une alternative textuelle non vide",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "decorativeImage": {
+      "description": "Une déclaration décorative explicite (alt=\"\", role=\"presentation\", aria-hidden=\"true\") doit être RESPECTÉE. Elle n'est remise en cause que si l'image relève d'une catégorie objectivement porteuse d'information.",
+      "tests": [
+        {
+          "id": "1.1.9",
+          "description": "Une image avec alt=\"\" (ou aria-hidden/role=presentation) ne doit être requalifiée en informative QUE si elle est objectivement porteuse d'information (texte dans l'image, image-lien/bouton, graphique/données, sujet du contenu).",
+          "selector": "img[alt='']",
+          "expected": "alt=\"\" sur une photo d'ambiance/illustration est CONFORME ; n'est une violation que pour une image objectivement informative",
+          "severity": "serious",
+          "type": "warning",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "respectExplicitDecorative": true,
+            "classifyImage": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img",
+          "svg",
+          "[role='img']",
+          "input[type='image']",
+          "area",
+          "object[type^='image/']",
+          "canvas"
+        ],
+        "attributes": [
+          "src",
+          "alt",
+          "title",
+          "aria-label",
+          "aria-labelledby",
+          "aria-describedby",
+          "longdesc",
+          "role",
+          "aria-hidden"
+        ],
+        "content": {
+          "textContent": false,
+          "innerHTML": false,
+          "imageAlt": true,
+          "surroundingContext": 200
+        },
+        "contextExtraction": {
+          "parentElements": 2,
+          "siblingElements": true,
+          "textContent": true,
+          "nearbyText": 100
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Analyser CHAQUE image de la page : <img>, <input type=\"image\">, <svg>, <canvas> et tout élément ayant role=\"img\". S'appuyer à la fois sur le DOM extrait (attributs réels) ET sur la capture d'écran haute fidélité (apparence et rôle de l'image dans la page), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux MÉCANIQUES du DOM : présence ou ABSENCE de l'attribut alt (un alt absent du balisage est DIFFÉRENT de alt=\"\"), valeur exacte de alt, présence de role=\"presentation\", de aria-hidden=\"true\", de aria-label / aria-labelledby / title, le fait que l'image soit l'unique contenu d'un <a> ou d'un <button>, et le texte visible IMMÉDIATEMENT adjacent (titre, slogan, paragraphe).",
+        "ÉTAPE 2 — Attribut alt ABSENT : si un <img> ne possède AUCUN attribut alt, le signaler (severity moderate) car l'image n'est ni déclarée informative ni déclarée décorative. Recommander d'ajouter alt=\"…\" si elle est informative, ou alt=\"\" si elle est décorative.",
+        "ÉTAPE 3 — RESPECTER la déclaration décorative EXPLICITE : si l'image porte alt=\"\" (présent et vide), role=\"presentation\" ou aria-hidden=\"true\", l'auteur l'a délibérément déclarée décorative. La considérer CONFORME et NE RIEN signaler, SAUF si elle relève d'une catégorie objectivement porteuse d'information listée à l'étape 4.",
+        "ÉTAPE 4 — Catégories OBJECTIVEMENT porteuses d'information (les SEULES qui justifient de remettre en cause un alt=\"\"/aria-hidden explicite) : (a) l'image contient du TEXTE lisible porteur de sens ; (b) elle est l'UNIQUE contenu d'un lien <a> ou d'un bouton <button> (rôle fonctionnel : il faut une alternative décrivant la destination/fonction) ; (c) c'est un graphique, diagramme, infographie, schéma ou carte véhiculant des DONNÉES ; (d) l'image EST le sujet du contenu et apporte une information absente du texte voisin (photo illustrant une actualité précise, photo d'un produit présenté à la vente, portrait d'une personne nommée/identifiée). Si l'image relève d'une de ces catégories et n'a pas d'alternative pertinente → finding type=\"violation\".",
+        "ÉTAPE 5 — Sont DÉCORATIVES (alt=\"\" attendu et CONFORME, NE PAS signaler) : les photos d'ambiance ou d'illustration marketing (personne/mannequin souriant, mise en situation générique, visuel d'humeur), les bannières « hero » purement illustratives, les images dont l'information est DÉJÀ donnée par le texte adjacent, ainsi que les fonds/textures/dégradés, séparateurs/filets, espaceurs, fioritures et icônes qui ne font que redoubler un texte visible. Pour ces images, alt=\"\" (ou aria-hidden) est le BON choix : CONFORME, aucun finding.",
+        "ÉTAPE 6 — CAPTCHA / image-test : ne pas statuer ici, renvoyer vers les critères 1.4 et 1.5.",
+        "ÉTAPE 7 — Pour une image SANS déclaration décorative explicite et SANS alternative : si elle relève d'une catégorie de l'étape 4 → violation ; si elle relève clairement de l'étape 5 → recommander alt=\"\" (la considérer décorative). Pour une image dotée d'une alternative NON vide, vérifier sa pertinence (nom de fichier, « image », « photo », « logo » → non pertinente, violation).",
+        "ÉTAPE 8 — En cas de DOUTE réel sur une image portant alt=\"\" (impossible de trancher entre image d'ambiance et image informative), NE PAS produire de violation : émettre au plus un finding type=\"warning\" invitant à une vérification manuelle. Réserver type=\"violation\" aux cas CERTAINS, afin d'éviter les faux positifs.",
+        "ÉTAPE 9 — Le critère n'est NON APPLICABLE que si la page ne contient AUCUNE image."
+      ],
+      "important": [
+        "Respecter une déclaration décorative explicite (alt=\"\", role=\"presentation\", aria-hidden=\"true\") : ne la remettre en cause QUE pour les catégories objectivement informatives de l'étape 4 (texte dans l'image, image-lien/bouton, graphique/données, sujet du contenu).",
+        "Une photo d'ambiance ou une bannière « hero » illustrative avec alt=\"\" est CONFORME (décorative) : NE PAS la signaler comme informative ni comme violation.",
+        "alt ABSENT ≠ alt=\"\" : alt absent est un défaut à compléter (severity moderate) ; alt=\"\" est une déclaration décorative valide.",
+        "En cas de doute sur une image alt=\"\", préférer un finding type=\"warning\" (vérification manuelle) plutôt qu'une violation.",
+        "Limiter à 5 findings maximum, descriptions concises (max 200 caractères).",
+        "Retourner UNIQUEMENT le JSON, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-alt'",
+          "compliant": "boolean - false uniquement si une image objectivement informative manque d'alternative valide, ou si une alternative est non pertinente",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre total d'images analysées",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec code HTML (attribut alt corrigé)",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (thématique 1 - Images), spécialisé dans la distinction rigoureuse entre images porteuses d'information et images décoratives. Tu RESPECTES les déclarations décoratives explicites (alt=\"\", role=\"presentation\", aria-hidden) et tu évites les faux positifs : une photo d'ambiance ou une bannière hero illustrative avec alt vide est conforme. Tu ne signales une image à alt vide que si elle est objectivement porteuse d'information (texte dans l'image, image-lien/bouton, graphique/données, sujet du contenu)."
+  },
+  "automatedChecks": [
+    "Présence de l'attribut alt sur chaque <img> (absent à compléter)",
+    "Présence d'une alternative sur <input type=\"image\"> (alt ou aria-label)",
+    "Présence de role=\"img\" + alternative sur les SVG informatifs",
+    "Détection des images-textes et images-liens à alt vide (objectivement informatives)"
+  ],
+  "manualChecks": [
+    "Classification informative vs décorative de chaque image, en respectant les déclarations décoratives explicites",
+    "Pertinence contextuelle de l'alternative textuelle des images informatives",
+    "Pertinence de l'alternative d'une image servant d'unique contenu à un lien ou un bouton"
+  ],
+  "commonErrors": [
+    {
+      "error": "Photo d'ambiance / bannière hero signalée à tort comme informative",
+      "example": "<img src=\"hero-epargne.jpg\" alt=\"\"> <!-- photo d'ambiance à côté d'un titre qui décrit déjà l'offre -->",
+      "correction": "<img src=\"hero-epargne.jpg\" alt=\"\"> <!-- CONFORME : image décorative, l'information est dans le texte adjacent -->",
+      "explanation": "Une photo d'ambiance ou une bannière hero purement illustrative, dont l'information est déjà donnée par le texte voisin, est DÉCORATIVE : alt=\"\" est le bon choix et ne doit pas être signalé comme une violation."
+    },
+    {
+      "error": "Image objectivement informative (graphique, schéma) avec alt vide ou absent",
+      "example": "<img src=\"schema-parcours-client.png\" alt=\"\">",
+      "correction": "<img src=\"schema-parcours-client.png\" alt=\"Parcours client en 4 étapes : découverte, achat, livraison, fidélisation\">",
+      "explanation": "Un graphique, schéma, diagramme ou une image-texte porte des données : avec alt vide ou absent, c'est une violation. Cela ne concerne PAS les photos d'ambiance."
+    },
+    {
+      "error": "Image unique contenu d'un lien ou d'un bouton sans alternative",
+      "example": "<a href=\"/panier\"><img src=\"cart.svg\" alt=\"\"></a>",
+      "correction": "<a href=\"/panier\"><img src=\"cart.svg\" alt=\"Voir mon panier\"></a>",
+      "explanation": "Quand une image est l'unique contenu d'un <a> ou d'un <button>, elle est fonctionnelle : l'alternative doit décrire la destination ou la fonction. Vide ou absente, le lien/bouton n'a pas d'intitulé accessible."
+    },
+    {
+      "error": "Alternative non pertinente (type de fichier ou mot générique)",
+      "example": "<img src=\"graph.png\" alt=\"image\">",
+      "correction": "<img src=\"graph.png\" alt=\"Graphique des ventes 2024, en hausse de 18 %\">",
+      "explanation": "Le texte alternatif doit décrire le contenu informatif, pas le type de fichier ou un mot générique (« image », « photo », « logo.png »)."
+    },
+    {
+      "error": "Image décorative avec alternative descriptive superflue",
+      "example": "<img src=\"decor-vague.svg\" alt=\"Vague bleue décorative\">",
+      "correction": "<img src=\"decor-vague.svg\" alt=\"\">",
+      "explanation": "Donner une alternative descriptive à une image purement décorative crée du bruit pour les lecteurs d'écran. Utiliser alt=\"\" (ou aria-hidden=\"true\")."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.1",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html",
+    "https://www.w3.org/WAI/tutorials/images/decision-tree/"
+  ]
+}

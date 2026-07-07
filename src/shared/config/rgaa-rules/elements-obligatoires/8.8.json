@@ -1,0 +1,158 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "8.8",
+  "ruleId": "mandatory-element-language-code",
+  "title": "Éléments obligatoires - Code de langue valide",
+  "description": "Dans chaque page web, le code de langue de la page et les codes de langue de changement de langue sont-ils pertinents ?",
+  "rgaaReference": "RGAA 4.1 - Critère 8.8",
+  "wcagReference": "WCAG 2.1 - 3.1.1 Langue de la page (A) / 3.1.2 Langue d'un passage (AA)",
+  "theme": "Éléments obligatoires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web",
+    "signals": {
+      "selectors": [
+        "html[lang]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": []
+  },
+  "testScenarios": {
+    "languageCodeValidity": {
+      "description": "Pertinence des codes de langue",
+      "tests": [
+        {
+          "id": "8.8.1",
+          "rgaaTestRef": "Test 8.8.1",
+          "description": "Le code de langue de la page est-il pertinent ?",
+          "methodology": [
+            "Vérifier la présence de l'attribut lang sur la balise html",
+            "Vérifier que le code correspond à la langue principale du contenu",
+            "Vérifier la validité du code (ISO 639-1 ou ISO 639-2)"
+          ],
+          "selector": "html[lang]",
+          "expected": "Le code de langue doit correspondre à la langue principale du contenu",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectMainLanguage": true,
+            "verifyLanguageCode": true
+          }
+        },
+        {
+          "id": "8.8.2",
+          "rgaaTestRef": "Test 8.8.2",
+          "description": "Les codes de langue de changement de langue sont-ils pertinents ?",
+          "methodology": [
+            "Identifier tous les attributs lang dans la page",
+            "Vérifier que chaque code correspond à la langue du contenu balisé",
+            "Vérifier la validité des codes"
+          ],
+          "selector": "*[lang]",
+          "expected": "Chaque code de langue doit correspondre au contenu qu'il balise",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 8.8 - Code de langue valide), spécialisé dans la validation déterministe des codes de langue. Tu signales en violation ferme uniquement les codes de langue syntaxiquement invalides ou vides (défaut objectif du DOM) et tu demandes une vérification manuelle (warning) dès que la pertinence d'un code valide par rapport à la langue réelle du contenu balisé relève d'une appréciation.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "html[lang]",
+        "*[lang]"
+      ],
+      "attributes": [
+        "lang",
+        "xml:lang"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Objectif : vérifier le critère RGAA 8.8 (pertinence du code de langue de la page et des codes de changement de langue). S'appuyer sur les attributs RÉELS du DOM extrait ET sur le contenu textuel, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (signal mécanique) — Relever la valeur EXACTE de lang sur <html> puis sur chaque élément portant un attribut lang (chaîne brute, vide ou non).",
+        "ÉTAPE 2 (violation objective) — Si le code lang de <html> est VIDE ou syntaxiquement INVALIDE au regard de BCP 47 / ISO 639-1/639-2 (ex. lang=\"french\", code inexistant) → finding type=\"violation\", severity serious : code de langue de page malformé, défaut vérifiable sans interprétation.",
+        "ÉTAPE 3 (doute → warning) — Si le code lang de <html> est syntaxiquement valide mais que sa PERTINENCE par rapport à la langue réelle du contenu principal dépend d'une lecture (contenu court, page multilingue, doute sur la langue dominante) → finding type=\"warning\" demandant une vérification manuelle, pas une violation ferme.",
+        "ÉTAPE 4 (violation objective) — Pour chaque élément portant un lang VIDE ou syntaxiquement INVALIDE → finding type=\"violation\" (severity moderate) : code de changement de langue malformé.",
+        "ÉTAPE 5 (doute → warning) — Pour chaque élément dont le code lang est valide mais dont la correspondance avec la langue réelle du passage balisé relève d'une appréciation → finding type=\"warning\" de vérification manuelle, jamais de violation ferme.",
+        "ÉTAPE 6 — Ce critère s'applique toujours (la balise <html> est présente). Si <html> ne porte AUCUN attribut lang, ne pas trancher ici la présence (critère 8.4) : se concentrer sur la pertinence des codes effectivement déclarés."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'mandatory-element-language-code'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec le code langue correct",
+          "rgaaTestRef": "Test 8.8.1 ou Test 8.8.2",
+          "wcagReference": "3.1.1 ou 3.1.2"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (valeur d'un code lang) doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS : code lang vide ou syntaxiquement invalide.",
+        "En cas de doute sur la PERTINENCE d'un code valide (langue réelle du contenu ou du passage balisé) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Ce critère s'applique toujours : pas de conclusion non applicable.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après. Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Présence de l'attribut lang sur html",
+    "Format des codes langue (2 ou 3 lettres)"
+  ],
+  "manualChecks": [
+    "Correspondance entre code langue et contenu réel",
+    "Pertinence des codes langue de changement"
+  ],
+  "commonErrors": [
+    {
+      "error": "Code langue de page syntaxiquement invalide",
+      "example": "<html lang=\"french\">",
+      "correction": "<html lang=\"fr\">",
+      "explanation": "Le code de langue de page doit respecter ISO 639-1/639-2 (fr, en, de…). Un libellé en toutes lettres est invalide : violation objective."
+    },
+    {
+      "error": "Code langue de page valide mais possiblement non pertinent (à vérifier manuellement)",
+      "example": "<html lang=\"en\"><body><p>Bonjour le monde</p></body></html>",
+      "correction": "<html lang=\"fr\"><body><p>Bonjour le monde</p></body></html>",
+      "explanation": "Le code est syntaxiquement valide mais semble ne pas correspondre au contenu : la correspondance code ↔ langue réelle relève d'une appréciation, à confirmer manuellement (warning)."
+    },
+    {
+      "error": "Code de changement de langue ne correspondant pas au passage",
+      "example": "<p>Le mot <span lang=\"fr\">hello</span> signifie bonjour.</p>",
+      "correction": "<p>Le mot <span lang=\"en\">hello</span> signifie bonjour.</p>",
+      "explanation": "Le code lang doit correspondre à la langue du passage balisé ; ici la pertinence du code relève d'une appréciation du contenu (warning)."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#8.8",
+    "https://www.w3.org/WAI/WCAG21/Understanding/language-of-page.html",
+    "https://www.loc.gov/standards/iso639-2/php/code_list.php"
+  ]
+}

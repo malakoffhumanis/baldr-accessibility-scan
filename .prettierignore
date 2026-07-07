@@ -1,0 +1,9 @@
+dist/
+coverage/
+node_modules/
+*.log
+package-lock.json
+
+# RGAA rule data: validated by `npm run validate:rules` (see lint-staged),
+# not formatted by Prettier — kept as authored.
+src/shared/config/rgaa-rules/

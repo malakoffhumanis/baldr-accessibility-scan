@@ -1,0 +1,153 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "9.2",
+  "ruleId": "structure-heading-hierarchy",
+  "title": "Structuration - Hiérarchie des titres",
+  "description": "Dans chaque page web, la structure du document est-elle cohérente (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 9.2",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Structuration",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web contenant des titres",
+    "signals": {
+      "selectors": [
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "[role='heading']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun titre présent dans la page"
+    ]
+  },
+  "testScenarios": {
+    "headingHierarchy": {
+      "description": "Cohérence de la hiérarchie des titres",
+      "tests": [
+        {
+          "id": "9.2.1",
+          "rgaaTestRef": "Test 9.2.1",
+          "description": "La hiérarchie entre les titres est-elle cohérente ?",
+          "methodology": [
+            "Repérer tous les titres de la page (h1 à h6)",
+            "Vérifier qu'il n'y a pas de saut de niveau (ex: h1 puis h3 sans h2)",
+            "Vérifier que la hiérarchie reflète la structure logique du contenu",
+            "Autoriser plusieurs h1 si document HTML5 avec sections"
+          ],
+          "selector": "h1, h2, h3, h4, h5, h6, [role='heading']",
+          "expected": "La hiérarchie des titres doit être cohérente sans saut de niveau",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 9.2 - Cohérence de la structure du document). Tu appliques une approche DÉTERMINISTE fondée sur les signaux mécaniques du DOM (suite ordonnée des niveaux de titres, valeurs d'aria-level) : tu réserves les violations aux sauts de niveau OBJECTIFS et tu demandes une vérification manuelle (warning) dès que le verdict dépend d'une appréciation de la cohérence logique du contenu.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "[role='heading']"
+      ],
+      "attributes": [
+        "aria-level"
+      ],
+      "context": {
+        "surroundingText": 100,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Lister DANS L'ORDRE D'APPARITION tous les titres du DOM (h1 à h6 et éléments role=\"heading\") et déduire leur niveau (h1=1 … h6=6 ; pour role=\"heading\", lire aria-level). Si aucun de ces éléments n'est présent, conclure conclusion='non_applicable' (findings=[]).",
+        "ÉTAPE 1 (signal mécanique — suite des niveaux) : construire la séquence ordonnée des niveaux (ex. 1, 2, 2, 3). Ce signal sert de base à un verdict reproductible.",
+        "ÉTAPE 2 (violation objective — saut de niveau) : tout passage d'un niveau N à un niveau strictement supérieur à N+1 sans niveau intermédiaire (ex. niveau 1 directement suivi de niveau 3) est un saut de niveau OBJECTIF → finding type='violation', severity='moderate', en citant le couple de titres concerné.",
+        "ÉTAPE 3 (signal mécanique — niveau indéterminable) : tout élément role=\"heading\" sans attribut aria-level (ou aria-level non numérique) rend le niveau non déterminable → finding type='violation', severity='moderate'.",
+        "ÉTAPE 4 (multiplicité des h1) : la présence de plusieurs h1 n'est PAS une violation ferme (sectionnement HTML5) ; la signaler au plus en type='recommendation', severity='minor'.",
+        "ÉTAPE 5 (doute → warning) : dès que le verdict dépend d'une APPRÉCIATION non tranchable dans le DOM — cohérence de la hiérarchie avec la structure logique réelle du contenu, choix d'un niveau motivé par l'aspect visuel, premier titre qui n'est pas un h1 — NE PAS produire de violation : émettre au plus un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 6 : proposer une hiérarchie corrigée concrète pour chaque saut détecté, et rappeler dans le summary la séquence observée des niveaux pour rendre le verdict traçable."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'structure-heading-hierarchy'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number - Nombre total de titres",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec hiérarchie suggérée",
+          "rgaaTestRef": "Test 9.2.1",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : la même séquence de niveaux de titres dans le DOM doit toujours produire le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : saut de niveau, role=\"heading\" sans aria-level exploitable.",
+        "En cas de doute (cohérence logique, niveau choisi pour l'aspect visuel) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Si aucun titre : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings ; lister la hiérarchie des titres dans le summary."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection des sauts de niveau dans la hiérarchie",
+    "Vérification de la présence d'au moins un h1",
+    "Extraction de la structure complète des titres"
+  ],
+  "manualChecks": [
+    "Cohérence de la hiérarchie avec la structure logique du contenu",
+    "Pertinence des niveaux de titres choisis"
+  ],
+  "commonErrors": [
+    {
+      "error": "Saut de niveau dans la hiérarchie",
+      "example": "<h1>Titre principal</h1>\n<h3>Sous-section</h3>",
+      "correction": "<h1>Titre principal</h1>\n<h2>Sous-section</h2>",
+      "explanation": "Ne pas sauter de niveau : h1 doit être suivi de h2, h2 de h3, etc. Ce défaut est objectif et vérifiable dans le DOM."
+    },
+    {
+      "error": "Utilisation de niveaux pour la taille visuelle (à vérifier manuellement)",
+      "example": "<h1>Titre</h1>\n<h4>Sous-titre (plus petit visuellement)</h4>",
+      "correction": "<h1>Titre</h1>\n<h2 class=\"subtitle\">Sous-titre</h2>\n/* CSS */\n.subtitle { font-size: 1.2em; }",
+      "explanation": "Utiliser la hiérarchie logique, pas la taille visuelle. Le choix d'un niveau motivé par l'apparence relève d'une appréciation : signaler en warning."
+    },
+    {
+      "error": "Plusieurs h1 sans structure HTML5",
+      "example": "<!-- HTML4 -->\n<h1>Section 1</h1>\n<h1>Section 2</h1>",
+      "correction": "<!-- HTML5 avec sections -->\n<section><h1>Section 1</h1></section>\n<section><h1>Section 2</h1></section>\n<!-- OU -->\n<h1>Page</h1>\n<h2>Section 1</h2>\n<h2>Section 2</h2>",
+      "explanation": "En HTML5, plusieurs h1 sont acceptés dans des sections distinctes : à signaler en recommandation, pas en violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#9.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://www.w3.org/WAI/tutorials/page-structure/headings/"
+  ]
+}

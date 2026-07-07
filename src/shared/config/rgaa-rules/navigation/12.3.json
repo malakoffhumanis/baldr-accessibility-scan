@@ -1,0 +1,140 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.3",
+  "ruleId": "navigation-page-structure",
+  "title": "Navigation - Structure de page",
+  "description": "La page « plan du site » est-elle pertinente ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.3",
+  "wcagReference": "WCAG 2.1 - 2.4.5 Accès multiples (AA)",
+  "theme": "Navigation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique si un plan du site est proposé",
+    "signals": {
+      "selectors": [
+        "a[href*='plan'], a[href*='sitemap'], a[href*='site-map']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun plan du site proposé"
+    ]
+  },
+  "testScenarios": {
+    "sitemapRelevance": {
+      "description": "Pertinence du plan du site",
+      "tests": [
+        {
+          "id": "12.3.1",
+          "rgaaTestRef": "Test 12.3.1",
+          "description": "Le plan du site est-il représentatif de l'architecture du site ?",
+          "methodology": [
+            "Identifier la page de plan du site",
+            "Vérifier qu'elle liste toutes les pages principales",
+            "Vérifier que la structure reflète l'organisation du site",
+            "Vérifier que les liens sont fonctionnels"
+          ],
+          "selector": "a[href*='plan'], a[href*='sitemap']",
+          "expected": "Le plan du site doit être complet et représentatif",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "a[href*='plan']",
+        "a[href*='sitemap']",
+        "a[href*='site-map']",
+        "nav"
+      ],
+      "attributes": [
+        "href",
+        "aria-label"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Rechercher via des signaux mécaniques du DOM la présence d'un lien vers un plan du site (élément <a> dont l'href contient 'plan', 'sitemap' ou 'site-map'), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — Si AUCUN lien vers un plan du site n'est présent dans le DOM → conclure NON APPLICABLE (ce critère n'évalue que la pertinence d'un plan existant).",
+        "ÉTAPE 2 (doute → warning) — Si un lien vers un plan du site EST présent : sa PERTINENCE (le plan reflète-t-il l'architecture du site, liste-t-il les pages principales, ses liens sont-ils fonctionnels et à jour ?) dépend du contenu d'une page DISTANTE non observable dans le DOM courant. Émettre un finding type=\"warning\" demandant une vérification manuelle de la page plan du site. NE PAS produire de violation ferme.",
+        "ÉTAPE 3 — Se limiter à la pertinence du plan : ne pas dénombrer ici les systèmes de navigation (critère 12.1)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'navigation-page-structure'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string",
+          "rgaaTestRef": "Test 12.3.1",
+          "wcagReference": "2.4.5"
+        }
+      },
+      "important": [
+        "Déterminisme : la présence d'un lien vers le plan du site se lit dans le DOM (href contenant plan/sitemap) ; même signal, même verdict.",
+        "type=\"violation\" interdit ici : la pertinence du plan dépend d'une page distante non observable dans le DOM courant.",
+        "En cas de doute (pertinence/complétude du plan) → type=\"warning\" pour vérification manuelle de la page plan du site.",
+        "Critère NON APPLICABLE si aucun plan du site n'est proposé.",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.3 - pertinence du plan du site). Tu détectes de façon DÉTERMINISTE la présence d'un lien vers le plan du site dans le DOM. Comme la pertinence du plan dépend d'une page distante non observable, tu n'émets jamais de violation ferme : tu conclus NON APPLICABLE en l'absence de plan, et tu produis un warning de vérification manuelle lorsqu'un plan est présent."
+  },
+  "automatedChecks": [
+    "Détection de liens vers plan du site"
+  ],
+  "manualChecks": [
+    "Analyse du contenu de la page plan du site",
+    "Vérification de la représentativité",
+    "Test des liens du plan",
+    "Vérification de la mise à jour"
+  ],
+  "commonErrors": [
+    {
+      "error": "Plan du site incomplet",
+      "example": "<!-- Plan seulement avec pages principales, sections importantes omises -->",
+      "correction": "<!-- Plan du site complet:\n- Accueil\n- Produits\n  - Catégorie A\n  - Catégorie B\n- Services\n- À propos\n- Contact\n- FAQ\n- Mentions légales\n-->",
+      "explanation": "Le plan doit couvrir toutes les sections importantes du site"
+    },
+    {
+      "error": "Liens du plan du site cassés",
+      "example": "<ul>\n  <li><a href=\"/old-page\">Page supprimée</a></li>\n</ul>",
+      "correction": "<!-- Maintenir le plan à jour avec des liens fonctionnels -->",
+      "explanation": "Tous les liens du plan doivent être fonctionnels"
+    },
+    {
+      "error": "Plan non structuré",
+      "example": "<div>\n  <a>Lien1</a> <a>Lien2</a> <a>Lien3</a>\n</div>",
+      "correction": "<nav aria-label=\"Plan du site\">\n  <ul>\n    <li><a href=\"/\">Accueil</a></li>\n    <li><a href=\"/produits\">Produits</a>\n      <ul>\n        <li><a href=\"/produits/cat-a\">Catégorie A</a></li>\n      </ul>\n    </li>\n  </ul>\n</nav>",
+      "explanation": "Utiliser une structure hiérarchique (listes imbriquées)"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.3",
+    "https://www.w3.org/WAI/WCAG21/Understanding/multiple-ways.html"
+  ]
+}

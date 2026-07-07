@@ -1,0 +1,189 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "7.4",
+  "ruleId": "script-status-messages",
+  "title": "Scripts - Messages de statut",
+  "description": "Pour chaque script qui provoque un changement de contexte, l'utilisateur est-il averti ou en a-t-il le contrôle ?",
+  "rgaaReference": "RGAA 4.1 - Critère 7.4",
+  "wcagReference": "WCAG 2.1 - 3.2.2 À la saisie (A) / 4.1.3 Messages de statut (AA)",
+  "theme": "Scripts",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux scripts qui provoquent changements de contexte ou affichent des messages",
+    "signals": {
+      "selectors": [
+        "[role='alert']",
+        "[role='status']",
+        "[aria-live]",
+        "form",
+        "[onchange]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun changement de contexte dynamique",
+      "Aucun message de statut"
+    ]
+  },
+  "testScenarios": {
+    "contextChangeControl": {
+      "description": "Contrôle et avertissement des changements de contexte",
+      "tests": [
+        {
+          "id": "7.4.1",
+          "rgaaTestRef": "Test 7.4.1",
+          "description": "Les messages de statut sont-ils restitués via role=\"status\", role=\"alert\" ou aria-live ?",
+          "methodology": [
+            "Identifier les messages affichés dynamiquement (succès, erreur, avertissement)",
+            "Vérifier présence de role=\"alert\" (messages urgents) ou role=\"status\" (non urgent)",
+            "Ou vérifier aria-live=\"polite\" ou \"assertive\"",
+            "Tester avec lecteur d'écran"
+          ],
+          "selector": "[role='alert'], [role='status'], [aria-live]",
+          "expected": "Les messages de statut doivent être annoncés aux technologies d'assistance",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectDynamicMessages": true,
+            "checkAriaLive": true,
+            "evaluateMessageTypes": true
+          }
+        },
+        {
+          "id": "7.4.2",
+          "rgaaTestRef": "Test 7.4.2",
+          "description": "Les changements de contexte automatiques sont-ils contrôlables ou précédés d'avertissement ?",
+          "methodology": [
+            "Identifier redirections automatiques, ouvertures de fenêtres, focus forcé",
+            "Vérifier que l'utilisateur initie le changement (clic, validation)",
+            "Ou vérifier présence d'avertissement préalable",
+            "Vérifier qu'aucun changement n'arrive au focus (onFocus) ou onchange automatique"
+          ],
+          "selector": "select[onchange], input[onchange], a[target='_blank']",
+          "expected": "Les changements de contexte ne doivent pas être automatiques et inattendus",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 7.4 - Messages de statut et changements de contexte, WCAG 4.1.3 / 3.2.2), spécialisé dans une analyse DÉTERMINISTE fondée sur les signaux ARIA du DOM (role=\"status\"/\"alert\", aria-live) et les déclencheurs de changement de contexte (onchange, target=\"_blank\"). Tu réserves la violation aux défauts objectifs (zone de message dépourvue de live region, soumission automatique au changement) et tu émets un warning de vérification manuelle dès que le verdict dépend de la nature éditoriale d'un message ou d'un comportement runtime.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "[role='alert']",
+        "[role='status']",
+        "[aria-live]",
+        "[onchange]",
+        "a[target]",
+        "form"
+      ],
+      "attributes": [
+        "role",
+        "aria-live",
+        "aria-atomic",
+        "onchange",
+        "onfocus",
+        "target"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 — Recenser à partir des SIGNAUX DOM : les zones de message live (role=\"status\", role=\"alert\", aria-live=\"polite\"/\"assertive\"), les déclencheurs de changement de contexte (select/input avec onchange, a[target=\"_blank\"]), les formulaires. Si AUCUN de ces signaux n'est présent, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 2 (signal déterministe) — Pour les conteneurs de message identifiés comme tels par leur classe/contenu (par ex. classes success/error/alert, textes « réussi », « erreur ») mais DÉPOURVUS de role=\"status\"/\"alert\" et de aria-live : signaler un défaut. Comme la qualification « zone de message » repose en partie sur une appréciation éditoriale, n'émettre une violation type=\"violation\" (severity serious) QUE lorsque le rôle de message est manifeste ; sinon émettre un warning.",
+        "ÉTAPE 3 (violation objective) — select ou input avec onchange déclenchant une soumission/redirection (par ex. onchange contenant submit() / location / form.submit) : changement de contexte non sollicité par une validation explicite → finding type=\"warning\", severity serious (le caractère « inattendu » dépend de l'usage : invitation à la vérification manuelle, conformément au test 7.4.2).",
+        "ÉTAPE 4 (doute → warning) — a[target=\"_blank\"] ouvrant une nouvelle fenêtre : vérifier la présence d'un avertissement dans le DOM (texte ou aria-label mentionnant « nouvelle fenêtre/onglet »). En l'absence d'indication claire, émettre un finding type=\"warning\" demandant de confirmer que l'ouverture est annoncée à l'utilisateur.",
+        "ÉTAPE 5 (doute → warning) — Une live region existe (role/aria-live présents) mais on ne peut PAS vérifier statiquement qu'elle reçoit effectivement les messages au bon moment ni que aria-live a la bonne politesse : si un doute subsiste, émettre un warning de vérification manuelle au lecteur d'écran plutôt qu'une violation.",
+        "ÉTAPE 6 — Ne pas inventer de violation pour une page qui ne produit légitimement aucun message de statut : l'absence de message n'est pas en soi un défaut. Pour chaque finding, proposer une correction concrète (role=\"status\"/\"alert\", aria-live, bouton de validation explicite, mention « nouvelle fenêtre »)."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (role/aria-live présents ou absents, onchange déclenchant une soumission, target=\"_blank\") doivent toujours produire le même verdict.",
+        "Violation réservée aux défauts OBJECTIFS : zone de message manifestement identifiée mais sans live region.",
+        "Doute → type=\"warning\" (vérification manuelle) : nature éditoriale d'un message, caractère inattendu d'un changement de contexte, restitution effective au lecteur d'écran.",
+        "Non applicable si aucun message de statut ni changement de contexte n'est détecté : compliant=true, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'script-status-messages'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML/ARIA",
+          "rgaaTestRef": "Test 7.4.1 ou Test 7.4.2",
+          "wcagReference": "4.1.3 ou 3.2.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    }
+  },
+  "automatedChecks": [
+    "Détection de conteneurs de messages sans role ARIA",
+    "Détection de select[onchange]",
+    "Détection de redirections automatiques"
+  ],
+  "manualChecks": [
+    "Test avec lecteur d'écran pour vérifier annonce des messages",
+    "Vérification que les changements de contexte sont contrôlés par l'utilisateur",
+    "Test de formulaires avec select"
+  ],
+  "commonErrors": [
+    {
+      "error": "Message de succès sans role ARIA",
+      "example": "<div class=\"success-message\" style=\"display:none\">Sauvegarde réussie</div>\n<script>\n  saveButton.onclick = () => {\n    document.querySelector('.success-message').style.display = 'block';\n  };\n</script>",
+      "correction": "<div role=\"status\" aria-live=\"polite\" class=\"success-message\">Sauvegarde réussie</div>",
+      "explanation": "Les messages affichés dynamiquement doivent avoir role=\"status\" ou role=\"alert\" pour être annoncés"
+    },
+    {
+      "error": "Select avec soumission automatique",
+      "example": "<select onchange=\"this.form.submit()\">\n  <option>Option 1</option>\n  <option>Option 2</option>\n</select>",
+      "correction": "<select id=\"mySelect\">\n  <option>Option 1</option>\n  <option>Option 2</option>\n</select>\n<button type=\"submit\">Valider</button>\n<p>Sélectionnez une option puis cliquez sur Valider</p>",
+      "explanation": "Ne pas soumettre automatiquement au changement. Utiliser un bouton explicite."
+    },
+    {
+      "error": "Lien ouvrant nouvelle fenêtre sans avertissement",
+      "example": "<a href=\"doc.pdf\" target=\"_blank\">Documentation</a>",
+      "correction": "<a href=\"doc.pdf\" target=\"_blank\" aria-label=\"Documentation (ouvre dans une nouvelle fenêtre)\">Documentation <span aria-hidden=\"true\">↗</span></a>",
+      "explanation": "Avertir l'utilisateur qu'un lien ouvre une nouvelle fenêtre"
+    },
+    {
+      "error": "Conteneur ressemblant à un message mais à qualifier manuellement (warning)",
+      "example": "<div class=\"toast\">Vos modifications ont été enregistrées</div>\n<!-- Pas de role ni aria-live ; nature de message à confirmer -->",
+      "correction": "<!-- Vérification manuelle : s'agit-il d'un message de statut ? Si oui, ajouter une live region -->\n<div role=\"status\" aria-live=\"polite\" class=\"toast\">Vos modifications ont été enregistrées</div>",
+      "explanation": "Qu'un bloc soit ou non un « message de statut » relève d'une appréciation éditoriale : en cas de doute, émettre un warning de vérification manuelle plutôt qu'une violation ferme."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#7.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/on-input.html"
+  ]
+}

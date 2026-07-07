@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Type-strictness mirrors the build (noUncheckedIndexedAccess inherited
+    // from tsconfig.json) so ESLint's type-aware rules see the same
+    // nullability as `tsc` — no false "unnecessary condition" on runtime guards.
+    // Only the lint-redundant checks are relaxed (ESLint owns unused-vars;
+    // dot-vs-index access is a style choice).
+    "noPropertyAccessFromIndexSignature": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

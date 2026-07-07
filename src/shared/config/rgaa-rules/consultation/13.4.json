@@ -1,0 +1,161 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "13.4",
+  "ruleId": "consultation-media-alternatives",
+  "title": "Consultation - Alternatives médias temporels",
+  "description": "Pour chaque document bureautique ayant un titre, celui-ci est-il pertinent ?",
+  "rgaaReference": "RGAA 4.1 - Critère 13.4",
+  "wcagReference": "WCAG 2.1 - 2.4.2 Titre de page (A)",
+  "theme": "Consultation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux documents bureautiques en téléchargement ayant un titre",
+    "signals": {
+      "selectors": [
+        "a[href$='.pdf']",
+        "a[href$='.doc']",
+        "a[href$='.docx']",
+        "a[href$='.odt']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun document bureautique en téléchargement"
+    ]
+  },
+  "testScenarios": {
+    "documentTitleRelevance": {
+      "description": "Pertinence du titre des documents",
+      "tests": [
+        {
+          "id": "13.4.1",
+          "rgaaTestRef": "Test 13.4.1",
+          "description": "Chaque document bureautique a-t-il un titre de document (title) pertinent ?",
+          "methodology": [
+            "Identifier les documents bureautiques en téléchargement",
+            "Télécharger et ouvrir chaque document",
+            "Vérifier la présence d'un titre dans les propriétés du document",
+            "Vérifier que le titre décrit le contenu du document",
+            "Vérifier que le titre n'est pas générique (\"Document1\", \"Sans titre\")"
+          ],
+          "selector": "a[href$='.pdf'], a[href$='.doc'], a[href$='.docx']",
+          "expected": "Chaque document doit avoir un titre pertinent dans ses métadonnées",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectDocumentLinks": true,
+            "suggestTitleCheck": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 13.4 - Titre pertinent d'un document bureautique), spécialisé dans la détection déterministe des liens de documents. Tu fondes ton repérage sur des signaux mécaniques du DOM (extension du href). Comme le titre réside dans les métadonnées internes du fichier, non observables depuis le DOM, et que sa pertinence relève d'une appréciation éditoriale, tu n'émets jamais de violation : tu demandes systématiquement une vérification manuelle via un finding type=warning.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "a[href*='.pdf']",
+        "a[href*='.doc']",
+        "a[href*='.odt']"
+      ],
+      "attributes": [
+        "href",
+        "download"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 (signaux DOM) — Identifier de façon mécanique tous les liens <a> dont le href se termine par une extension de document bureautique (.pdf, .doc, .docx, .odt, .ods, .odp). Relever le libellé visible de chaque lien.",
+        "ÉTAPE 2 (non applicable) — Si AUCUN lien vers un document bureautique n'est présent dans le DOM extrait, conclure NON APPLICABLE : conclusion='non_applicable', findings=[].",
+        "ÉTAPE 3 (doute → warning systématique) — Le titre d'un document réside dans ses MÉTADONNÉES internes (propriété Titre du PDF, propriétés Office/LibreOffice), NON observables depuis le DOM, et sa PERTINENCE est une appréciation éditoriale. Ne JAMAIS conclure à une violation : pour chaque document détecté, émettre un finding type='recommendation' (ou 'warning'), severity='moderate' demandant d'ouvrir le fichier et de vérifier que la propriété Titre est présente, descriptive et non générique (« Document1 », « Sans titre », nom de fichier).",
+        "ÉTAPE 4 — Indiquer dans la recommendation où contrôler le titre selon le format : PDF (Propriétés > Description > Titre), Word (Fichier > Informations > Propriétés > Titre), LibreOffice (Fichier > Propriétés > Description > Titre).",
+        "ÉTAPE 5 — Dans le résumé, indiquer le nombre de documents à vérifier manuellement."
+      ],
+      "important": [
+        "Déterminisme : les mêmes liens de documents (mêmes extensions dans le DOM) produisent toujours la même liste à vérifier.",
+        "Aucune violation possible ici : le titre et sa pertinence ne sont pas observables dans le DOM, le verdict reste une vérification manuelle (type='warning' ou 'recommendation').",
+        "En cas de doute → vérification manuelle ; ne jamais inventer un titre absent.",
+        "Si aucun document détecté : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'consultation-media-alternatives'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string - Indiquer le nombre de documents à vérifier",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec instructions pour vérifier le titre",
+          "rgaaTestRef": "Test 13.4.1",
+          "wcagReference": "2.4.2"
+        }
+      }
+    }
+  },
+  "automatedChecks": [
+    "Détection de liens vers documents bureautiques"
+  ],
+  "manualChecks": [
+    "Téléchargement de chaque document",
+    "Vérification du titre dans les propriétés",
+    "Évaluation de la pertinence du titre"
+  ],
+  "commonErrors": [
+    {
+      "error": "PDF sans titre (propriétés)",
+      "example": "<!-- PDF avec title vide dans métadonnées -->",
+      "correction": "<!-- Dans Adobe Acrobat -->\nFichier > Propriétés > Description > Titre : \"Rapport annuel 2026\"",
+      "explanation": "Définir un titre pertinent dans les propriétés du PDF"
+    },
+    {
+      "error": "Document Word avec titre générique",
+      "example": "<!-- Title: \"Document1\" -->",
+      "correction": "<!-- Dans Word -->\nFichier > Informations > Propriétés > Titre : \"Guide d'utilisation du produit XYZ\"",
+      "explanation": "Utiliser un titre descriptif, pas le nom de fichier par défaut"
+    },
+    {
+      "error": "Titre non cohérent avec le contenu",
+      "example": "<!-- Title: \"Rapport\" pour un guide utilisateur -->",
+      "correction": "<!-- Title correct -->\n\"Guide utilisateur - Application Mobile\"",
+      "explanation": "Le titre doit refléter le contenu réel du document"
+    },
+    {
+      "error": "Absence de titre dans LibreOffice",
+      "example": "<!-- Document .odt sans titre -->",
+      "correction": "<!-- Dans LibreOffice -->\nFichier > Propriétés > Description > Titre : \"Procédure de réclamation\"",
+      "explanation": "Définir le titre dans les propriétés du document"
+    },
+    {
+      "error": "Pertinence du titre non vérifiable depuis le DOM (à vérifier manuellement)",
+      "example": "<a href=\"notice-2026.pdf\">Notice</a> <!-- propriété Titre interne inconnue -->",
+      "correction": "<!-- Ouvrir le fichier et contrôler Propriétés > Titre -->\n<!-- Titre attendu, descriptif : \"Notice d'utilisation 2026\" -->",
+      "explanation": "Le titre est stocké dans les métadonnées du fichier et sa pertinence est éditoriale : seule l'ouverture du document permet de statuer, d'où une vérification manuelle plutôt qu'une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#13.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/page-titled.html",
+    "https://helpx.adobe.com/fr/acrobat/using/pdf-properties-metadata.html"
+  ]
+}

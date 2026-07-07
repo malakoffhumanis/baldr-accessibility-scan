@@ -1,0 +1,143 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.6",
+  "ruleId": "media-sign-language",
+  "title": "Multimédia - Interprétation en langue des signes",
+  "description": "Chaque média temporel synchronisé pré-enregistré a-t-il, si nécessaire, une interprétation en langue des signes ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.6",
+  "wcagReference": "WCAG 2.1 - 1.2.6 Langue des signes (pré-enregistré) (AAA)",
+  "theme": "Multimédia",
+  "level": "AAA",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias temporels synchronisés pré-enregistrés",
+    "signals": {
+      "selectors": [
+        "video[src]",
+        "video > source"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune vidéo avec audio",
+      "Vidéo en direct uniquement"
+    ]
+  },
+  "testScenarios": {
+    "signLanguage": {
+      "description": "Interprétation en langue des signes",
+      "tests": [
+        {
+          "id": "4.6.1",
+          "rgaaTestRef": "Test 4.6.1",
+          "description": "La vidéo propose-t-elle une interprétation en langue des signes ?",
+          "methodology": [
+            "Vérifier la présence d'un interprète en langue des signes dans la vidéo",
+            "Ou vérifier la présence d'une version alternative avec interprète",
+            "Vérifier la visibilité et la qualité de l'interprétation"
+          ],
+          "selector": "video",
+          "expected": "Une interprétation en langue des signes visible ou une version alternative",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectSignLanguage": true,
+            "checkAlternativeVersion": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.6 - interprétation en langue des signes, niveau AAA). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (lien vers une version LSF, track kind='sign', classe 'sign-language'). Comme la présence effective d'un interprète DANS l'image n'est pas détectable depuis le seul DOM, tu privilégies fortement le warning (vérification manuelle) et ne signales une violation que pour un défaut objectif et certain.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "a[href*='sign' i]",
+        "a[href*='lsf' i]",
+        "[class*='sign-language']",
+        "track[kind='sign']"
+      ],
+      "attributes": [
+        "src",
+        "aria-label",
+        "title"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les vidéos synchronisées (<video> avec src ou <source>). Si AUCUNE vidéo n'est présente, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque vidéo, relever les indices d'interprétation en langue des signes : lien (href contenant 'sign'/'lsf'), classe/identifiant 'sign-language', <track kind='sign'>, mention 'langue des signes'/'LSF' dans le texte adjacent.",
+        "ÉTAPE 2 (doute → warning, priorité) — La présence d'un interprète INCRUSTÉ dans le flux vidéo n'est PAS détectable depuis le DOM (elle relève de l'image). Émettre par défaut un finding type='warning', severity='moderate' demandant une vérification manuelle (un interprète est-il visible dans la vidéo ou une version LSF est-elle proposée ?).",
+        "ÉTAPE 3 (violation objective limitée) — Ne réserver type='violation' qu'au cas CERTAIN où aucun signal d'interprétation (lien LSF, track sign, interprète) n'existe ET où l'exigence est manifeste ; dans le doute, rester en warning.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les signaux RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Proposer, le cas échéant, un lien vers une version avec interprète LSF ou l'incrustation d'un interprète."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-sign-language'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM doivent toujours donner le même verdict.",
+        "Niveau AAA exigeant : la présence d'un interprète incrusté n'est PAS détectable depuis le DOM, donc privilégier type='warning' (vérification manuelle, severity='moderate').",
+        "type='violation' réservé aux défauts OBJECTIFS et CERTAINS uniquement ; dans le doute, rester en warning.",
+        "Si aucune vidéo: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de vidéos",
+    "Recherche de liens vers versions LSF"
+  ],
+  "manualChecks": [
+    "Présence effective d'un interprète en langue des signes",
+    "Visibilité et qualité de l'interprétation",
+    "Synchronisation avec le contenu audio"
+  ],
+  "commonErrors": [
+    {
+      "error": "Vidéo sans interprétation en langue des signes",
+      "example": "<video controls src=\"conference.mp4\"></video>",
+      "correction": "<video controls src=\"conference.mp4\"></video>\n<p><a href=\"conference-lsf.mp4\">Version avec interprète en Langue des Signes Française</a></p>\n<!-- Ou intégrer l'interprète directement dans la vidéo -->",
+      "explanation": "L'interprétation en langue des signes améliore l'accessibilité pour les personnes sourdes de naissance."
+    },
+    {
+      "error": "Interprète possiblement incrusté dans la vidéo (à vérifier manuellement)",
+      "example": "<video controls src=\"conference.mp4\"></video>",
+      "correction": "<video controls src=\"conference.mp4\"></video>\n<!-- Vérifier manuellement à l'écran si un interprète LSF est incrusté dans la vidéo ; sinon proposer une version dédiée -->",
+      "explanation": "Le DOM ne révèle pas si un interprète est filmé dans la vidéo : ne pas conclure automatiquement à une violation. Cas à vérifier manuellement (warning) en visionnant le média."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.6",
+    "https://www.w3.org/WAI/WCAG21/Understanding/sign-language-prerecorded.html"
+  ]
+}

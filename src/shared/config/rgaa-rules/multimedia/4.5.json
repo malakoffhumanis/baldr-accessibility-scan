@@ -1,0 +1,140 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.5",
+  "ruleId": "media-extended-audio-description",
+  "title": "Multimédia - Audiodescription étendue",
+  "description": "Chaque média temporel synchronisé pré-enregistré a-t-il, si nécessaire, une audiodescription étendue synchronisée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.5",
+  "wcagReference": "WCAG 2.1 - 1.2.7 Audiodescription étendue (pré-enregistré) (AAA)",
+  "theme": "Multimédia",
+  "level": "AAA",
+  "applicability": {
+    "description": "Ce critère s'applique quand l'audiodescription standard ne suffit pas (dialogues trop continus)",
+    "signals": {
+      "selectors": [
+        "video[src]",
+        "video > source"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune vidéo présente",
+      "L'audiodescription standard suffit",
+      "Vidéo sans contenu visuel informatif nécessitant description étendue"
+    ]
+  },
+  "testScenarios": {
+    "extendedAudioDescription": {
+      "description": "Audiodescription étendue avec pause",
+      "tests": [
+        {
+          "id": "4.5.1",
+          "rgaaTestRef": "Test 4.5.1",
+          "description": "Si nécessaire, la vidéo propose-t-elle une audiodescription étendue ?",
+          "methodology": [
+            "Identifier si l'audiodescription standard est insuffisante",
+            "Vérifier la présence d'une version avec audiodescription étendue",
+            "La vidéo doit se mettre en pause pour permettre la description",
+            "Vérifier que toutes les informations visuelles sont décrites"
+          ],
+          "selector": "video",
+          "expected": "Une audiodescription étendue avec mise en pause de la vidéo si nécessaire",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.5 - audiodescription étendue, niveau AAA). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (track descriptions, lien/version 'extended'). Comme la NÉCESSITÉ d'une audiodescription étendue dépend de la densité éditoriale du contenu (non évaluable depuis le seul DOM), tu privilégies fortement le warning (vérification manuelle) et tu ne signales une violation que pour un défaut objectif et certain.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "track[kind='descriptions']",
+        "a[href*='extended' i]",
+        "button[aria-label*='extended' i]"
+      ],
+      "attributes": [
+        "src",
+        "kind",
+        "label"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les vidéos synchronisées (<video> avec src ou <source>). Si AUCUNE vidéo n'est présente, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque vidéo, relever les indices d'audiodescription ÉTENDUE : <track kind='descriptions'>, lien (href contenant 'extended'/'etendue') ou bouton (aria-label contenant 'extended'/'étendue') vers une version à audiodescription étendue.",
+        "ÉTAPE 2 (doute → warning, priorité) — La NÉCESSITÉ d'une audiodescription étendue dépend de la densité des informations visuelles vs des pauses dans la bande son, qui n'est PAS évaluable depuis le DOM. Émettre par défaut un finding type='warning', severity='moderate' demandant une vérification manuelle (l'audiodescription standard suffit-elle ? une version étendue avec mise en pause est-elle proposée ?).",
+        "ÉTAPE 3 (violation objective limitée) — Ne réserver type='violation' qu'au cas CERTAIN où une nécessité d'audiodescription étendue est manifeste et où aucun signal (track, version étendue) n'existe ; dans le doute, rester en warning.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les signaux RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Proposer, le cas échéant, un lien vers une version à audiodescription étendue ou un track kind='descriptions' enrichi."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-extended-audio-description'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM doivent toujours donner le même verdict.",
+        "Niveau AAA exigeant : la nécessité d'une audiodescription étendue n'est PAS tranchable depuis le DOM, donc privilégier type='warning' (vérification manuelle, severity='moderate').",
+        "type='violation' réservé aux défauts OBJECTIFS et CERTAINS uniquement ; dans le doute, rester en warning.",
+        "Si aucune vidéo: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de vidéos",
+    "Présence de liens vers versions avec audiodescription étendue"
+  ],
+  "manualChecks": [
+    "Évaluer si l'audiodescription standard suffit",
+    "Vérifier la présence et la qualité de l'audiodescription étendue",
+    "Vérifier les mécanismes de pause pour la description"
+  ],
+  "commonErrors": [
+    {
+      "error": "Audiodescription insuffisante pour contenu dense",
+      "example": "<video controls src=\"documentary.mp4\">\n  <track kind=\"descriptions\" src=\"basic-desc.vtt\">\n</video>",
+      "correction": "<video controls src=\"documentary.mp4\">\n  <track kind=\"descriptions\" src=\"extended-desc.vtt\" label=\"Audiodescription étendue\">\n</video>\n<p><a href=\"documentary-extended-ad.mp4\">Version avec audiodescription étendue</a></p>",
+      "explanation": "Pour les contenus visuels denses, une audiodescription étendue avec pauses peut être nécessaire."
+    },
+    {
+      "error": "Nécessité d'audiodescription étendue indéterminable depuis le code (à vérifier manuellement)",
+      "example": "<video controls src=\"film.mp4\">\n  <track kind=\"descriptions\" src=\"desc-fr.vtt\" srclang=\"fr\">\n</video>",
+      "correction": "<video controls src=\"film.mp4\">\n  <track kind=\"descriptions\" src=\"desc-fr.vtt\" srclang=\"fr\">\n</video>\n<!-- Vérifier manuellement si les pauses dans la bande son suffisent à l'audiodescription standard ; sinon proposer une version étendue -->",
+      "explanation": "Savoir si l'audiodescription standard suffit dépend de la densité du contenu visuel, non évaluable depuis le DOM. Cas à vérifier manuellement (warning) plutôt que violation automatique."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/extended-audio-description-prerecorded.html"
+  ]
+}

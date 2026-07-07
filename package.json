@@ -1,0 +1,112 @@
+{
+  "name": "baldr-accessibility-scan",
+  "version": "1.0.0",
+  "description": "Automated accessibility (RGAA/WCAG) audit API & CLI built on axe-core, Puppeteer and LLMs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "baldr": "./dist/cli/index.js",
+    "baldrd": "./dist/api/server.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "start": "node dist/api/server.js",
+    "start:cli": "node dist/cli/index.js",
+    "dev": "tsx watch src/api/server.ts",
+    "dev:cli": "tsx src/cli/index.ts",
+    "build": "tsc && tsc-alias && node scripts/copy-assets.js",
+    "build:clean": "rm -rf dist && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "validate:rules": "vitest run src/shared/config/rgaa-rules/rule-validator.util.test.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "licenses:check": "license-checker --production --onlyAllow '0BSD;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;MIT;MPL-2.0;Python-2.0' --summary",
+    "notices:generate": "node scripts/generate-third-party-notices.js",
+    "prepublishOnly": "npm run build:clean",
+    "prepare": "husky || true"
+  },
+  "keywords": [
+    "nodejs",
+    "typescript",
+    "api",
+    "accessibility",
+    "rgaa"
+  ],
+  "author": "Malakoff Humanis",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malakoffhumanis/baldr-accessibility-scan.git"
+  },
+  "bugs": {
+    "url": "https://github.com/malakoffhumanis/baldr-accessibility-scan/issues"
+  },
+  "homepage": "https://github.com/malakoffhumanis/baldr-accessibility-scan#readme",
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "@axe-core/puppeteer": "^4.11.0",
+    "ajv": "^8.20.0",
+    "async-mutex": "^0.5.0",
+    "axios": "^1.15.1",
+    "better-ajv-errors": "^2.0.3",
+    "cheerio": "^1.2.0",
+    "commander": "^15.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "fs-extra": "^11.3.3",
+    "helmet": "^8.2.0",
+    "https-proxy-agent": "^9.0.0",
+    "jsonrepair": "^3.14.0",
+    "pino": "^10.3.1",
+    "prom-client": "^15.1.3",
+    "puppeteer": "^25.1.0",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.6",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^26.1.0",
+    "@types/supertest": "^7.2.0",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "license-checker": "^25.0.1",
+    "lint-staged": "^17.0.8",
+    "pino-pretty": "^13.1.3",
+    "prettier": "^3.9.4",
+    "supertest": "^7.2.2",
+    "tsc-alias": "^1.9.0",
+    "tsx": "^4.23.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.5"
+  }
+}

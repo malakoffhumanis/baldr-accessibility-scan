@@ -1,0 +1,186 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.10",
+  "ruleId": "media-audio-control",
+  "title": "Multimédia - Contrôle du son",
+  "description": "Chaque son déclenché automatiquement est-il contrôlable par l'utilisateur ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.10",
+  "wcagReference": "WCAG 2.1 - 1.4.2 Contrôle du son (Niveau A)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Cette règle s'applique aux éléments audio ou vidéo qui se déclenchent automatiquement et durent plus de 3 secondes.",
+    "signals": {
+      "selectors": [
+        "audio[autoplay]",
+        "video[autoplay]",
+        "audio:not([muted])",
+        "video:not([muted])"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Sons de durée inférieure ou égale à 3 secondes",
+      "Sons uniquement déclenchés par l'utilisateur",
+      "Sons avec attribut muted actif"
+    ]
+  },
+  "testScenarios": {
+    "media-audio-control-autoplay": {
+      "description": "Test de la présence de contrôles pour un son déclenché automatiquement",
+      "tests": [
+        {
+          "id": "4.10.1",
+          "rgaaTestRef": "Test 4.10.1",
+          "description": "Chaque son déclenché automatiquement possède-t-il un mécanisme de contrôle (pause, stop ou volume) ?",
+          "methodology": [
+            "Identifier les éléments audio/vidéo avec autoplay",
+            "Vérifier la présence de l'attribut controls",
+            "Vérifier la présence de contrôles personnalisés (boutons pause/stop)",
+            "Vérifier que les contrôles sont accessibles au clavier",
+            "Vérifier que les contrôles sont visibles et utilisables"
+          ],
+          "selector": "audio[autoplay], video[autoplay]",
+          "expected": "Présence de contrôles natifs (controls) ou personnalisés permettant de mettre en pause, arrêter ou contrôler le volume du média",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Vérifiez si les médias avec autoplay disposent de contrôles accessibles (attribut controls ou boutons personnalisés visibles et fonctionnels)."
+          }
+        },
+        {
+          "id": "4.10.2",
+          "rgaaTestRef": "Test 4.10.2",
+          "description": "Les contrôles du son sont-ils accessibles au clavier et correctement restitués par les technologies d'assistance ?",
+          "methodology": [
+            "Tester la navigation au clavier vers les contrôles",
+            "Vérifier que les contrôles sont activables avec Entrée/Espace",
+            "Vérifier les attributs ARIA (aria-label, role, aria-pressed)",
+            "Tester avec un lecteur d'écran la restitution des contrôles"
+          ],
+          "selector": "audio[autoplay] ~ [role='button'], video[autoplay] ~ [role='button'], audio[autoplay] + button, video[autoplay] + button",
+          "expected": "Les contrôles sont accessibles au clavier, ont des labels explicites et sont correctement restitués",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Analysez l'accessibilité des contrôles de lecture (focusables, activables au clavier, labels ARIA appropriés)."
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.10 - contrôle du son déclenché automatiquement). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (attribut autoplay, muted, controls, présence de contrôles personnalisés accessibles). Tu réserves la violation aux défauts objectifs (son en autoplay sans aucun moyen de contrôle) et tu demandes une vérification manuelle (warning) dès que la durée du son (>3 s) ou l'accessibilité réelle des contrôles dépend d'une appréciation non vérifiable dans le DOM.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "audio[autoplay]",
+        "video[autoplay]",
+        "audio:not([muted])",
+        "video:not([muted])"
+      ],
+      "steps": [
+        "Localiser tous les éléments avec autoplay (audio/video)",
+        "Vérifier la présence de l'attribut controls",
+        "Identifier les contrôles personnalisés associés",
+        "Analyser l'accessibilité des contrôles (ARIA, keyboard)"
+      ]
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les médias susceptibles de produire un son automatique : <audio>/<video> avec attribut autoplay et sans attribut muted. Si AUCUN n'est présent, conclure NON APPLICABLE (compliant=true, severity='minor', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque média en autoplay non muet, relever : présence de l'attribut natif controls, présence de contrôles personnalisés à proximité (button ou élément role='button' avec aria-label) permettant pause/stop ou réglage du volume.",
+        "ÉTAPE 2 (violation objective) — Si un média en autoplay (non muted) ne présente AUCUN moyen de contrôle (ni controls natif, ni bouton/contrôle personnalisé détectable), émettre un finding type='violation', severity='serious' : l'absence de contrôle est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 3 (doute → warning) — Si la durée réelle du son (le critère ne s'applique qu'au-delà de 3 s) ne peut être déterminée depuis le DOM, ou si des contrôles existent mais que leur accessibilité clavier / la mise à jour de leur état ne peut être tranchée statiquement, NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les attributs RÉELLEMENT présents dans le DOM (autoplay, muted, controls) ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque média sans contrôle, proposer une correction concrète (ajout de controls, ou bouton accessible pause/volume)."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (autoplay, muted, controls, contrôles personnalisés) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : son en autoplay non muet sans aucun moyen de contrôle.",
+        "En cas de doute (durée >3 s indéterminable, accessibilité clavier des contrôles non vérifiable statiquement) : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun son en autoplay: compliant=true, severity='minor', findings=[] (non applicable).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "structure": {
+          "ruleId": "string",
+          "compliant": "boolean",
+          "severity": "critical | serious | moderate | minor",
+          "summary": "string (max 200 chars)",
+          "totalElements": "number",
+          "findings": "array (max 5)"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      }
+    },
+    "enabled": true
+  },
+  "automatedChecks": [
+    "Détection des éléments audio/video avec autoplay",
+    "Vérification de la présence de l'attribut controls",
+    "Détection des contrôles personnalisés (boutons à proximité)",
+    "Vérification des attributs ARIA sur les contrôles"
+  ],
+  "manualChecks": [
+    "Test de l'accessibilité au clavier des contrôles",
+    "Vérification fonctionnelle des boutons pause/stop",
+    "Test du réglage du volume",
+    "Validation avec lecteur d'écran",
+    "Vérification de la visibilité et utilisabilité des contrôles"
+  ],
+  "commonErrors": [
+    {
+      "error": "Son en autoplay sans aucun contrôle",
+      "example": "<audio src=\"musique.mp3\" autoplay></audio>",
+      "correction": "<audio src=\"musique.mp3\" autoplay controls></audio>",
+      "explanation": "L'attribut controls doit être présent pour permettre à l'utilisateur de contrôler le son."
+    },
+    {
+      "error": "Contrôles personnalisés non accessibles au clavier",
+      "example": "<audio src=\"son.mp3\" autoplay id=\"audio1\"></audio>\n<div onclick=\"pauseAudio()\">Pause</div>",
+      "correction": "<audio src=\"son.mp3\" autoplay id=\"audio1\"></audio>\n<button type=\"button\" onclick=\"pauseAudio()\" aria-label=\"Mettre en pause\">Pause</button>",
+      "explanation": "Les contrôles doivent être des éléments interactifs accessibles au clavier (button) avec des labels explicites."
+    },
+    {
+      "error": "Contrôles présents mais sans label",
+      "example": "<button onclick=\"audio.pause()\" aria-label=\"\"><span class=\"icon-pause\"></span></button>",
+      "correction": "<button onclick=\"audio.pause()\" aria-label=\"Mettre en pause la lecture audio\"><span class=\"icon-pause\" aria-hidden=\"true\"></span></button>",
+      "explanation": "Les contrôles doivent avoir des labels textuels explicites pour les lecteurs d'écran."
+    },
+    {
+      "error": "Uniquement contrôle de pause sans contrôle de volume",
+      "example": "<audio src=\"son.mp3\" autoplay></audio>\n<button onclick=\"togglePause()\">Pause</button>",
+      "correction": "<audio src=\"son.mp3\" autoplay controls></audio>\n<!-- OU contrôles personnalisés avec pause ET volume -->",
+      "explanation": "L'utilisateur doit pouvoir contrôler à la fois la lecture (pause/stop) ET le volume du son."
+    },
+    {
+      "error": "Son en autoplay dont la durée est indéterminable (à vérifier manuellement)",
+      "example": "<video src=\"intro.mp4\" autoplay></video>",
+      "correction": "<video src=\"intro.mp4\" autoplay controls></video>\n<!-- Vérifier manuellement la durée du son : le critère ne s'applique qu'au-delà de 3 secondes -->",
+      "explanation": "La durée du son (seuil de 3 s) n'est pas connue depuis le DOM. Si la durée est incertaine, préférer une vérification manuelle (warning) plutôt qu'une violation automatique ; en pratique, ajouter controls reste la correction recommandée."
+    }
+  ],
+  "resources": [
+    "RGAA 4.1.2 - Critère 4.10 : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.10",
+    "WCAG 2.1 - 1.4.2 Audio Control : https://www.w3.org/WAI/WCAG21/Understanding/audio-control.html",
+    "MDN - HTMLMediaElement API : https://developer.mozilla.org/fr/docs/Web/API/HTMLMediaElement",
+    "Accessible Media Player : https://www.w3.org/WAI/perspective-videos/controls/",
+    "AcceDe Web - Multimédia : https://www.accede-web.com/notices/multimedia/"
+  ]
+}

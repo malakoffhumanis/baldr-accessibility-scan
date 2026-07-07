@@ -1,0 +1,174 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.2",
+  "ruleId": "image-decorative",
+  "title": "Images - Image décorative ignorée des technologies d'assistance",
+  "description": "Chaque image de décoration est-elle correctement ignorée par les technologies d'assistance ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.2",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A), 4.1.2 Nom, rôle et valeur (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère ne s'applique qu'aux images réellement décoratives : <img>, <area> non cliquable, <svg>, <canvas>, <object type=\"image/…\"> n'apportant aucune information.",
+    "signals": {
+      "selectors": [
+        "img",
+        "svg",
+        "canvas",
+        "area",
+        "object[type^='image/']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune image présente sur la page",
+      "Aucune image décorative identifiable (toutes les images sont porteuses d'information — voir critère 1.1)",
+      "Image accompagnée d'une légende (<figcaption> dans un <figure>) : traitée par le critère 1.9"
+    ]
+  },
+  "testScenarios": {
+    "decorativeImage": {
+      "description": "Image purement décorative : elle doit être correctement ignorée des technologies d'assistance.",
+      "tests": [
+        {
+          "id": "1.2.1",
+          "rgaaTestRef": "Test 1.2.1",
+          "description": "Chaque <img> décorative est-elle ignorée des technologies d'assistance (alt=\"\" présent, ou aria-hidden=\"true\", ou role=\"presentation\") ?",
+          "methodology": [
+            "Reprendre la classification informative/décorative de la procédure du critère 1.1",
+            "Pour les seules images réellement décoratives, vérifier la présence de alt=\"\", aria-hidden=\"true\" ou role=\"presentation\"",
+            "Vérifier qu'aucune alternative non vide n'est exposée (alt, aria-label, title)"
+          ],
+          "selector": "img",
+          "expected": "Une image décorative doit avoir alt=\"\" (présent et vide), ou aria-hidden=\"true\", ou role=\"presentation\", sans alternative non vide",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "classifyImage": true,
+            "determineIfDecorative": true,
+            "checkVisualPurpose": true
+          }
+        },
+        {
+          "id": "1.2.4",
+          "rgaaTestRef": "Test 1.2.4",
+          "description": "Chaque <svg> décoratif est-il ignoré des technologies d'assistance (aria-hidden=\"true\", sans alternative ni <title>/<desc>) ?",
+          "methodology": [
+            "Identifier les SVG purement décoratifs",
+            "Vérifier aria-hidden=\"true\" et l'absence d'alternative exposée"
+          ],
+          "selector": "svg:not([aria-hidden='true']):not([role='presentation'])",
+          "expected": "Un SVG décoratif doit porter aria-hidden=\"true\" et ne pas exposer d'alternative",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img",
+          "svg",
+          "canvas",
+          "area",
+          "object[type^='image/']"
+        ],
+        "attributes": [
+          "src",
+          "alt",
+          "role",
+          "aria-hidden",
+          "aria-label",
+          "title"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 200
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Reprendre la classification du critère 1.1. Le critère 1.2 vérifie que les images RÉELLEMENT décoratives sont correctement ignorées des technologies d'assistance.",
+        "RESPECTER la déclaration décorative EXPLICITE : une image avec alt=\"\" (présent et vide), role=\"presentation\" ou aria-hidden=\"true\" est correctement déclarée décorative → CONFORME. Cela inclut les photos d'ambiance et bannières « hero » illustratives, les fonds/textures/dégradés, séparateurs/filets, espaceurs, fioritures et icônes redoublant un texte visible adjacent. NE PAS leur réclamer d'alternative et NE PAS les signaler comme informatives.",
+        "Signaler (type=\"violation\") une image décorative UNIQUEMENT si elle est MAL déclarée : par exemple une image purement décorative qui expose une alternative NON vide (alt renseigné, aria-label) ajoutant du bruit pour les lecteurs d'écran → recommander alt=\"\" (et/ou aria-hidden=\"true\").",
+        "Garde-fou anti-faux-négatif : ne PAS valider ici comme décorative une image OBJECTIVEMENT porteuse d'information — image contenant du texte lisible, image unique contenu d'un lien/bouton, graphique/diagramme/carte véhiculant des données, ou image qui EST le sujet du contenu. Si une telle image a un alt vide ou absent, cela relève d'une VIOLATION du critère 1.1 (à traiter là-bas), pas d'une conformité 1.2.",
+        "Cas particulier : si une image possède une légende (<figcaption> dans un <figure>), le critère 1.2 est NON APPLICABLE pour cette image (elle est traitée par le critère 1.9).",
+        "Si toutes les images décoratives sont correctement ignorées (ou s'il n'y a aucune image décorative), conclure CONFORME sans inventer de violation."
+      ],
+      "important": [
+        "Respecter alt=\"\"/aria-hidden/role=presentation : une photo d'ambiance ou une bannière hero avec alt vide est CONFORME, ne pas la signaler.",
+        "Ne signaler que les images décoratives MAL déclarées (alternative non vide sur une image décorative).",
+        "Ne pas valider comme décorative une image objectivement informative (texte dans l'image, image-lien/bouton, graphique/données, sujet du contenu) sans alternative : cela masquerait une violation 1.1.",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-decorative'",
+          "compliant": "boolean - true si toutes les images décoratives sont correctement ignorées (ou aucune image décorative)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre d'images décoratives identifiées",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec code HTML (alt=\"\" ou aria-hidden)",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.2), spécialisé dans la vérification que les images décoratives sont correctement ignorées des technologies d'assistance, sans jamais masquer une image porteuse d'information non décrite."
+  },
+  "automatedChecks": [
+    "Présence de alt=\"\" sur les images candidates au statut décoratif",
+    "Présence de aria-hidden=\"true\" ou role=\"presentation\"",
+    "Absence d'alternative non vide (alt, aria-label, title) sur une image décorative"
+  ],
+  "manualChecks": [
+    "Confirmation visuelle du caractère réellement décoratif de l'image",
+    "Vérification qu'aucune image porteuse d'information n'est masquée à tort",
+    "Détection des images dotées d'une légende (relèvent du critère 1.9)"
+  ],
+  "commonErrors": [
+    {
+      "error": "Image décorative avec alt renseigné",
+      "example": "<img src=\"decoration.png\" alt=\"Décoration\">",
+      "correction": "<img src=\"decoration.png\" alt=\"\">",
+      "explanation": "Une image purement décorative doit avoir alt=\"\" (vide) pour être ignorée des lecteurs d'écran, ou porter aria-hidden=\"true\"."
+    },
+    {
+      "error": "Image de contenu masquée à tort comme décorative",
+      "example": "<img src=\"photo-equipe.jpg\" aria-hidden=\"true\">",
+      "correction": "<img src=\"photo-equipe.jpg\" alt=\"L'équipe de la direction réunie en séminaire\">",
+      "explanation": "Masquer une image porteuse d'information (aria-hidden ou alt vide) prive les utilisateurs de lecteur d'écran de l'information. Ce cas est une violation du critère 1.1, pas une conformité 1.2."
+    },
+    {
+      "error": "SVG décoratif non masqué aux technologies d'assistance",
+      "example": "<svg><circle cx=\"50\" cy=\"50\" r=\"40\"/></svg>",
+      "correction": "<svg aria-hidden=\"true\" focusable=\"false\"><circle cx=\"50\" cy=\"50\" r=\"40\"/></svg>",
+      "explanation": "Un SVG décoratif doit porter aria-hidden=\"true\" (et focusable=\"false\") pour être correctement ignoré."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html",
+    "https://www.w3.org/WAI/tutorials/images/decorative/"
+  ]
+}

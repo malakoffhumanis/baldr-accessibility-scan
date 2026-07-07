@@ -1,0 +1,222 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.12",
+  "ruleId": "media-controls-keyboard",
+  "title": "Multimédia - Éléments de contrôle accessibles au clavier",
+  "description": "Les éléments de contrôle d'un média temporel sont-ils accessibles au clavier et correctement restitués par les technologies d'assistance ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.12",
+  "wcagReference": "WCAG 2.1 - 2.1.1 Clavier (Niveau A)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Cette règle s'applique aux éléments audio et vidéo disposant de contrôles de lecture (natifs ou personnalisés).",
+    "signals": {
+      "selectors": [
+        "audio",
+        "video",
+        "audio + button",
+        "video + button",
+        "[role='button'][aria-controls]",
+        ".media-controls"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Médias sans contrôles interactifs",
+      "Médias utilisant uniquement les contrôles natifs du navigateur (attribut controls)",
+      "Contenus non multimédias"
+    ]
+  },
+  "testScenarios": {
+    "media-controls-keyboard-access": {
+      "description": "Test de l'accessibilité au clavier des contrôles multimédias",
+      "tests": [
+        {
+          "id": "4.12.1",
+          "rgaaTestRef": "Test 4.12.1",
+          "description": "Chaque contrôle multimédia est-il accessible au clavier (navigation avec Tab et activation avec Entrée/Espace) ?",
+          "methodology": [
+            "Identifier tous les contrôles du lecteur multimédia",
+            "Tester la navigation au clavier avec Tab",
+            "Vérifier que les contrôles reçoivent le focus visible",
+            "Tester l'activation avec Entrée et Espace",
+            "Vérifier l'ordre de tabulation logique"
+          ],
+          "selector": "audio ~ button, video ~ button, [role='button'][aria-controls], .media-control, .video-controls button, .audio-controls button",
+          "expected": "Tous les contrôles sont accessibles avec Tab, ont un focus visible et sont activables avec Entrée ou Espace",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Analysez si les contrôles multimédias sont des éléments interactifs standards (button, input) ou ont les attributs ARIA appropriés (role='button', tabindex='0')."
+          }
+        },
+        {
+          "id": "4.12.2",
+          "rgaaTestRef": "Test 4.12.2",
+          "description": "Chaque contrôle multimédia possède-t-il un intitulé explicite accessible aux technologies d'assistance ?",
+          "methodology": [
+            "Identifier les contrôles multimédias",
+            "Vérifier la présence de labels textuels visibles",
+            "Vérifier les attributs aria-label ou aria-labelledby",
+            "Tester avec un lecteur d'écran la restitution",
+            "Valider la clarté et pertinence des intitulés"
+          ],
+          "selector": "audio ~ button, video ~ button, [role='button'][aria-controls]",
+          "expected": "Chaque contrôle a un intitulé textuel explicite (texte visible, aria-label ou aria-labelledby) décrivant clairement sa fonction",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Vérifiez que chaque contrôle possède un label accessible : texte visible, aria-label, aria-labelledby ou title. Les icônes seules sans label sont non conformes."
+          }
+        },
+        {
+          "id": "4.12.3",
+          "rgaaTestRef": "Test 4.12.3",
+          "description": "Les états des contrôles (lecture, pause, muet) sont-ils correctement restitués aux technologies d'assistance ?",
+          "methodology": [
+            "Identifier les contrôles avec états multiples (play/pause, mute/unmute)",
+            "Vérifier la présence d'attributs ARIA d'état (aria-pressed, aria-checked, aria-expanded)",
+            "Tester le changement d'état lors de l'interaction",
+            "Valider la restitution avec lecteur d'écran"
+          ],
+          "selector": "[role='button'][aria-pressed], [role='button'][aria-checked], button[aria-pressed]",
+          "expected": "Les états des contrôles sont indiqués via ARIA (aria-pressed, aria-checked) et se mettent à jour dynamiquement",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Analysez si les boutons à états multiples (toggle) utilisent aria-pressed='true/false' ou aria-checked pour indiquer leur état actuel."
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.12 - contrôles multimédias accessibles au clavier et restitués aux technologies d'assistance). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (type d'élément button vs div/span, role='button', tabindex, aria-label/aria-labelledby, aria-pressed/aria-checked). Tu réserves la violation aux défauts objectifs (contrôle non focusable, sans intitulé accessible) et tu demandes une vérification manuelle (warning) dès que le comportement clavier réel ou l'ordre de tabulation dépend d'une appréciation non vérifiable statiquement.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "audio",
+        "video",
+        "audio + button",
+        "video + button",
+        "[role='button'][aria-controls]",
+        ".media-controls"
+      ],
+      "steps": [
+        "Localiser tous les contrôles multimédias (play, pause, stop, volume, progression, plein écran, etc.)",
+        "Identifier le type d'élément utilisé (button, div, span, etc.)",
+        "Extraire les attributs d'accessibilité (tabindex, role, aria-*)",
+        "Analyser la présence de labels et leur pertinence"
+      ]
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les contrôles de lecteur multimédia personnalisés (boutons/éléments associés à un <audio>/<video>, [role='button'][aria-controls], .media-controls). Si la page n'utilise QUE les contrôles natifs du navigateur (attribut controls sans contrôles personnalisés) ou ne contient aucun contrôle interactif, conclure NON APPLICABLE (compliant=true, severity='minor', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque contrôle personnalisé, relever : le type d'élément (button/input natif vs div/span), la présence de role='button', la valeur de tabindex, la présence d'un intitulé accessible (texte visible, aria-label, aria-labelledby, title), et pour les bascules la présence de aria-pressed/aria-checked.",
+        "ÉTAPE 2 (violation objective) — Émettre un finding type='violation' pour les défauts CERTAINS et vérifiables dans le DOM : contrôle sur <div>/<span> SANS role='button' ni tabindex='0' (non focusable), OU contrôle interactif SANS aucun intitulé accessible (icône seule sans aria-label).",
+        "ÉTAPE 3 (doute → warning) — Pour ce qui dépend du COMPORTEMENT à l'exécution non vérifiable statiquement (activation effective via Entrée/Espace, mise à jour dynamique de aria-pressed, focus visible, ordre de tabulation logique, restitution lecteur d'écran), NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les attributs et types d'éléments RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque contrôle non conforme, proposer une correction concrète (button natif ou role='button'+tabindex='0', aria-label explicite, aria-hidden='true' sur l'icône, aria-pressed pour les bascules)."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (type d'élément, role, tabindex, intitulé, état ARIA) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : contrôle non focusable (div/span sans role+tabindex) ou sans intitulé accessible.",
+        "En cas de doute sur le comportement clavier réel, l'ordre de tabulation ou la restitution dynamique : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun contrôle personnalisé (contrôles natifs uniquement): compliant=true, severity='minor', findings=[] (non applicable).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "structure": {
+          "ruleId": "string",
+          "compliant": "boolean",
+          "severity": "critical | serious | moderate | minor",
+          "summary": "string (max 200 chars)",
+          "totalElements": "number",
+          "findings": "array (max 5)"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      }
+    },
+    "enabled": true
+  },
+  "automatedChecks": [
+    "Détection des éléments audio/video",
+    "Identification des contrôles associés (boutons, divs cliquables)",
+    "Vérification du type d'élément (button vs div/span)",
+    "Présence de l'attribut tabindex sur éléments non-natifs",
+    "Présence de role='button' sur éléments non-natifs",
+    "Détection de labels (aria-label, aria-labelledby, texte visible)",
+    "Présence d'attributs d'état (aria-pressed, aria-checked)"
+  ],
+  "manualChecks": [
+    "Test de navigation au clavier (Tab, Shift+Tab)",
+    "Vérification du focus visible sur chaque contrôle",
+    "Test d'activation avec Entrée et Espace",
+    "Validation de l'ordre de tabulation logique",
+    "Test avec lecteur d'écran (NVDA, JAWS, VoiceOver)",
+    "Vérification fonctionnelle de chaque contrôle",
+    "Test du changement d'état dynamique"
+  ],
+  "commonErrors": [
+    {
+      "error": "Contrôles non interactifs (div/span sans role ni tabindex)",
+      "example": "<video id=\"video1\" src=\"film.mp4\"></video>\n<div class=\"controls\">\n  <span onclick=\"playVideo()\" class=\"icon-play\">Play</span>\n  <span onclick=\"pauseVideo()\" class=\"icon-pause\">Pause</span>\n</div>",
+      "correction": "<video id=\"video1\" src=\"film.mp4\"></video>\n<div class=\"controls\">\n  <button type=\"button\" onclick=\"playVideo()\" aria-label=\"Lecture\">\n    <span class=\"icon-play\" aria-hidden=\"true\"></span>\n  </button>\n  <button type=\"button\" onclick=\"pauseVideo()\" aria-label=\"Pause\">\n    <span class=\"icon-pause\" aria-hidden=\"true\"></span>\n  </button>\n</div>",
+      "explanation": "Les contrôles doivent être des éléments <button> natifs ou avoir role='button' avec tabindex='0' pour être accessibles au clavier."
+    },
+    {
+      "error": "Absence de labels sur les contrôles iconographiques",
+      "example": "<button onclick=\"togglePlay()\">\n  <svg class=\"icon-play\"><use xlink:href=\"#play\"/></svg>\n</button>",
+      "correction": "<button onclick=\"togglePlay()\" aria-label=\"Lecture / Pause\">\n  <svg class=\"icon-play\" aria-hidden=\"true\"><use xlink:href=\"#play\"/></svg>\n</button>",
+      "explanation": "Les contrôles avec icônes seules doivent avoir un aria-label explicite. Les icônes SVG doivent avoir aria-hidden='true'."
+    },
+    {
+      "error": "États des boutons à bascule non indiqués",
+      "example": "<button id=\"muteBtn\" onclick=\"toggleMute()\" aria-label=\"Muet\"></button>",
+      "correction": "<button id=\"muteBtn\" onclick=\"toggleMute()\" aria-label=\"Muet\" aria-pressed=\"false\"></button>\n<!-- Le script doit mettre à jour aria-pressed à true/false lors du toggle -->",
+      "explanation": "Les boutons à bascule (play/pause, mute/unmute) doivent utiliser aria-pressed pour indiquer leur état actuel."
+    },
+    {
+      "error": "Contrôles personnalisés sans rôle ARIA",
+      "example": "<div tabindex=\"0\" onclick=\"seek(10)\" class=\"seek-forward\">+10s</div>",
+      "correction": "<div role=\"button\" tabindex=\"0\" onclick=\"seek(10)\" onkeypress=\"handleKey(event)\" aria-label=\"Avancer de 10 secondes\" class=\"seek-forward\">+10s</div>",
+      "explanation": "Les éléments non-natifs doivent avoir role='button' et gérer les événements clavier (Entrée/Espace)."
+    },
+    {
+      "error": "Ordre de tabulation illogique",
+      "example": "<!-- Contrôles dans un ordre DOM incohérent -->\n<button>Plein écran</button>\n<button>Lecture</button>\n<button>Volume</button>",
+      "correction": "<!-- Ordre logique: Lecture > Volume > Temps > Options > Plein écran -->\n<button>Lecture</button>\n<button>Volume</button>\n<button>Barre de progression</button>\n<button>Plein écran</button>",
+      "explanation": "L'ordre de tabulation doit suivre un ordre logique d'utilisation (lecture, contrôles principaux, contrôles secondaires)."
+    },
+    {
+      "error": "Bouton correctement balisé mais activation clavier à vérifier manuellement",
+      "example": "<div role=\"button\" tabindex=\"0\" aria-label=\"Lecture / Pause\" class=\"play-toggle\"></div>",
+      "correction": "<div role=\"button\" tabindex=\"0\" aria-label=\"Lecture / Pause\" aria-pressed=\"false\" onkeydown=\"handleKey(event)\" class=\"play-toggle\"></div>\n<!-- Vérifier manuellement que Entrée et Espace déclenchent bien l'action et que aria-pressed se met à jour -->",
+      "explanation": "Le DOM montre un contrôle focusable et étiqueté (signaux conformes) : ne pas conclure à une violation. L'activation effective au clavier et la mise à jour de l'état relèvent d'une vérification manuelle (warning)."
+    }
+  ],
+  "resources": [
+    "RGAA 4.1.2 - Critère 4.12 : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.12",
+    "WCAG 2.1 - 2.1.1 Keyboard : https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html",
+    "ARIA Authoring Practices - Media Player : https://www.w3.org/WAI/ARIA/apg/patterns/media-player/",
+    "MDN - Keyboard-navigable JavaScript widgets : https://developer.mozilla.org/fr/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets",
+    "AcceDe Web - Composants riches : https://www.accede-web.com/notices/interface-riche/"
+  ]
+}

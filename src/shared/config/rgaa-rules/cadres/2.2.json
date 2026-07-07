@@ -1,0 +1,154 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "2.2",
+  "ruleId": "frame-title-relevance",
+  "title": "Cadres - Pertinence du titre de cadre",
+  "description": "Pour chaque cadre ayant un titre de cadre, ce titre de cadre est-il pertinent ?",
+  "rgaaReference": "RGAA 4.1 - Critère 2.2",
+  "wcagReference": "WCAG 2.1 - 4.1.2 Nom, rôle et valeur (A)",
+  "theme": "Cadres",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux cadres (<iframe>, <frame>) qui possèdent déjà un titre.",
+    "signals": {
+      "selectors": [
+        "iframe[title]",
+        "frame[title]",
+        "iframe[aria-label]",
+        "iframe[aria-labelledby]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun cadre présent sur la page",
+      "Aucun cadre doté d'un titre à évaluer (la présence relève du critère 2.1)"
+    ]
+  },
+  "testScenarios": {
+    "frameTitleRelevance": {
+      "description": "Pertinence et unicité du titre de cadre existant.",
+      "tests": [
+        {
+          "id": "2.2.1",
+          "rgaaTestRef": "Test 2.2.1",
+          "description": "Pour chaque cadre ayant un titre, ce titre décrit-il le contenu ou la fonction du cadre et le distingue-t-il des autres cadres ?",
+          "methodology": [
+            "Comparer le titre au contenu/à la fonction du cadre (URL src, contexte)",
+            "Repérer les titres génériques (« frame », « iframe », « sans titre », URL brute)",
+            "Vérifier l'unicité des titres lorsque plusieurs cadres sont présents",
+            "En cas de doute sur la pertinence, demander une vérification manuelle"
+          ],
+          "selector": "iframe[title], frame[title]",
+          "expected": "Le titre doit être explicite, pertinent et distinctif",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractFrameTitle": true,
+            "extractFrameSrc": true,
+            "evaluateTitleRelevance": true,
+            "checkUniqueness": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "iframe[title]",
+        "frame[title]",
+        "iframe[aria-label]",
+        "iframe[aria-labelledby]"
+      ],
+      "attributes": [
+        "title",
+        "src",
+        "name",
+        "id",
+        "aria-label",
+        "aria-labelledby"
+      ],
+      "context": {
+        "surroundingText": 150,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Pour chaque cadre (iframe/frame) possédant DÉJÀ un titre (attribut title non vide, ou aria-label/aria-labelledby), évaluer la PERTINENCE de ce titre. Ne pas réévaluer ici l'absence de titre (critère 2.1).",
+        "Un titre pertinent décrit le CONTENU ou la FONCTION du cadre et permet de le distinguer des autres cadres de la page.",
+        "DOUTE → WARNING : la pertinence est une APPRÉCIATION. Lorsqu'un titre existe mais que sa pertinence ne peut pas être tranchée avec certitude (titre court, ambigu, en langue étrangère, ou dépendant d'un contenu distant non visible), émettre un finding type=\"warning\" demandant une vérification manuelle, plutôt qu'une violation.",
+        "Signaler les titres manifestement NON pertinents (génériques : « frame », « iframe », « sans titre », « untitled », ou simple URL/nom de fichier src) et les titres DUPLIQUÉS entre plusieurs cadres : par défaut en type=\"warning\" (vérification manuelle), sauf certitude établie.",
+        "Proposer un titre pertinent fondé sur le contenu ou l'URL src.",
+        "Si aucun cadre titré n'est présent, conclure NON APPLICABLE (compliant=true, findings=[])."
+      ],
+      "important": [
+        "La pertinence d'un titre est SUBJECTIVE : en cas de doute, émettre type=\"warning\" (vérification manuelle), jamais de violation ferme.",
+        "Titres génériques (« frame », « iframe », URL brute) ou dupliqués : à signaler, de préférence en warning pour confirmation humaine.",
+        "Ne pas signaler l'absence de titre : cela relève du critère 2.1.",
+        "Si aucun cadre titré : compliant=true, severity='minor', summary='Aucun cadre titré à évaluer, critère non applicable', findings=[].",
+        "Maximum 5 findings, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'frame-title-relevance'",
+          "compliant": "boolean - true si tous les titres présents sont pertinents (ou aucun cadre titré)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string",
+          "totalElements": "number - Nombre de cadres titrés évalués",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "css selector",
+          "issue": "string<=150",
+          "recommendation": "string avec exemple HTML (title pertinent)",
+          "wcagReference": "4.1.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 2.2), spécialisé dans l'évaluation de la pertinence et de l'unicité des titres de cadre. La pertinence étant une appréciation, tu privilégies un avertissement (warning) demandant une vérification manuelle en cas de doute."
+  },
+  "automatedChecks": [
+    "Détection des titres génériques (« frame », « iframe »)",
+    "Détection des titres dupliqués entre plusieurs cadres"
+  ],
+  "manualChecks": [
+    "Pertinence du titre par rapport au contenu réel du cadre",
+    "Caractère distinctif et explicite du titre"
+  ],
+  "commonErrors": [
+    {
+      "error": "Titre générique ou non pertinent",
+      "example": "<iframe src=\"map.html\" title=\"Frame\"></iframe>",
+      "correction": "<iframe src=\"map.html\" title=\"Carte interactive de localisation\"></iframe>",
+      "explanation": "Le titre doit décrire précisément le contenu ou la fonction du cadre, pas reprendre un mot générique."
+    },
+    {
+      "error": "Plusieurs cadres avec le même titre",
+      "example": "<iframe src=\"video1.mp4\" title=\"Vidéo\"></iframe>\n<iframe src=\"video2.mp4\" title=\"Vidéo\"></iframe>",
+      "correction": "<iframe src=\"video1.mp4\" title=\"Vidéo : Introduction au produit\"></iframe>\n<iframe src=\"video2.mp4\" title=\"Vidéo : Tutoriel d'utilisation\"></iframe>",
+      "explanation": "Chaque cadre doit avoir un titre unique permettant de le distinguer des autres."
+    },
+    {
+      "error": "Titre reprenant l'URL du cadre",
+      "example": "<iframe src=\"https://maps.example.com/embed/123\" title=\"https://maps.example.com/embed/123\"></iframe>",
+      "correction": "<iframe src=\"https://maps.example.com/embed/123\" title=\"Plan d'accès au siège social\"></iframe>",
+      "explanation": "Une URL brute n'est pas un titre pertinent : il faut décrire le contenu du cadre."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#2.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html"
+  ]
+}

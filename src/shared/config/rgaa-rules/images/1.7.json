@@ -1,0 +1,143 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.7",
+  "ruleId": "image-description-relevance",
+  "title": "Images - Pertinence de la description détaillée",
+  "description": "Pour chaque image porteuse d'information ayant une description détaillée, cette description est-elle pertinente ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.7",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux images complexes qui possèdent déjà une description détaillée (longdesc, aria-describedby, lien ou texte adjacent).",
+    "signals": {
+      "selectors": [
+        "img[aria-describedby]",
+        "img[longdesc]",
+        "svg[aria-describedby]",
+        "[role='img'][aria-describedby]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune image complexe avec description détaillée"
+    ]
+  },
+  "testScenarios": {
+    "descriptionRelevance": {
+      "description": "Évaluation de l'exhaustivité et de la pertinence de la description détaillée existante.",
+      "tests": [
+        {
+          "id": "1.7.1",
+          "rgaaTestRef": "Test 1.7.1",
+          "description": "La description détaillée restitue-t-elle de manière exhaustive et pertinente l'information véhiculée par l'image complexe ?",
+          "methodology": [
+            "Comparer la description détaillée au contenu visuel de l'image complexe",
+            "Vérifier que toutes les informations utiles (données, relations, tendances) sont restituées",
+            "Vérifier l'absence d'informations erronées ou hors sujet"
+          ],
+          "selector": "img[aria-describedby], img[longdesc], svg[aria-describedby], [role='img'][aria-describedby]",
+          "expected": "La description doit restituer fidèlement et complètement l'information de l'image",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectComplexImage": true,
+            "evaluateDescriptionRelevance": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img[aria-describedby]",
+          "img[longdesc]",
+          "svg[aria-describedby]",
+          "[role='img'][aria-describedby]",
+          "[id]"
+        ],
+        "attributes": [
+          "alt",
+          "longdesc",
+          "aria-describedby",
+          "src",
+          "role"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 600
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Pour chaque image complexe disposant DÉJÀ d'une description détaillée (ne pas réévaluer ici l'absence de description : cela relève du critère 1.6), localiser cette description (cible de aria-describedby, longdesc, lien ou texte adjacent).",
+        "Comparer la description au contenu visible de l'image (capture d'écran) : la description doit restituer de façon EXHAUSTIVE et FIDÈLE l'information (données chiffrées, relations, tendances, étapes).",
+        "Signaler (type=\"warning\" ou \"violation\") les descriptions incomplètes (données manquantes), erronées, ou hors sujet.",
+        "Si aucune image complexe ne possède de description détaillée à évaluer, conclure non applicable.",
+        "Proposer les compléments nécessaires lorsque la description est lacunaire."
+      ],
+      "important": [
+        "Ne pas signaler l'absence de description (critère 1.6) : se concentrer sur la qualité des descriptions existantes.",
+        "Une description doit restituer les données clés, pas seulement nommer l'image.",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-description-relevance'",
+          "compliant": "boolean - true si les descriptions existantes sont pertinentes (ou aucune à évaluer)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre de descriptions détaillées évaluées",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Compléments à apporter à la description",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.7), spécialisé dans l'évaluation de l'exhaustivité et de la pertinence des descriptions détaillées des images complexes."
+  },
+  "automatedChecks": [
+    "Présence d'une cible valide pour aria-describedby/longdesc"
+  ],
+  "manualChecks": [
+    "Exhaustivité de la description par rapport au contenu de l'image complexe",
+    "Exactitude et clarté de la description détaillée"
+  ],
+  "commonErrors": [
+    {
+      "error": "Description détaillée incomplète",
+      "example": "<div id=\"graph-desc\">Le graphique montre une hausse.</div>",
+      "correction": "<div id=\"graph-desc\">Évolution mensuelle du chiffre d'affaires 2024 : 1,2 M€ en janvier, 1,5 M€ en juin, 2,1 M€ en décembre, soit +75 % sur l'année.</div>",
+      "explanation": "La description doit restituer toutes les données utiles, pas seulement la tendance générale."
+    },
+    {
+      "error": "Description hors sujet ou erronée",
+      "example": "<div id=\"map-desc\">Photo de l'équipe.</div>",
+      "correction": "<div id=\"map-desc\">Carte des 12 agences en France, concentrées en Île-de-France et dans le quart sud-est.</div>",
+      "explanation": "La description doit correspondre exactement à l'image qu'elle décrit."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.7",
+    "https://www.w3.org/WAI/tutorials/images/complex/",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+  ]
+}

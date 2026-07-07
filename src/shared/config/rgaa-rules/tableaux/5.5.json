@@ -1,0 +1,170 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "5.5",
+  "ruleId": "table-complex-summary",
+  "title": "Tableaux - Résumé pour tableau complexe",
+  "description": "Pour chaque tableau de données complexe, un résumé est-il disponible ?",
+  "rgaaReference": "RGAA 4.1 - Critère 5.5",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Tableaux",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux tableaux de données complexes (structure à plusieurs niveaux, fusions de cellules, relations complexes)",
+    "signals": {
+      "selectors": [
+        "table"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun tableau présent",
+      "Uniquement des tableaux simples"
+    ]
+  },
+  "testScenarios": {
+    "complexTableSummary": {
+      "description": "Résumé pour tableaux complexes",
+      "tests": [
+        {
+          "id": "5.5.1",
+          "rgaaTestRef": "Test 5.5.1",
+          "description": "Le tableau complexe a-t-il un résumé disponible ?",
+          "methodology": [
+            "Identifier les tableaux complexes (colspan, rowspan multiples, plusieurs niveaux d'en-têtes)",
+            "Vérifier la présence d'un résumé via aria-describedby pointant vers un élément visible",
+            "Ou vérifier la présence d'un paragraphe adjacent expliquant la structure",
+            "Ou vérifier l'attribut summary (obsolète HTML5 mais acceptable RGAA)"
+          ],
+          "selector": "table",
+          "expected": "Les tableaux complexes doivent avoir un résumé expliquant leur structure",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectComplexTable": true,
+            "checkSummaryPresence": true,
+            "evaluateSummaryQuality": true
+          }
+        },
+        {
+          "id": "5.5.2",
+          "rgaaTestRef": "Test 5.5.2",
+          "description": "Le résumé est-il pertinent et décrit-il la structure du tableau ?",
+          "methodology": [
+            "Lire le résumé fourni",
+            "Vérifier qu'il explique la structure et l'organisation du tableau",
+            "Vérifier qu'il aide à comprendre les relations entre en-têtes et données"
+          ],
+          "selector": "table[aria-describedby], table[summary]",
+          "expected": "Le résumé doit expliquer clairement la structure complexe",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "table",
+        "th",
+        "td"
+      ],
+      "attributes": [
+        "summary",
+        "aria-describedby",
+        "colspan",
+        "rowspan",
+        "headers",
+        "id"
+      ],
+      "context": {
+        "surroundingText": 500,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Si le tableau complexe possède DÉJÀ un résumé (attribut aria-describedby pointant vers un élément existant, OU attribut summary, OU un <caption>), le critère est SATISFAIT : conclure IMMÉDIATEMENT compliant=true, findings=[]. Ne produis NI warning NI violation sur la seule 'pertinence à vérifier' du résumé (appréciation éditoriale non automatisable).",
+        "Recenser tous les tableaux : balises <table> du DOM extrait. Pour chacun, relever les SIGNAUX MÉCANIQUES de complexité (présence de colspan/rowspan, nombre de niveaux d'en-têtes, en-têtes à la fois en ligne et en colonne) et les signaux de résumé (présence de aria-describedby, d'un attribut summary, d'un <th>/scope multi-niveaux). Appliquer ensuite les étapes DANS L'ORDRE.",
+        "ÉTAPE 1 (non applicable) — Si la page ne contient aucun tableau, ou uniquement des tableaux SIMPLES (aucun colspan/rowspan, un seul niveau d'en-têtes), conclure NON APPLICABLE (compliant=true, severity='minor', summary='Aucun tableau complexe détecté, critère non applicable', findings=[]). Un tableau simple n'exige aucun résumé.",
+        "ÉTAPE 2 (complexité — appréciation → warning) — Le caractère réellement COMPLEXE d'un tableau (au sens RGAA : structure que les en-têtes seuls ne suffisent pas à comprendre) dépend d'une analyse de la structure et ne se déduit pas d'un seul attribut. Quand les signaux DOM indiquent une complexité (colspan/rowspan multiples, plusieurs niveaux d'en-têtes) mais qu'aucun résumé n'est présent, NE PAS conclure à une violation : émettre un finding type=\"warning\", severity='serious' demandant une vérification manuelle (le tableau est-il assez complexe pour exiger un résumé ?).",
+        "ÉTAPE 3 (présence d'un résumé) — Relever de façon déterministe la présence d'un résumé : aria-describedby pointant vers un élément, attribut summary, ou paragraphe adjacent décrivant la structure. Noter qu'un résumé référencé via aria-describedby renvoie à un CONTENU DISTANT dont la qualité ne peut être tranchée mécaniquement.",
+        "ÉTAPE 4 (qualité — appréciation → warning) — La PERTINENCE et l'utilité d'un résumé présent relèvent d'une appréciation éditoriale : émettre au plus un finding type=\"warning\", severity='moderate' (vérification manuelle) si le résumé semble générique ou incomplet. Ne jamais produire de violation sur ce motif.",
+        "ÉTAPE 5 — En cas de DOUTE sur la nécessité d'un résumé ou sur la complexité, privilégier type=\"warning\" plutôt qu'une violation, et proposer un exemple de résumé fondé sur la structure observée."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'table-complex-summary'",
+          "compliant": "boolean - true si conforme ou si aucun tableau complexe détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number - Nombre total de tableaux",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de résumé applicable",
+          "rgaaTestRef": "Test 5.5.1 ou Test 5.5.2",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (colspan/rowspan, niveaux d'en-têtes, aria-describedby, summary) donnent toujours le même verdict.",
+        "La complexité réelle et l'utilité d'un résumé relèvent d'une APPRÉCIATION → type='warning' (vérification manuelle), jamais de violation : un tableau complexe sans résumé est un warning (severity='serious'), un résumé présent mais douteux est un warning (severity='moderate').",
+        "Distinguer les tableaux simples (aucun résumé requis, non applicable) des tableaux à structure complexe.",
+        "Si aucun tableau complexe détecté: compliant=true, severity='minor', summary='Aucun tableau complexe détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères) ; toujours proposer un exemple de résumé pertinent.",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 5.5 - Résumé de tableau complexe), spécialisé dans l'analyse des tableaux de données complexes. Tu te fondes sur les signaux mécaniques du DOM (colspan/rowspan, niveaux d'en-têtes, aria-describedby, summary) pour un verdict reproductible. Comme la complexité réelle et l'utilité d'un résumé dépendent d'une appréciation, tu privilégies systématiquement la vérification manuelle (warning) plutôt qu'une violation."
+  },
+  "automatedChecks": [
+    "Détection de tableaux avec colspan/rowspan",
+    "Présence d'aria-describedby ou summary",
+    "Validation des références aria-describedby"
+  ],
+  "manualChecks": [
+    "Identification des tableaux réellement complexes",
+    "Pertinence et utilité du résumé",
+    "Clarté de l'explication de la structure"
+  ],
+  "commonErrors": [
+    {
+      "error": "Tableau complexe sans résumé",
+      "example": "<table>\n  <caption>Statistiques</caption>\n  <tr><th rowspan=\"2\">Région</th><th colspan=\"2\">Ventes</th></tr>\n  <tr><th>2025</th><th>2026</th></tr>\n  <tr><th>Nord</th><td>100</td><td>120</td></tr>\n</table>",
+      "correction": "<table aria-describedby=\"table-summary\">\n  <caption>Statistiques</caption>\n  <tr><th rowspan=\"2\">Région</th><th colspan=\"2\">Ventes</th></tr>\n  <tr><th>2025</th><th>2026</th></tr>\n  <tr><th>Nord</th><td>100</td><td>120</td></tr>\n</table>\n<p id=\"table-summary\">Ce tableau présente les ventes par région sur 2 années. La première colonne liste les régions, les deux colonnes suivantes présentent les ventes pour 2025 et 2026.</p>",
+      "explanation": "Un tableau complexe nécessite un résumé expliquant sa structure"
+    },
+    {
+      "error": "Résumé présent mais non pertinent",
+      "example": "<table summary=\"Tableau\">\n  <caption>Données complexes</caption>\n  <tr><th colspan=\"3\">En-têtes multiples</th></tr>\n</table>",
+      "correction": "<table aria-describedby=\"desc\">\n  <caption>Données complexes</caption>\n  <tr><th colspan=\"3\">En-têtes multiples</th></tr>\n</table>\n<p id=\"desc\">Ce tableau présente [description de la structure et de l'organisation des données].</p>",
+      "explanation": "Le résumé doit expliquer concrètement la structure du tableau"
+    },
+    {
+      "error": "Complexité du tableau à confirmer avant d'exiger un résumé (à vérifier manuellement)",
+      "example": "<table>\n  <caption>Planning</caption>\n  <tr><th rowspan=\"2\" scope=\"row\">Équipe</th><th colspan=\"2\" scope=\"colgroup\">Semaine</th></tr>\n  <tr><th scope=\"col\">Matin</th><th scope=\"col\">Après-midi</th></tr>\n</table>",
+      "correction": "<table aria-describedby=\"planning-desc\">\n  <caption>Planning</caption>\n  <tr><th rowspan=\"2\" scope=\"row\">Équipe</th><th colspan=\"2\" scope=\"colgroup\">Semaine</th></tr>\n  <tr><th scope=\"col\">Matin</th><th scope=\"col\">Après-midi</th></tr>\n</table>\n<p id=\"planning-desc\">Tableau à deux niveaux d'en-têtes : chaque semaine est subdivisée en matin et après-midi par équipe.</p>",
+      "explanation": "Les fusions (colspan/rowspan) signalent une complexité potentielle, mais le besoin réel d'un résumé dépend de la lisibilité de la structure : signaler en warning pour vérification manuelle plutôt que conclure à une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#5.5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://www.w3.org/WAI/tutorials/tables/multi-level/"
+  ]
+}

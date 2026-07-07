@@ -1,0 +1,147 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.8",
+  "ruleId": "image-text",
+  "title": "Images - Image-texte remplacée par du texte stylé",
+  "description": "Chaque image texte porteuse d'information, en l'absence d'un mécanisme de remplacement, doit si possible être remplacée par du texte stylé. Cette règle est-elle respectée (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.8",
+  "wcagReference": "WCAG 2.1 - 1.4.5 Texte sous forme d'image (AA)",
+  "theme": "Images",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique aux images contenant du texte (image-texte) porteuses d'information, hors cas particuliers.",
+    "signals": {
+      "selectors": [
+        "img",
+        "svg",
+        "canvas",
+        "input[type='image']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune image présente",
+      "Aucune image ne contient de texte",
+      "Cas particuliers : logos, noms commerciaux/marques, CAPTCHA et images-test, images où la présentation graphique du texte est essentielle à l'information transmise"
+    ]
+  },
+  "testScenarios": {
+    "imageText": {
+      "description": "Les images-textes porteuses d'information doivent, si possible, être remplacées par du texte stylé.",
+      "tests": [
+        {
+          "id": "1.8.1",
+          "rgaaTestRef": "Test 1.8.1",
+          "description": "Chaque image-texte (hors cas particuliers et hors mécanisme de remplacement) peut-elle être remplacée par du texte stylé (HTML + CSS) ?",
+          "methodology": [
+            "Détecter visuellement les images contenant du texte",
+            "Exclure logos, marques, CAPTCHA, images-test, et cas où la présentation graphique est essentielle",
+            "Vérifier l'absence d'un mécanisme de remplacement permettant d'obtenir du texte stylé",
+            "Évaluer si l'effet visuel peut être reproduit en CSS"
+          ],
+          "selector": "img, svg, canvas, input[type='image']",
+          "expected": "Privilégier du texte réel stylé en CSS plutôt qu'une image-texte, sauf cas particuliers",
+          "severity": "moderate",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectTextInImage": true,
+            "excludeSpecialCases": true,
+            "evaluateCssReplacement": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img",
+          "svg",
+          "canvas",
+          "input[type='image']"
+        ],
+        "attributes": [
+          "alt",
+          "src",
+          "aria-label",
+          "role"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 200
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Analyser visuellement chaque image (capture d'écran) pour détecter la présence de TEXTE intégré à l'image (image-texte).",
+        "Exclure les CAS PARTICULIERS conformes par nature : logos, noms commerciaux et marques, CAPTCHA et images-test, et images où la présentation graphique précise du texte est essentielle à l'information (par ex. reproduction d'un document, typographie de marque indissociable).",
+        "Pour les images-textes restantes (hors cas particuliers) et en l'absence d'un mécanisme de remplacement, signaler qu'il faut privilégier du TEXTE RÉEL stylé en HTML + CSS.",
+        "Proposer une solution de remplacement concrète (texte HTML + CSS reproduisant l'effet visuel).",
+        "Si aucune image-texte n'est détectée (hors cas particuliers), conclure non applicable.",
+        "Distinguer clairement ce critère (image-texte → texte stylé, niveau AA) du critère 1.1 (présence d'une alternative textuelle)."
+      ],
+      "important": [
+        "Si aucune image-texte détectée : compliant=true, severity='minor', summary='Aucune image-texte détectée, critère non applicable', findings=[].",
+        "Logos, marques, CAPTCHA et images-test sont des cas particuliers : ne pas les signaler.",
+        "Type de finding privilégié : recommendation (sauf image-texte manifestement injustifiée → warning).",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-text'",
+          "compliant": "boolean - true si conforme ou si aucune image-texte (non applicable)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre d'images-textes détectées",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution de remplacement HTML/CSS",
+          "wcagReference": "string - Ex: 1.4.5"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.8, WCAG 1.4.5), spécialisé dans la détection des images-textes et leur remplacement par du texte stylé, en tenant compte des cas particuliers (logos, marques, CAPTCHA, présentation essentielle)."
+  },
+  "automatedChecks": [
+    "Présence d'un attribut alt sur les images candidates"
+  ],
+  "manualChecks": [
+    "Détection visuelle du texte intégré aux images",
+    "Identification des cas particuliers (logos, marques, CAPTCHA, présentation essentielle)",
+    "Évaluation de la possibilité de remplacer par du texte stylé en CSS"
+  ],
+  "commonErrors": [
+    {
+      "error": "Titre/slogan en image-texte au lieu de texte stylé",
+      "example": "<img src=\"titre-stylise.png\" alt=\"Nos engagements\">",
+      "correction": "<h2 class=\"titre-stylise\">Nos engagements</h2>\n<style>.titre-stylise { font-family: 'Marque', sans-serif; color: #e74c3c; }</style>",
+      "explanation": "Hors cas particuliers, privilégier du texte HTML stylé en CSS, qui reste lisible, redimensionnable et adaptable par l'utilisateur."
+    },
+    {
+      "error": "Bouton réalisé en image-texte pour un simple effet visuel",
+      "example": "<img src=\"button.png\" alt=\"Cliquez ici\">",
+      "correction": "<button class=\"cta\">Cliquez ici</button>\n<style>.cta { background: linear-gradient(#36d, #14a); color: #fff; }</style>",
+      "explanation": "Les effets visuels simples doivent être réalisés en CSS sur du texte réel."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.8",
+    "https://www.w3.org/WAI/WCAG21/Understanding/images-of-text.html"
+  ]
+}

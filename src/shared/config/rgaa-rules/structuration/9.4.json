@@ -1,0 +1,187 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "9.4",
+  "ruleId": "structure-citation",
+  "title": "Structuration - Citations",
+  "description": "Dans chaque page web, chaque citation est-elle correctement indiquée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 9.4",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Structuration",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages contenant des citations",
+    "signals": {
+      "selectors": [
+        "blockquote",
+        "q",
+        "[cite]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune citation présente dans la page"
+    ]
+  },
+  "testScenarios": {
+    "citationStructure": {
+      "description": "Balisage correct des citations",
+      "tests": [
+        {
+          "id": "9.4.1",
+          "rgaaTestRef": "Test 9.4.1",
+          "description": "Chaque citation longue est-elle structurée avec la balise <blockquote> ?",
+          "methodology": [
+            "Identifier les citations longues (plusieurs lignes, paragraphes)",
+            "Vérifier qu'elles sont balisées avec <blockquote>",
+            "Vérifier que <blockquote> n'est pas utilisé pour indenter du texte non cité"
+          ],
+          "selector": "blockquote",
+          "expected": "Les citations longues doivent utiliser <blockquote>",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectCitations": true,
+            "verifyBlockquoteUsage": true
+          }
+        },
+        {
+          "id": "9.4.2",
+          "rgaaTestRef": "Test 9.4.2",
+          "description": "Chaque citation courte est-elle structurée avec la balise <q> ?",
+          "methodology": [
+            "Identifier les citations courtes dans les paragraphes",
+            "Vérifier qu'elles sont balisées avec <q>",
+            "Vérifier que les guillemets ne sont pas ajoutés manuellement avec <q>"
+          ],
+          "selector": "q",
+          "expected": "Les citations courtes peuvent utiliser <q>",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "9.4.3",
+          "rgaaTestRef": "Test 9.4.3",
+          "description": "Les citations ont-elles une source indiquée si nécessaire ?",
+          "methodology": [
+            "Pour chaque <blockquote>, vérifier si une source est nécessaire",
+            "Vérifier la présence d'un attribut cite ou d'un élément <cite>",
+            "Vérifier que la source est accessible"
+          ],
+          "selector": "blockquote[cite], blockquote:has(cite)",
+          "expected": "Les citations doivent avoir une source si pertinent",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 9.4 - Balisage des citations). Tu appliques une approche DÉTERMINISTE fondée sur les signaux mécaniques du DOM (présence/absence des balises q, blockquote, cite, guillemets dans le texte) ; comme la qualification d'un passage comme citation relève d'une appréciation éditoriale, tu privilégies systématiquement le warning (vérification manuelle) plutôt qu'une violation ferme.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "blockquote",
+        "q",
+        "cite",
+        "p"
+      ],
+      "attributes": [
+        "cite"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier dans le DOM les éléments de citation : <blockquote>, <q>, <cite> et les attributs cite. Si aucun de ces éléments n'est présent ET qu'aucun passage manifestement cité (texte entre guillemets attribué à une source) n'apparaît, conclure conclusion='non_applicable' (findings=[]).",
+        "ÉTAPE 1 (signal mécanique — mauvais usage de blockquote) : repérer les <blockquote> dont le contenu n'est pas une citation (texte simplement indenté/mis en avant). Comme déterminer si un contenu EST une citation relève d'une appréciation éditoriale, émettre un finding type='warning', severity='moderate' pour vérification manuelle, et non une violation ferme.",
+        "ÉTAPE 2 (signal mécanique — guillemets doublés dans <q>) : si un <q> contient des guillemets saisis manuellement (« » ou \" ) en plus de ceux générés par le navigateur, c'est un défaut OBJECTIF de doublement → finding type='violation', severity='minor', avec correction (retirer les guillemets manuels).",
+        "ÉTAPE 3 (citation courte non balisée) : repérer dans les paragraphes les courts passages entre guillemets attribués à une source qui ne sont pas dans un <q>. Comme l'identification d'une citation est éditoriale → finding type='recommendation', severity='minor' (suggérer <q>), jamais de violation.",
+        "ÉTAPE 4 (source) : pour un <blockquote> qui est bien une citation, l'absence d'attribut cite et d'élément <cite> est une amélioration possible → finding type='recommendation', severity='minor' (la source n'est pas toujours requise).",
+        "ÉTAPE 5 (doute → warning) : toute incertitude sur la nature réellement citationnelle d'un contenu, ou sur le caractère long/court d'une citation, doit conduire à un finding type='warning' (vérification manuelle), jamais à une violation.",
+        "ÉTAPE 6 : pour chaque finding, fournir le balisage HTML approprié (q, blockquote + cite/<cite>) et préciser l'élément concerné."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'structure-citation'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML correct",
+          "rgaaTestRef": "Test 9.4.1, 9.4.2 ou 9.4.3",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence de q/blockquote/cite, guillemets, attribut cite) doivent toujours produire le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS (ex. guillemets doublés dans <q>) ; la qualification d'un contenu comme citation reste une appréciation éditoriale.",
+        "En cas de doute (le contenu est-il une citation ? blockquote détourné pour indenter ?) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Si aucune citation : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection des balises blockquote et q",
+    "Vérification de la présence de l'attribut cite"
+  ],
+  "manualChecks": [
+    "Vérification que le contenu est réellement une citation",
+    "Pertinence de l'utilisation de blockquote vs q",
+    "Accessibilité et pertinence de la source citée"
+  ],
+  "commonErrors": [
+    {
+      "error": "blockquote utilisé pour indenter (à vérifier manuellement)",
+      "example": "<blockquote>Ce texte n'est pas une citation</blockquote>",
+      "correction": "<p class=\"indented\">Ce texte n'est pas une citation</p>\n/* CSS */\n.indented { margin-left: 2em; }",
+      "explanation": "Utiliser <blockquote> uniquement pour les citations, pas pour l'indentation. Comme savoir si le contenu est une citation relève d'une appréciation éditoriale, signaler en warning (vérification manuelle)."
+    },
+    {
+      "error": "Citation sans balisage sémantique",
+      "example": "<p>\"C'est une citation\" - Auteur</p>",
+      "correction": "<blockquote>\n  <p>C'est une citation</p>\n  <footer>— <cite>Auteur</cite></footer>\n</blockquote>",
+      "explanation": "Utiliser blockquote pour structurer les citations avec leur source. L'identification d'une citation étant éditoriale, signaler en recommandation."
+    },
+    {
+      "error": "Guillemets manuels avec balise q",
+      "example": "<q>\"citation\"</q>",
+      "correction": "<q>citation</q>",
+      "explanation": "La balise <q> ajoute automatiquement les guillemets : les doubler est un défaut objectif, à corriger en retirant les guillemets manuels."
+    },
+    {
+      "error": "Citation sans source identifiable",
+      "example": "<blockquote>Citation importante</blockquote>",
+      "correction": "<blockquote cite=\"https://source.example.com\">\n  <p>Citation importante</p>\n  <footer>— <cite>Nom de l'auteur</cite></footer>\n</blockquote>",
+      "explanation": "Indiquer la source avec l'attribut cite et/ou l'élément <cite> quand elle est pertinente."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#9.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://developer.mozilla.org/fr/docs/Web/HTML/Element/blockquote"
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "7.1",
+  "ruleId": "script-keyboard-controllable",
+  "title": "Scripts - Contrôlable au clavier",
+  "description": "Chaque script est-il, si nécessaire, contrôlable par le clavier et tout dispositif de pointage ?",
+  "rgaaReference": "RGAA 4.1 - Critère 7.1",
+  "wcagReference": "WCAG 2.1 - 2.1.1 Clavier (A)",
+  "theme": "Scripts",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les composants interactifs créés ou contrôlés par JavaScript",
+    "signals": {
+      "selectors": [
+        "[onclick]",
+        "[onmousedown]",
+        "[onmouseover]",
+        "[tabindex]",
+        "button",
+        "a[href='#']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun composant interactif scripté",
+      "Page entièrement statique"
+    ]
+  },
+  "testScenarios": {
+    "keyboardAccessibility": {
+      "description": "Accessibilité au clavier des composants scriptés",
+      "tests": [
+        {
+          "id": "7.1.1",
+          "rgaaTestRef": "Test 7.1.1",
+          "description": "Chaque fonctionnalité accessible à la souris est-elle aussi accessible au clavier ?",
+          "methodology": [
+            "Identifier tous les éléments avec événements souris (onclick, onmousedown, onmouseover, etc.)",
+            "Vérifier la présence d'événements clavier équivalents (onkeydown, onkeyup, onkeypress)",
+            "Ou vérifier l'utilisation d'éléments natifs interactifs (button, a)",
+            "Tester la navigation au clavier (Tab, Enter, Espace)"
+          ],
+          "selector": "[onclick], [onmousedown], [onmouseover], [onmouseup], [onmousemove]",
+          "expected": "Tous les événements souris doivent avoir un équivalent clavier",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectMouseEvents": true,
+            "checkKeyboardEvents": true,
+            "evaluateAccessibility": true
+          }
+        },
+        {
+          "id": "7.1.2",
+          "rgaaTestRef": "Test 7.1.2",
+          "description": "Les éléments interactifs non-natifs ont-ils role, tabindex et gestion clavier appropriés ?",
+          "methodology": [
+            "Identifier les div, span ou autres éléments avec événements onclick",
+            "Vérifier tabindex=\"0\" ou autre valeur pour rendre focusable",
+            "Vérifier role ARIA approprié (button, link, menuitem, etc.)",
+            "Vérifier gestion des touches Enter et Espace"
+          ],
+          "selector": "div[onclick], span[onclick], [role='button']:not(button), [role='link']:not(a)",
+          "expected": "Les éléments interactifs non-natifs doivent être accessibles au clavier",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "7.1.3",
+          "rgaaTestRef": "Test 7.1.3",
+          "description": "Les composants complexes (accordéons, onglets, menus) sont-ils navigables au clavier ?",
+          "methodology": [
+            "Identifier les composants complexes (tabs, accordion, dropdown, modal)",
+            "Vérifier navigation au clavier selon les patterns ARIA",
+            "Tester flèches directionnelles, Escape, Home, End si approprié"
+          ],
+          "selector": "[role='tablist'], [role='menu'], [role='dialog'], [role='tree']",
+          "expected": "Les composants doivent suivre les patterns de navigation ARIA",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 7.1 - Scripts contrôlables au clavier, WCAG 2.1.1), spécialisé dans une analyse DÉTERMINISTE de l'accessibilité clavier des composants JavaScript : tu te fondes sur les signaux mécaniques du DOM (gestionnaires souris vs clavier, élément natif vs custom, tabindex, role ARIA), tu réserves la violation aux défauts objectivement vérifiables et, dès qu'un verdict dépend d'un comportement runtime non observable dans le DOM, tu émets un warning invitant à une vérification manuelle.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "[onclick]",
+        "[onmousedown]",
+        "[onmouseover]",
+        "[tabindex]",
+        "[role]",
+        "button",
+        "a",
+        "input"
+      ],
+      "attributes": [
+        "onclick",
+        "onmousedown",
+        "onmouseover",
+        "onkeydown",
+        "onkeyup",
+        "onkeypress",
+        "tabindex",
+        "role",
+        "aria-*"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 — Recenser les éléments interactifs scriptés à partir de SIGNAUX MÉCANIQUES du DOM : présence d'un gestionnaire de pointage en attribut (onclick, onmousedown, onmouseup, onmouseover, onmousemove), présence d'un role ARIA interactif (button, link, menuitem, tab, etc.), valeur de tabindex. Si AUCUN de ces signaux n'est présent (page statique), conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 2 (déterministe) — Pour chaque élément porteur d'un gestionnaire souris, déterminer mécaniquement s'il est NATIF interactif (<button>, <a href>, <input>, <select>, <textarea>) : un élément natif est focusable et actionnable au clavier par défaut, donc CONFORME pour ce point. Ne pas le signaler.",
+        "ÉTAPE 3 (violation objective) — Élément NON natif (div, span, li, i, …) portant un gestionnaire souris (onclick/onmousedown/…) ET dépourvu À LA FOIS de tabindex le rendant focusable (tabindex absent ou tabindex négatif) et de gestionnaire clavier équivalent en attribut (onkeydown/onkeyup/onkeypress) : finding type=\"violation\", severity critical (l'élément n'est ni atteignable ni actionnable au clavier).",
+        "ÉTAPE 4 (violation objective) — Élément non natif avec role=\"button\"/\"link\"/\"menuitem\" mais SANS tabindex le rendant focusable (tabindex=\"0\" ou positif absent) : finding type=\"violation\", severity critical, car le rôle annonce un composant interactif non atteignable au clavier.",
+        "ÉTAPE 5 (doute → warning) — Élément non natif disposant d'un tabindex=\"0\" ET d'un gestionnaire clavier en attribut : les signaux DOM sont présents, mais la PERTINENCE de la gestion (touches Enter/Espace réellement gérées, comportement attendu) n'est pas vérifiable statiquement. Émettre au plus un finding type=\"warning\" pour vérification manuelle si un doute subsiste, sinon ne rien signaler.",
+        "ÉTAPE 6 (doute → warning) — Composants complexes signalés par un rôle composite (role=\"tablist\", \"menu\", \"dialog\", \"tree\", \"combobox\") : la conformité dépend de la navigation clavier au runtime (flèches, Home/End, Escape) NON observable dans le DOM. Ne jamais conclure à une violation ferme ; émettre un finding type=\"warning\" demandant une vérification manuelle selon les ARIA Authoring Practices.",
+        "ÉTAPE 7 — La logique attachée via addEventListener (gestionnaires non présents en attribut HTML) n'est PAS visible dans le DOM extrait : ne pas l'inférer. En l'absence d'attribut clavier sur un élément non natif interactif, traiter selon les étapes 3-4 (violation) ; en cas d'ambiguïté sur le type d'élément, préférer le warning.",
+        "ÉTAPE 8 — Pour chaque violation ou warning, proposer une correction concrète : remplacer par un élément natif (<button>) ou ajouter role + tabindex=\"0\" + gestion clavier Enter/Espace."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (type d'élément, gestionnaires en attribut, tabindex, role) doivent toujours produire le même verdict.",
+        "Violation réservée aux défauts OBJECTIFS du DOM : élément non natif interactif non focusable et/ou sans gestion clavier équivalente.",
+        "Doute → type=\"warning\" (vérification manuelle) : navigation clavier des composants ARIA composites, logique attachée hors attribut, pertinence réelle de la gestion clavier.",
+        "Non applicable si aucun composant interactif scripté n'est détecté : compliant=true, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'script-keyboard-controllable'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de code HTML/JS accessible",
+          "rgaaTestRef": "Test 7.1.1, 7.1.2 ou 7.1.3",
+          "wcagReference": "2.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    }
+  },
+  "automatedChecks": [
+    "Détection d'événements souris sans équivalent clavier",
+    "Détection d'éléments custom interactifs sans tabindex",
+    "Vérification des rôles ARIA sur éléments interactifs"
+  ],
+  "manualChecks": [
+    "Test réel de navigation au clavier",
+    "Vérification du bon fonctionnement des patterns ARIA",
+    "Test de toutes les fonctionnalités critiques au clavier"
+  ],
+  "commonErrors": [
+    {
+      "error": "onclick sur div sans gestion clavier",
+      "example": "<div onclick=\"openModal()\">Ouvrir</div>",
+      "correction": "<button type=\"button\" onclick=\"openModal()\">Ouvrir</button>\n<!-- OU -->\n<div role=\"button\" tabindex=\"0\" onclick=\"openModal()\" onkeydown=\"if(event.key==='Enter'||event.key===' ')openModal()\">Ouvrir</div>",
+      "explanation": "Utiliser un <button> natif ou ajouter role, tabindex et gestion clavier"
+    },
+    {
+      "error": "onmouseover sans équivalent focus",
+      "example": "<div onmouseover=\"showTooltip()\" onmouseout=\"hideTooltip()\">Info</div>",
+      "correction": "<button type=\"button\" aria-describedby=\"tooltip\" onfocus=\"showTooltip()\" onblur=\"hideTooltip()\" onmouseover=\"showTooltip()\" onmouseout=\"hideTooltip()\">Info</button>",
+      "explanation": "Les événements onmouseover/out doivent avoir des équivalents onfocus/blur"
+    },
+    {
+      "error": "Composant custom sans pattern ARIA",
+      "example": "<div class=\"tabs\">\n  <div onclick=\"selectTab(1)\">Tab 1</div>\n  <div onclick=\"selectTab(2)\">Tab 2</div>\n</div>",
+      "correction": "<div role=\"tablist\">\n  <button role=\"tab\" aria-selected=\"true\" aria-controls=\"panel1\" onclick=\"selectTab(1)\">Tab 1</button>\n  <button role=\"tab\" aria-selected=\"false\" aria-controls=\"panel2\" onclick=\"selectTab(2)\">Tab 2</button>\n</div>\n<!-- + gestion clavier flèches gauche/droite -->",
+      "explanation": "Les composants complexes doivent suivre les patterns ARIA avec navigation clavier complète"
+    },
+    {
+      "error": "Composant ARIA composite focusable mais à vérifier manuellement",
+      "example": "<div role=\"menu\">\n  <div role=\"menuitem\" tabindex=\"0\" onclick=\"go(1)\">Élément 1</div>\n  <div role=\"menuitem\" tabindex=\"-1\" onclick=\"go(2)\">Élément 2</div>\n</div>",
+      "correction": "<!-- Vérification manuelle : la navigation par flèches, Home/End et Escape doit suivre le pattern ARIA menu -->\n<div role=\"menu\">\n  <button role=\"menuitem\" tabindex=\"0\" onclick=\"go(1)\">Élément 1</button>\n  <button role=\"menuitem\" tabindex=\"-1\" onclick=\"go(2)\">Élément 2</button>\n</div>",
+      "explanation": "Les tabindex et rôles sont présents (signaux DOM corrects), mais la navigation clavier réelle (flèches, Home/End, Escape) n'est pas vérifiable statiquement : à confirmer par un test clavier manuel (warning)."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#7.1",
+    "https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/"
+  ]
+}

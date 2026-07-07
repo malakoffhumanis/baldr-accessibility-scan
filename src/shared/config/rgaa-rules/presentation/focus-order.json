@@ -1,0 +1,370 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.8",
+  "ruleId": "focus-order",
+  "title": "Navigation - Ordre de tabulation et parcours du focus",
+  "description": "Dans chaque page web, l'ordre de tabulation est-il cohérent ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.8",
+  "wcagReference": "WCAG 2.1 - 2.4.3 Parcours du focus (A), 1.3.2 Ordre séquentiel logique (A)",
+  "theme": "Navigation",
+  "level": "A",
+  "testScenarios": {
+    "tabindexUsage": {
+      "description": "Utilisation de l'attribut tabindex",
+      "tests": [
+        {
+          "id": "12.8.1",
+          "description": "Les valeurs de tabindex positives (> 0) sont-elles évitées ?",
+          "selector": "[tabindex]:not([tabindex='0']):not([tabindex='-1'])",
+          "expected": "Éviter les valeurs positives de tabindex qui perturbent l'ordre naturel",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractTabindexValues": true,
+            "identifyPositiveValues": true,
+            "checkDocumentOrder": true
+          }
+        },
+        {
+          "id": "12.8.2",
+          "description": "Les éléments avec tabindex=\"-1\" sont-ils intentionnellement exclus de la navigation clavier ?",
+          "selector": "[tabindex='-1']",
+          "expected": "tabindex=\"-1\" doit être utilisé uniquement pour exclure volontairement un élément",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.8.3",
+          "description": "Les éléments avec tabindex=\"0\" sont-ils des éléments non focusables par défaut ?",
+          "selector": "[tabindex='0']",
+          "expected": "Utiliser tabindex=\"0\" pour rendre focusables des éléments non interactifs",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "focusOrder": {
+      "description": "Ordre logique du focus",
+      "tests": [
+        {
+          "id": "12.8.4",
+          "description": "L'ordre de tabulation suit-il l'ordre visuel et logique du contenu ?",
+          "selector": "a[href], button, input, select, textarea, [tabindex]:not([tabindex='-1'])",
+          "expected": "L'ordre de navigation doit correspondre à l'ordre visuel de la page",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractFocusableElements": true,
+            "checkVisualOrder": true,
+            "compareDOMOrder": true,
+            "detectOrderInconsistencies": true
+          }
+        },
+        {
+          "id": "12.8.5",
+          "description": "L'ordre de tabulation est-il cohérent dans les formulaires ?",
+          "selector": "form input, form select, form textarea, form button",
+          "expected": "Les champs de formulaire doivent suivre un ordre logique de saisie",
+          "severity": "serious",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.8.6",
+          "description": "L'ordre de tabulation est-il préservé dans les composants interactifs (menus, onglets, modales) ?",
+          "selector": "[role='menu'], [role='tablist'], [role='dialog'], [role='menubar']",
+          "expected": "Les composants ARIA doivent gérer correctement le focus",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "focusVisibility": {
+      "description": "Visibilité du focus",
+      "tests": [
+        {
+          "id": "12.8.7",
+          "description": "Le focus est-il visible sur tous les éléments interactifs ?",
+          "selector": "a, button, input, select, textarea, [tabindex]:not([tabindex='-1'])",
+          "expected": "Tous les éléments focusables doivent avoir un indicateur de focus visible",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkOutlineRemoval": true,
+            "detectFocusStyles": true
+          }
+        },
+        {
+          "id": "12.8.8",
+          "description": "Les styles outline:none ou :focus {outline:0} sont-ils compensés par un autre indicateur visible ?",
+          "selector": "*",
+          "expected": "Si outline est supprimé, fournir un indicateur alternatif clair",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "focusTrap": {
+      "description": "Piège du focus (focus trap)",
+      "tests": [
+        {
+          "id": "12.8.9",
+          "description": "Les modales et boîtes de dialogue gèrent-elles correctement le focus (piège de focus) ?",
+          "selector": "[role='dialog'], [role='alertdialog'], .modal",
+          "expected": "Le focus doit rester dans la modale jusqu'à sa fermeture",
+          "severity": "serious",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.8.10",
+          "description": "Le focus est-il restauré correctement après fermeture d'une modale ?",
+          "selector": "[role='dialog'], [role='alertdialog']",
+          "expected": "Le focus doit revenir à l'élément qui a ouvert la modale",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "skipLinks": {
+      "description": "Liens d'évitement",
+      "tests": [
+        {
+          "id": "12.8.11",
+          "description": "Des liens d'évitement sont-ils présents pour naviguer rapidement (aller au contenu, menu, etc.) ?",
+          "selector": "a[href^='#']",
+          "expected": "Fournir des liens d'évitement en début de page",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.8.12",
+          "description": "Les liens d'évitement sont-ils fonctionnels et déplacent-ils bien le focus ?",
+          "selector": "a[href^='#']",
+          "expected": "Les ancres ciblées doivent exister et recevoir le focus",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "hiddenElements": {
+      "description": "Éléments cachés et focus",
+      "tests": [
+        {
+          "id": "12.8.13",
+          "description": "Les éléments cachés (display:none, visibility:hidden) sont-ils exclus de la navigation clavier ?",
+          "selector": "[style*='display: none'], [style*='display:none'], [hidden], [aria-hidden='true']",
+          "expected": "Les éléments masqués ne doivent pas être focusables",
+          "severity": "serious",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.8.14",
+          "description": "Les éléments hors écran (position absolute avec left négatif) sont-ils gérés correctement ?",
+          "selector": "[style*='position: absolute'], [style*='position:absolute']",
+          "expected": "Les éléments positionnés hors écran doivent avoir tabindex=\"-1\" s'ils ne sont pas destinés à recevoir le focus",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "customControls": {
+      "description": "Contrôles personnalisés",
+      "tests": [
+        {
+          "id": "12.8.15",
+          "description": "Les contrôles personnalisés (div, span cliquables) sont-ils accessibles au clavier ?",
+          "selector": "div[onclick], span[onclick]",
+          "expected": "Utiliser des éléments sémantiques (button, a) ou ajouter tabindex et gestion clavier",
+          "severity": "critical",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.8.16",
+          "description": "Les éléments avec role=\"button\" sont-ils focusables (tabindex=\"0\") ?",
+          "selector": "[role='button']",
+          "expected": "Les éléments avec rôle ARIA doivent être focusables",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "focusableElements": {
+        "selectors": [
+          "a[href]",
+          "button",
+          "input",
+          "select",
+          "textarea",
+          "[tabindex]",
+          "[role='button']",
+          "[role='link']",
+          "[role='menuitem']",
+          "[role='tab']",
+          "[onclick]"
+        ],
+        "attributes": [
+          "tabindex",
+          "disabled",
+          "aria-hidden",
+          "hidden",
+          "role",
+          "href",
+          "type",
+          "style"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": false,
+          "surroundingContext": 150
+        },
+        "contextExtraction": {
+          "parentElements": 2,
+          "documentPosition": true,
+          "visualOrder": true,
+          "computedStyles": [
+            "display",
+            "visibility",
+            "position",
+            "left",
+            "top",
+            "outline"
+          ]
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — En l'absence de défaut OBJECTIF (aucun tabindex positif > 0, aucun div/span cliquable non focusable, aucun élément masqué resté focusable, ancres de liens d'évitement valides), conclure IMMÉDIATEMENT compliant=true, findings=[]. Les éléments <details>/<summary> natifs sont accessibles au clavier et suivent l'ordre du DOM : ne les signale pas. N'émets AUCUN warning d'ordre visuel, de focus visible ou de composant dynamique sans indice concret (order/flex-reverse en CSS, outline:none visible, role=dialog).",
+        "Extraire tous les éléments focusables (a[href], button, input, select, textarea, [tabindex], éléments à role interactif) dans leur ORDRE DOM, en relevant pour chacun les attributs RÉELS : tabindex, role, disabled, hidden, aria-hidden, et les styles calculés display/visibility/position/outline. Appliquer ensuite la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — tabindex POSITIF : tout élément portant tabindex avec une valeur entière > 0 (signal mécanique non ambigu) → finding type=\"violation\", severity serious. Recommander de retirer tabindex ou d'utiliser tabindex=\"0\".",
+        "ÉTAPE 2 (déterministe) — Contrôle personnalisé non focusable : un élément div ou span portant onclick (ou un gestionnaire de clic) SANS tabindex et SANS rôle interactif natif → finding type=\"violation\", severity critical (inaccessible au clavier). Un élément à role interactif (role=\"button\", \"link\", \"menuitem\", \"tab\") natif non focusable (élément non focusable par défaut sans tabindex=\"0\") → finding type=\"violation\", severity serious.",
+        "ÉTAPE 3 (déterministe) — Élément MASQUÉ mais focusable : un élément focusable (lien, bouton, champ ou tabindex >= 0) qui est aussi marqué aria-hidden=\"true\", hidden, ou dont le style calculé est display:none / visibility:hidden, ne doit pas rester dans l'ordre de tabulation → finding type=\"violation\", severity serious. Recommander tabindex=\"-1\" ou le retrait de l'élément du flux focusable.",
+        "ÉTAPE 4 (déterministe) — Lien d'évitement : si un lien interne a[href^=\"#\"] de tête de page cible une ancre, vérifier mécaniquement que l'élément cible (id correspondant) EXISTE dans le DOM. Cible absente → finding type=\"violation\", severity moderate. Absence totale de lien d'évitement alors qu'une navigation répétée précède le contenu → finding type=\"warning\" (à confirmer manuellement, des landmarks peuvent suffire).",
+        "ÉTAPE 5 (doute → warning) — Ordre VISUEL vs ordre DOM : la cohérence entre l'ordre de tabulation (ordre DOM) et l'ordre visuel dépend du rendu CSS (flex/grid order, float, positionnement) et d'une appréciation. NE PAS conclure à une violation ferme sur la seule lecture du DOM : émettre un finding type=\"warning\" demandant une vérification manuelle dès qu'un indice (flex-direction reverse, order CSS, position absolute) suggère un décalage.",
+        "ÉTAPE 6 (doute → warning) — Visibilité du focus : la suppression d'outline (outline:none, outline:0) sans indicateur de remplacement clairement contrasté ne peut être tranchée de façon certaine sans rendu ni test au clavier → finding type=\"warning\" (vérification manuelle), jamais une violation ferme sur le seul CSS extrait.",
+        "ÉTAPE 7 (doute → warning) — Gestion du focus dans les composants : piège de focus des modales (role=\"dialog\"/\"alertdialog\"), restauration du focus à la fermeture, ordre dans menus/onglets/formulaires : ces comportements sont DYNAMIQUES et non observables dans le DOM statique → finding type=\"warning\" pour vérification manuelle.",
+        "ÉTAPE 8 — Le critère est NON APPLICABLE uniquement si la page ne contient AUCUN élément focusable."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'focus-order'",
+          "compliant": "boolean",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre total d'éléments focusables analysés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec exemple de code",
+          "wcagReference": "string - Ex: 2.4.3, 1.3.2"
+        }
+      },
+      "important": [
+        "CONFORME PAR DÉFAUT : en l'absence de défaut OBJECTIF (aucun tabindex positif > 0, aucun div/span cliquable non focusable, aucun élément masqué resté focusable, ancres de liens d'évitement valides), conclure compliant=true, findings=[]. Les éléments <details>/<summary> natifs sont accessibles au clavier et suivent l'ordre du DOM : ne pas les signaler. N'émettre les warnings d'ordre visuel, de focus visible ou de composants dynamiques QUE si un indice concret est présent (order/flex-reverse en CSS, outline:none visible, role=dialog) — sinon conforme.",
+        "Déterminisme : les mêmes signaux DOM (valeur de tabindex, présence de onclick/role, aria-hidden/hidden, styles calculés) doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS et vérifiables dans le DOM : tabindex positif, div/span cliquable non focusable, élément masqué resté focusable, ancre de lien d'évitement inexistante.",
+        "En cas de DOUTE (ordre visuel vs DOM, focus visible après suppression d'outline, piège/restauration de focus, ordre dans un composant dynamique) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Critère NON APPLICABLE si la page ne contient aucun élément focusable.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après ; descriptions concises (max 200 caractères).",
+        "Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.8 - ordre de tabulation et parcours du focus). Tu appliques une approche DÉTERMINISTE fondée sur les signaux mécaniques du DOM (valeur de tabindex, présence de onclick/role, aria-hidden/hidden, styles calculés). Tu ne signales en violation ferme que les défauts objectivement vérifiables (tabindex positif, contrôle cliquable non focusable, élément masqué focusable, ancre de lien d'évitement inexistante). Dès qu'un point dépend du rendu visuel ou d'un comportement dynamique (cohérence ordre visuel/DOM, focus visible, piège de focus), tu émets un warning de vérification manuelle plutôt qu'une violation."
+  },
+  "automatedChecks": [
+    "Présence de valeurs tabindex positives",
+    "Éléments cachés focusables",
+    "Présence de tabindex sur éléments avec role ARIA interactif",
+    "Div/span avec onclick sans tabindex",
+    "Suppression d'outline sans alternative",
+    "Présence de liens d'évitement"
+  ],
+  "manualChecks": [
+    "Cohérence entre ordre DOM et ordre visuel",
+    "Ordre logique dans les formulaires",
+    "Gestion du focus dans les composants complexes (menus, onglets)",
+    "Piège de focus dans les modales",
+    "Visibilité effective du focus",
+    "Fonctionnalité des liens d'évitement"
+  ],
+  "commonErrors": [
+    {
+      "error": "Utilisation de tabindex positif",
+      "example": "<button tabindex=\"1\">Premier</button>\n<button tabindex=\"2\">Deuxième</button>",
+      "correction": "<button>Premier</button>\n<button>Deuxième</button>",
+      "explanation": "Éviter les valeurs positives de tabindex qui créent un ordre artificiel difficile à maintenir"
+    },
+    {
+      "error": "Div cliquable non accessible au clavier",
+      "example": "<div onclick=\"doSomething()\">Cliquer ici</div>",
+      "correction": "<button onclick=\"doSomething()\">Cliquer ici</button>",
+      "explanation": "Utiliser un élément button sémantique ou ajouter role=\"button\" et tabindex=\"0\""
+    },
+    {
+      "error": "Suppression du focus visible",
+      "example": "button:focus { outline: none; }",
+      "correction": "button:focus {\n  outline: 2px solid blue;\n  outline-offset: 2px;\n}",
+      "explanation": "Si outline est supprimé, fournir un indicateur de focus alternatif visible et contrasté"
+    },
+    {
+      "error": "Élément caché mais focusable",
+      "example": "<div style=\"display: none;\">\n  <button>Action</button>\n</div>",
+      "correction": "<div style=\"display: none;\">\n  <button tabindex=\"-1\">Action</button>\n</div>",
+      "explanation": "Les éléments dans un conteneur caché doivent avoir tabindex=\"-1\" ou le conteneur doit gérer le focus"
+    },
+    {
+      "error": "Ordre de tabulation incohérent avec CSS",
+      "example": "<div style=\"display: flex; flex-direction: column-reverse;\">\n  <button>Premier visuellement</button>\n  <button>Deuxième visuellement</button>\n</div>",
+      "correction": "Réorganiser l'ordre DOM pour qu'il corresponde à l'ordre visuel, ou utiliser tabindex avec précaution",
+      "explanation": "L'ordre de tabulation suit l'ordre DOM, pas l'ordre visuel créé par CSS"
+    },
+    {
+      "error": "Modale sans gestion du focus",
+      "example": "<div class=\"modal\" role=\"dialog\">\n  <p>Contenu</p>\n  <button>Fermer</button>\n</div>",
+      "correction": "<div class=\"modal\" role=\"dialog\" tabindex=\"-1\">\n  <p>Contenu</p>\n  <button id=\"closeBtn\">Fermer</button>\n</div>\n<!-- JS: gérer le piège de focus et la restauration -->",
+      "explanation": "Les modales doivent capturer le focus, empêcher la navigation en dehors et restaurer le focus à la fermeture"
+    },
+    {
+      "error": "Lien d'évitement non fonctionnel",
+      "example": "<a href=\"#content\">Aller au contenu</a>\n<!-- Pas d'élément avec id=\"content\" -->",
+      "correction": "<a href=\"#content\">Aller au contenu</a>\n<main id=\"content\" tabindex=\"-1\">\n  <!-- Contenu -->\n</main>",
+      "explanation": "La cible du lien d'évitement doit exister et être focusable (tabindex=\"-1\")"
+    },
+    {
+      "error": "Élément avec role interactif non focusable",
+      "example": "<div role=\"button\" onclick=\"action()\">Cliquer</div>",
+      "correction": "<div role=\"button\" tabindex=\"0\" onclick=\"action()\" onkeypress=\"handleKey(event)\">Cliquer</div>",
+      "explanation": "Les éléments avec rôle interactif doivent être focusables (tabindex=\"0\") et gérer les événements clavier"
+    },
+    {
+      "error": "Champs de formulaire dans un ordre illogique",
+      "example": "<form>\n  <input name=\"email\" placeholder=\"Email\">\n  <input name=\"firstname\" placeholder=\"Prénom\">\n  <input name=\"lastname\" placeholder=\"Nom\">\n</form>",
+      "correction": "<form>\n  <input name=\"firstname\" placeholder=\"Prénom\">\n  <input name=\"lastname\" placeholder=\"Nom\">\n  <input name=\"email\" placeholder=\"Email\">\n</form>",
+      "explanation": "Organiser les champs dans un ordre logique de saisie (prénom, nom, puis email)"
+    },
+    {
+      "error": "Décalage entre ordre visuel et ordre DOM (à vérifier manuellement)",
+      "example": "<div style=\"display:flex; flex-direction:row-reverse;\">\n  <button>Précédent</button>\n  <button>Suivant</button>\n</div>",
+      "correction": "<div style=\"display:flex;\">\n  <button>Précédent</button>\n  <button>Suivant</button>\n</div>\n<!-- ou réorganiser le DOM pour que l'ordre de tabulation suive l'ordre visuel -->",
+      "explanation": "flex-direction:row-reverse (ou order CSS) peut inverser l'affichage sans changer l'ordre DOM/tabulation. Le DOM seul ne permet pas de trancher : émettre un warning et vérifier manuellement au clavier que l'ordre de focus suit l'ordre visuel."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12",
+    "https://www.w3.org/WAI/WCAG21/Understanding/focus-order.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/meaningful-sequence.html",
+    "https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/"
+  ]
+}

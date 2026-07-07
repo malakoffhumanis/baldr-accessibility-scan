@@ -1,0 +1,174 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "11.4",
+  "ruleId": "form-input-type-appropriate",
+  "title": "Formulaires - Association étiquette et champ",
+  "description": "Dans chaque formulaire, chaque étiquette de champ et son champ associé sont-ils accolés (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 11.4",
+  "wcagReference": "WCAG 2.1 - 3.3.2 Étiquettes ou instructions (A) / 1.3.1 Information et relations (A)",
+  "theme": "Formulaires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les champs de formulaire avec étiquette visible",
+    "signals": {
+      "selectors": [
+        "label",
+        "input",
+        "select",
+        "textarea"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun formulaire dans la page",
+      "Champs sans étiquette visible (aria-label uniquement)"
+    ]
+  },
+  "testScenarios": {
+    "labelPosition": {
+      "description": "Proximité visuelle étiquette/champ",
+      "tests": [
+        {
+          "id": "11.4.1",
+          "rgaaTestRef": "Test 11.4.1",
+          "description": "L'étiquette et le champ sont-ils visuellement accolés ?",
+          "methodology": [
+            "Vérifier que l'étiquette est visuellement proche du champ",
+            "Vérifier qu'il n'y a pas d'ambiguïté sur l'association",
+            "Pour les cases à cocher/radio: étiquette immédiatement après le contrôle",
+            "Pour les autres champs: étiquette au-dessus ou à gauche du champ"
+          ],
+          "selector": "label",
+          "expected": "L'étiquette doit être visuellement accolée au champ sans ambiguïté",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectLabelPosition": true,
+            "checkVisualProximity": true
+          }
+        },
+        {
+          "id": "11.4.2",
+          "rgaaTestRef": "Test 11.4.2",
+          "description": "L'ordre de lecture étiquette/champ est-il logique ?",
+          "methodology": [
+            "Vérifier l'ordre dans le DOM",
+            "Pour checkbox/radio: label après input dans le DOM",
+            "Pour autres champs: label avant input dans le DOM",
+            "Vérifier qu'il n'y a pas de réorganisation CSS confuse"
+          ],
+          "selector": "label, input, select, textarea",
+          "expected": "L'ordre DOM doit refléter l'ordre visuel logique",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "label",
+        "input",
+        "select",
+        "textarea"
+      ],
+      "attributes": [
+        "for",
+        "id",
+        "type"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier les paires étiquette/champ à partir des attributs RÉELS du DOM (label[for] correspondant à un id, ou champ imbriqué dans un <label>). Appliquer ensuite la procédure DANS L'ORDRE.",
+        "ÉTAPE 0 — Si aucune paire étiquette/champ visible n'est présente, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 — Relever les signaux MÉCANIQUES de l'ORDRE DOM : pour un champ checkbox/radio, le <label> doit suivre le champ ; pour les autres champs, le <label> doit précéder le champ. Repérer aussi l'éloignement structurel (nœuds intermédiaires nombreux entre label et champ associé).",
+        "ÉTAPE 2 (violation objective) — Ordre DOM manifestement incohérent et vérifiable : pour un checkbox/radio, <label> placé AVANT l'input ; pour un champ texte, <label> placé APRÈS l'input, alors que l'association for/id existe → finding type=\"violation\" si l'incohérence est certaine dans le DOM.",
+        "ÉTAPE 3 (doute → warning) — Proximité VISUELLE étiquette/champ : la distance réelle et la mise en page dépendent du rendu CSS, non vérifiable de façon certaine dans le seul DOM. Émettre un finding type=\"warning\" demandant une vérification manuelle dès qu'une ambiguïté de positionnement est suspectée (étiquette potentiellement éloignée, plusieurs étiquettes entre plusieurs champs, réorganisation CSS supposée).",
+        "ÉTAPE 4 — Pour chaque finding, proposer un ordre DOM correct et un regroupement visuel de la paire (conteneur dédié)."
+      ],
+      "important": [
+        "Déterminisme : l'ordre DOM (label avant/après champ) est un signal vérifiable ; mêmes signaux, même verdict.",
+        "type=\"violation\" est réservé aux incohérences d'ordre DOM CERTAINES ; la proximité visuelle dépend du CSS et n'est pas tranchable dans le seul DOM.",
+        "En cas de doute sur le positionnement visuel ou une réorganisation CSS → type=\"warning\" (vérification manuelle), jamais de violation ferme.",
+        "Si aucun champ de formulaire avec étiquette visible: compliant=true, severity='minor', summary='Aucun champ de formulaire détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; maximum 5 findings, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'form-input-type-appropriate'",
+          "compliant": "boolean - true si conforme ou si aucun champ de formulaire détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de positionnement correct",
+          "rgaaTestRef": "Test 11.4.1 ou 11.4.2",
+          "wcagReference": "3.3.2 ou 1.3.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 11.4 - Formulaires), spécialisé dans l'association et le positionnement des étiquettes de champ. Tu appliques une approche déterministe : tu signales en violation une incohérence d'ordre DOM certaine (label/input), et tu demandes une vérification manuelle (warning) pour toute ambiguïté de proximité visuelle, qui dépend du rendu CSS et n'est pas tranchable dans le seul DOM."
+  },
+  "automatedChecks": [
+    "Vérification de l'ordre DOM label/input",
+    "Détection de labels non associés"
+  ],
+  "manualChecks": [
+    "Vérification visuelle de la proximité",
+    "Détection d'ambiguïtés visuelles",
+    "Vérification de la clarté de l'association"
+  ],
+  "commonErrors": [
+    {
+      "error": "Étiquette éloignée du champ (à vérifier manuellement)",
+      "example": "<label for=\"email\">Email</label>\n<div style=\"margin: 200px 0;\"><!-- espace important --></div>\n<input id=\"email\" type=\"email\">",
+      "correction": "<label for=\"email\">Email</label>\n<input id=\"email\" type=\"email\">",
+      "explanation": "L'étiquette doit être visuellement proche du champ. L'éloignement dépend du rendu CSS : il relève d'une vérification manuelle (warning) plutôt que d'une violation automatique."
+    },
+    {
+      "error": "Ambiguïté visuelle",
+      "example": "<label for=\"field1\">Champ 1</label>\n<label for=\"field2\">Champ 2</label>\n<input id=\"field1\">\n<input id=\"field2\">",
+      "correction": "<div>\n  <label for=\"field1\">Champ 1</label>\n  <input id=\"field1\">\n</div>\n<div>\n  <label for=\"field2\">Champ 2</label>\n  <input id=\"field2\">\n</div>",
+      "explanation": "Grouper visuellement chaque paire étiquette/champ"
+    },
+    {
+      "error": "Ordre DOM inversé pour checkbox",
+      "example": "<label for=\"agree\">J'accepte</label>\n<input type=\"checkbox\" id=\"agree\">",
+      "correction": "<input type=\"checkbox\" id=\"agree\">\n<label for=\"agree\">J'accepte</label>",
+      "explanation": "Pour checkbox/radio, l'input doit précéder le label dans le DOM"
+    },
+    {
+      "error": "Réorganisation CSS confuse",
+      "example": "<!-- DOM -->\n<input id=\"name\">\n<label for=\"name\">Nom</label>\n/* CSS avec order ou float qui inverse */",
+      "correction": "<!-- Ordre logique dans le DOM -->\n<label for=\"name\">Nom</label>\n<input id=\"name\">",
+      "explanation": "Mettre l'ordre correct dans le DOM, pas uniquement en CSS"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#11.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html",
+    "https://www.w3.org/WAI/tutorials/forms/labels/"
+  ]
+}

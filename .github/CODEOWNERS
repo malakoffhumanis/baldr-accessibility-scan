@@ -1,0 +1,8 @@
+# Default owners — every PR requires review from a maintainer.
+*       @mmteyeb @MhammedElMrabetMH
+
+# Governance & legal-sensitive files require the technical lead.
+/LICENSE            @ricardvince59
+/NOTICE             @ricardvince59
+/GOVERNANCE.md      @ricardvince59
+/SECURITY.md        @ricardvince59

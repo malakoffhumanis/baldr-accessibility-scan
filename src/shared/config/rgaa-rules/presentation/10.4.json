@@ -1,0 +1,180 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "10.4",
+  "ruleId": "presentation-text-resize",
+  "title": "Présentation - Agrandissement de texte",
+  "description": "Dans chaque page web, le texte reste-t-il lisible lorsque la taille des caractères est augmentée jusqu'à 200% au moins (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 10.4",
+  "wcagReference": "WCAG 2.1 - 1.4.4 Redimensionnement du texte (AA)",
+  "theme": "Présentation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web",
+    "signals": {
+      "selectors": [
+        "*"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Sous-titres incrustés dans une vidéo",
+      "Images de texte nécessaires (ex: logos)"
+    ]
+  },
+  "testScenarios": {
+    "textResizing": {
+      "description": "Lisibilité du texte agrandi",
+      "tests": [
+        {
+          "id": "10.4.1",
+          "rgaaTestRef": "Test 10.4.1",
+          "description": "Le texte reste-t-il lisible avec un zoom texte à 200% ?",
+          "methodology": [
+            "Augmenter la taille du texte à 200% (zoom texte du navigateur)",
+            "Vérifier qu'aucun texte n'est tronqué",
+            "Vérifier qu'aucun texte ne se chevauche",
+            "Vérifier que les fonctionnalités restent accessibles",
+            "Vérifier l'absence de barre de défilement horizontal"
+          ],
+          "selector": "body",
+          "expected": "Le texte doit rester lisible et accessible à 200%",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectFixedSizes": true,
+            "checkOverflow": true
+          }
+        },
+        {
+          "id": "10.4.2",
+          "rgaaTestRef": "Test 10.4.2",
+          "description": "Les conteneurs de texte s'adaptent-ils correctement ?",
+          "methodology": [
+            "Identifier les conteneurs avec hauteur ou largeur fixes",
+            "Vérifier l'utilisation d'unités relatives (em, rem, %)",
+            "Vérifier l'absence de overflow:hidden sur du texte",
+            "Tester avec zoom à 200%"
+          ],
+          "selector": "*",
+          "expected": "Les conteneurs doivent utiliser des unités relatives et permettre l'agrandissement",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "*"
+      ],
+      "attributes": [
+        "style",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Le zoom navigateur agrandit aussi les tailles en px. En l'absence, dans les styles fournis, d'une hauteur ou max-height fixe COMBINÉE à overflow:hidden sur un conteneur de texte, conclure IMMÉDIATEMENT compliant=true, findings=[]. Ne produis NI violation NI warning sur la seule présence d'unités absolues (px) ou de dimensions min-width/min-height.",
+        "Évaluer si le texte reste lisible une fois agrandi à 200%, à partir des SIGNAUX MÉCANIQUES du DOM/CSS extraits (unités de font-size, dimensions des conteneurs, gestion du débordement), en appliquant les étapes ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux CSS déterministes : unités de font-size (px/pt absolues vs em/rem/%/vw relatives), conteneurs de texte avec height ou max-height fixe en px, déclarations overflow:hidden sur des éléments contenant du texte, largeurs fixes en px.",
+        "ÉTAPE 2 — Signal à risque élevé → finding type=\"warning\" (vérification manuelle au zoom 200%) : une hauteur fixe (height/max-height en px) COMBINÉE à overflow:hidden sur un conteneur de texte, qui tronque très probablement le texte agrandi. Le DOM révèle le risque mais la troncature effective dépend du rendu : demander la confirmation manuelle.",
+        "ÉTAPE 3 — DOUTE vers warning : font-size en px/pt, largeurs fixes, overflow:hidden isolé. Ces signaux n'empêchent pas toujours le zoom (le zoom navigateur agit aussi sur les px) ; la lisibilité réelle à 200% se constate visuellement. Émettre un finding type=\"warning\" invitant à tester le zoom texte à 200%.",
+        "ÉTAPE 4 — NE PAS conclure à une violation ferme sur la seule présence d'unités absolues : aucun défaut de lisibilité à 200% ne peut être tranché de façon certaine par le seul DOM, donc PAS de type=\"violation\" ici ; privilégier systématiquement type=\"warning\".",
+        "ÉTAPE 5 — Toujours suggérer des unités relatives (em, rem, %) et min-height/overflow:visible dans la recommandation.",
+        "ÉTAPE 6 — Conclure NON APPLICABLE si la page ne contient aucun texte stylé (cas particuliers : sous-titres incrustés, images de texte nécessaires)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'presentation-text-resize'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemples CSS en unités relatives",
+          "rgaaTestRef": "Test 10.4.1 ou 10.4.2",
+          "wcagReference": "1.4.4"
+        }
+      },
+      "important": [
+        "CONFORME PAR DÉFAUT : le zoom navigateur agrandit aussi les tailles en px. En l'absence, dans les styles fournis, d'une hauteur ou max-height fixe COMBINÉE à overflow:hidden sur un conteneur de texte, conclure compliant=true, findings=[]. Ne PAS émettre de violation ni de warning sur la seule présence d'unités absolues (px) ou de dimensions min-width/min-height.",
+        "Déterminisme : les mêmes signaux CSS (unités, dimensions fixes, overflow) doivent toujours donner le même verdict.",
+        "La lisibilité effective au zoom 200% ne peut être tranchée par le seul DOM : ne PAS produire de type='violation', privilégier type='warning' (vérification manuelle au zoom).",
+        "En cas de doute (font-size en px, hauteur fixe, overflow:hidden) → type='warning' pour test réel à 200%.",
+        "Toujours suggérer des unités relatives (em, rem, %) et min-height/overflow:visible.",
+        "Non applicable si la page ne contient aucun texte stylé (sous-titres incrustés, images de texte nécessaires).",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 10.4 - agrandissement du texte jusqu'à 200%), spécialisé dans l'analyse déterministe des unités et dimensions CSS. Comme la lisibilité réelle au zoom 200% ne peut être tranchée par le seul DOM, tu signales les unités absolues et dimensions fixes en warning (vérification manuelle au zoom) plutôt qu'en violation ferme."
+  },
+  "automatedChecks": [
+    "Détection de font-size en px",
+    "Détection de hauteur/largeur fixes",
+    "Détection de overflow:hidden sur texte"
+  ],
+  "manualChecks": [
+    "Test réel avec zoom texte à 200%",
+    "Vérification de l'absence de troncature",
+    "Vérification de l'absence de chevauchement",
+    "Vérification de la disponibilité des fonctionnalités"
+  ],
+  "commonErrors": [
+    {
+      "error": "Taille de texte en pixels",
+      "example": "p { font-size: 16px; }",
+      "correction": "p { font-size: 1rem; } /* ou 100% ou 1em */",
+      "explanation": "Utiliser des unités relatives (rem, em, %) pour permettre le zoom"
+    },
+    {
+      "error": "Conteneur avec hauteur fixe",
+      "example": ".box { height: 200px; overflow: hidden; }",
+      "correction": ".box { min-height: 200px; /* ou height: auto */ }",
+      "explanation": "Utiliser min-height ou auto pour permettre l'expansion"
+    },
+    {
+      "error": "Largeur fixe causant défilement horizontal",
+      "example": ".container { width: 1200px; }",
+      "correction": ".container { max-width: 1200px; width: 100%; }",
+      "explanation": "Utiliser max-width avec width: 100% pour la flexibilité"
+    },
+    {
+      "error": "Overflow hidden coupant le texte agrandi",
+      "example": ".text { height: 50px; overflow: hidden; }",
+      "correction": ".text { min-height: 50px; overflow: visible; }",
+      "explanation": "Permettre au contenu de s'étendre avec overflow: visible"
+    },
+    {
+      "error": "Font-size en pixels (à confirmer au zoom 200%)",
+      "example": "body { font-size: 14px; }",
+      "correction": "body { font-size: 0.875rem; } /* tester ensuite le zoom texte à 200% */",
+      "explanation": "Une font-size en px n'empêche pas toujours le zoom navigateur : émettre un warning et confirmer manuellement, zoom texte à 200%, l'absence de troncature ou de chevauchement."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#10.4",
+    "https://www.w3.org/WAI/WCAG21/Understanding/resize-text.html"
+  ]
+}

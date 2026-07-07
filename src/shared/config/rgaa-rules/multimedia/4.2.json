@@ -1,0 +1,181 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.2",
+  "ruleId": "media-live-captions",
+  "title": "Multimédia - Sous-titres synchronisés en direct",
+  "description": "Pour chaque média temporel synchronisé diffusé en direct, des sous-titres synchronisés sont-ils disponibles ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.2",
+  "wcagReference": "WCAG 2.1 - 1.2.4 Sous-titres (en direct) (AA)",
+  "theme": "Multimédia",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias temporels synchronisés diffusés en direct",
+    "signals": {
+      "selectors": [
+        "video[src*='live']",
+        "iframe[src*='live']",
+        "iframe[src*='stream']",
+        "[data-live]",
+        "[class*='livestream']",
+        "[id*='livestream']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média en direct sur la page",
+      "Média pré-enregistré uniquement",
+      "Média audio seul (non synchronisé)"
+    ]
+  },
+  "testScenarios": {
+    "liveCaptions": {
+      "description": "Sous-titres pour diffusion en direct",
+      "tests": [
+        {
+          "id": "4.2.1",
+          "rgaaTestRef": "Test 4.2.1",
+          "description": "Chaque média temporel synchronisé en direct a-t-il des sous-titres synchronisés ?",
+          "methodology": [
+            "Identifier les médias diffusés en direct",
+            "Vérifier la présence d'une option de sous-titrage",
+            "Tester l'activation et la synchronisation des sous-titres",
+            "Vérifier la pertinence des sous-titres"
+          ],
+          "selector": "video, iframe[src*='youtube.com/live'], iframe[src*='twitch.tv']",
+          "expected": "Des sous-titres synchronisés doivent être disponibles et activables pour les diffusions en direct",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectLiveStream": true,
+            "checkCaptionsAvailability": true,
+            "verifyControls": true
+          }
+        },
+        {
+          "id": "4.2.2",
+          "rgaaTestRef": "Test 4.2.2",
+          "description": "Les sous-titres en direct sont-ils correctement synchronisés ?",
+          "methodology": [
+            "Activer les sous-titres",
+            "Vérifier la synchronisation avec l'audio",
+            "Vérifier la lisibilité et la pertinence"
+          ],
+          "selector": "track[kind='captions'], track[kind='subtitles']",
+          "expected": "Les sous-titres doivent être synchronisés avec l'audio en temps réel",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.2 - sous-titres synchronisés des médias diffusés en direct). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (indices de flux en direct, présence d'un track captions/subtitles, contrôles de sous-titrage). Tu réserves la violation aux défauts objectifs et tu demandes une vérification manuelle (warning) dès que la nature « en direct » du média, la disponibilité ou la synchronisation des sous-titres dépendent d'une appréciation ou d'une plateforme tierce non inspectable.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "iframe",
+        "track",
+        "[controls]",
+        "[data-live]",
+        "[class*='live']",
+        "button[aria-label*='captions' i]",
+        "button[aria-label*='subtitles' i]"
+      ],
+      "attributes": [
+        "src",
+        "controls",
+        "aria-label",
+        "data-live",
+        "kind",
+        "srclang"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Rechercher dans le DOM des signaux mécaniques de diffusion EN DIRECT : URL contenant 'live'/'stream' (video[src], iframe[src*='youtube.com/live'], iframe[src*='twitch.tv']), attribut data-live, classes/identifiants 'livestream'. Si AUCUN signal de direct n'est présent, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque média candidat, relever : présence d'un <track kind='captions'> ou <track kind='subtitles'>, présence de contrôles de sous-titrage identifiables (button avec aria-label contenant 'captions'/'subtitles'/'sous-titre', ou attribut controls natif).",
+        "ÉTAPE 2 (violation objective) — Pour un <video> en direct contrôlé en local (non plateforme tierce) qui ne présente AUCUN track de sous-titres ni contrôle de sous-titrage détectable, émettre un finding type='violation' : l'absence de sous-titres synchronisés est un défaut objectif.",
+        "ÉTAPE 3 (doute → warning) — Si le média en direct est intégré via une plateforme tierce (iframe YouTube Live, Twitch…) dont le DOM ne révèle pas les sous-titres, OU si la nature réellement « en direct » du flux ne peut être confirmée depuis le seul DOM, OU si la synchronisation en temps réel ne peut être tranchée : NE PAS conclure à une violation ferme. Émettre un finding type='warning' demandant une vérification manuelle (le flux est-il en direct ? les sous-titres sont-ils activables et synchronisés ?).",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les attributs et relations RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque média en direct sans sous-titres, proposer une correction concrète (track kind='captions' alimenté par un service de sous-titrage temps réel, ou contrôle accessible)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-live-captions'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string - Si non_applicable: 'Aucune diffusion en direct détectée'. Sinon résumé",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de code HTML",
+          "rgaaTestRef": "Test 4.2.1 ou Test 4.2.2",
+          "wcagReference": "1.2.4"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (indices de direct, présence de track/contrôles) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : média en direct contrôlé en local sans aucun track ni contrôle de sous-titrage détectable.",
+        "En cas de doute (plateforme tierce non inspectable, nature du flux ou synchronisation indéterminables) : type='warning' (vérification manuelle), jamais de violation ferme.",
+        "Si aucun média en direct: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de médias en direct via URL ou attributs",
+    "Présence d'élément track avec kind='captions'",
+    "Présence de contrôles de sous-titrage accessibles"
+  ],
+  "manualChecks": [
+    "Confirmation qu'il s'agit d'un flux en direct",
+    "Test de l'activation des sous-titres",
+    "Vérification de la synchronisation en temps réel",
+    "Pertinence et exactitude des sous-titres"
+  ],
+  "commonErrors": [
+    {
+      "error": "Diffusion en direct sans sous-titres",
+      "example": "<video controls src=\"https://stream.example.com/live\"></video>",
+      "correction": "<video controls src=\"https://stream.example.com/live\">\n  <track kind=\"captions\" src=\"live-captions.vtt\" srclang=\"fr\" label=\"Français\" default>\n</video>\n<p>Note: Utiliser un service de sous-titrage en temps réel</p>",
+      "explanation": "Les diffusions en direct doivent proposer des sous-titres synchronisés en temps réel pour l'accessibilité."
+    },
+    {
+      "error": "Contrôles de sous-titrage non accessibles",
+      "example": "<div onclick=\"toggleCaptions()\">CC</div>",
+      "correction": "<button type=\"button\" aria-label=\"Activer/désactiver les sous-titres\" onclick=\"toggleCaptions()\">\n  <span aria-hidden=\"true\">CC</span>\n</button>",
+      "explanation": "Les contrôles doivent être des éléments interactifs accessibles avec des libellés clairs."
+    },
+    {
+      "error": "Flux en direct via plateforme tierce (à vérifier manuellement)",
+      "example": "<iframe src=\"https://www.youtube.com/embed/live_stream?channel=XXXX\" title=\"Diffusion en direct\"></iframe>",
+      "correction": "<iframe src=\"https://www.youtube.com/embed/live_stream?channel=XXXX\" title=\"Diffusion en direct\"></iframe>\n<!-- Vérifier manuellement que le sous-titrage en temps réel est activé côté plateforme -->",
+      "explanation": "Le DOM d'un iframe tiers ne révèle pas la disponibilité des sous-titres : ne pas conclure à une violation. Cas à vérifier manuellement (warning) en activant le sous-titrage dans le lecteur tiers."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/captions-live.html"
+  ]
+}

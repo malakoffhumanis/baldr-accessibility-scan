@@ -1,0 +1,168 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "10.7",
+  "ruleId": "presentation-focus-visibility",
+  "title": "Présentation - Visibilité du focus",
+  "description": "Dans chaque page web, pour chaque élément recevant le focus, la prise de focus est-elle visible ?",
+  "rgaaReference": "RGAA 4.1 - Critère 10.7",
+  "wcagReference": "WCAG 2.1 - 2.4.7 Focus visible (AA)",
+  "theme": "Présentation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les éléments interactifs pouvant recevoir le focus",
+    "signals": {
+      "selectors": [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "[tabindex]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun élément interactif dans la page"
+    ]
+  },
+  "testScenarios": {
+    "focusVisibility": {
+      "description": "Visibilité de l'indicateur de focus",
+      "tests": [
+        {
+          "id": "10.7.1",
+          "rgaaTestRef": "Test 10.7.1",
+          "description": "Pour chaque élément recevant le focus, la prise de focus est-elle visible ?",
+          "methodology": [
+            "Naviguer au clavier (Tab) sur tous les éléments interactifs",
+            "Vérifier qu'un indicateur visuel de focus est présent",
+            "Vérifier que l'indicateur est suffisamment visible (contraste, épaisseur)",
+            "Vérifier l'absence de outline: none sans alternative visible"
+          ],
+          "selector": "a, button, input, select, textarea, [tabindex], [onclick]",
+          "expected": "Chaque élément recevant le focus doit avoir un indicateur visuel clair",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "a",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "[tabindex]",
+        "*:focus"
+      ],
+      "attributes": [
+        "style",
+        "class",
+        "tabindex"
+      ],
+      "context": {
+        "surroundingText": 100,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Si AUCUN outline:none / outline:0 sur :focus n'est effectivement visible dans les styles fournis, l'indicateur de focus natif du navigateur est présumé présent : conclure IMMÉDIATEMENT compliant=true, findings=[]. Ne produis NI warning NI violation au motif que le CSS :focus n'est pas fourni ou pas visible.",
+        "Évaluer la visibilité de la prise de focus sur les éléments interactifs, à partir des SIGNAUX MÉCANIQUES du DOM/CSS extraits (règles :focus, outline, alternatives visuelles), en appliquant les étapes ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux CSS déterministes : présence de outline:none / outline:0 (sur sélecteur global *:focus, sur :focus, ou inline), présence d'un style :focus ALTERNATIF visible (outline non nul, box-shadow, border distincte, background:focus), et liste des éléments focusables (a, button, input, select, textarea, [tabindex] hors -1, [onclick]).",
+        "ÉTAPE 2 — Défaut OBJECTIF → finding type=\"violation\", severity serious : un outline:none / outline:0 appliqué à :focus (en particulier le reset global *:focus { outline:none }) SANS aucune déclaration :focus fournissant un indicateur alternatif (box-shadow, border, background, outline non nul). La suppression non compensée de l'indicateur est mécaniquement constatable dans le CSS.",
+        "ÉTAPE 3 — DOUTE vers warning (vérification manuelle) : (a) un indicateur :focus alternatif existe mais son CONTRASTE ou sa visibilité réelle ne peut être tranché (ex. outline:1px solid #fff sur fond clair) ; (b) un élément focusable custom (div/span avec tabindex) sans style :focus repéré, dont le rendu effectif dépend d'éventuels styles hérités. Émettre un finding type=\"warning\" demandant le test réel de navigation au clavier.",
+        "ÉTAPE 4 — NE PAS conclure à une violation quand l'outline natif n'est PAS supprimé (absence de outline:none) : l'indicateur de focus par défaut du navigateur est alors présumé présent. Réserver type=\"violation\" au cas de l'étape 2 (suppression non compensée).",
+        "ÉTAPE 5 — Conclure conclusion='non_applicable' si la page ne contient AUCUN élément focusable."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'presentation-focus-visibility'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple CSS pour focus visible",
+          "rgaaTestRef": "Test 10.7.1",
+          "wcagReference": "2.4.7"
+        }
+      },
+      "important": [
+        "CONFORME PAR DÉFAUT : si AUCUNE suppression d'indicateur (outline:none / outline:0 sur :focus) n'est effectivement visible dans les styles fournis, l'indicateur de focus natif du navigateur est présumé présent — conclure compliant=true, findings=[]. Ne PAS émettre de warning ni de violation au seul motif que le CSS :focus n'est pas fourni ou pas visible.",
+        "Déterminisme : les mêmes signaux CSS (outline:none, style :focus alternatif) doivent toujours donner le même verdict.",
+        "type='violation' (severity='serious') réservé au défaut OBJECTIF : outline:none/0 sur :focus SANS aucun indicateur alternatif visible.",
+        "En cas de doute (contraste/visibilité réelle de l'indicateur, élément custom focusable sans style :focus) → type='warning' pour test réel au clavier.",
+        "Pas de violation si l'outline natif n'est pas supprimé (indicateur par défaut présumé présent).",
+        "Si aucun élément focusable: conclusion='non_applicable'.",
+        "Toujours suggérer un style :focus visible ; retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 10.7 - visibilité de la prise de focus), spécialisé dans l'analyse déterministe des styles :focus. Tu ne signales en violation ferme que la suppression non compensée de l'indicateur de focus (outline:none sans alternative visible) et tu demandes une vérification manuelle (warning) dès que le contraste ou la visibilité réelle de l'indicateur dépend du rendu."
+  },
+  "automatedChecks": [
+    "Détection de outline: none dans les styles",
+    "Détection de :focus dans les feuilles de styles",
+    "Identification des éléments focusables"
+  ],
+  "manualChecks": [
+    "Test réel de navigation au clavier",
+    "Évaluation de la visibilité effective du focus",
+    "Vérification du contraste de l'indicateur de focus"
+  ],
+  "commonErrors": [
+    {
+      "error": "outline: none sans alternative",
+      "example": "button:focus { outline: none; }",
+      "correction": "button:focus {\n  outline: 2px solid #0066cc;\n  outline-offset: 2px;\n}",
+      "explanation": "Ne jamais supprimer l'outline sans fournir une alternative visible"
+    },
+    {
+      "error": "Style de focus invisible",
+      "example": "a:focus { outline: 1px solid #fff; } /* sur fond blanc */",
+      "correction": "a:focus {\n  outline: 2px solid #0066cc;\n  outline-offset: 2px;\n}",
+      "explanation": "L'indicateur de focus doit avoir un contraste suffisant"
+    },
+    {
+      "error": "Élément custom focusable sans style de focus",
+      "example": "<div tabindex=\"0\" onclick=\"...\">Cliquer</div>",
+      "correction": "<div tabindex=\"0\" onclick=\"...\" class=\"focusable\">Cliquer</div>\n/* CSS */\n.focusable:focus {\n  outline: 2px solid #0066cc;\n  outline-offset: 2px;\n}",
+      "explanation": "Tous les éléments focusables doivent avoir un style :focus visible"
+    },
+    {
+      "error": "Reset CSS global supprimant tous les focus",
+      "example": "*:focus { outline: none; }",
+      "correction": "/* Ne pas utiliser de reset global */\n/* Définir des styles :focus spécifiques pour chaque élément */\na:focus, button:focus, input:focus { outline: 2px solid #0066cc; }",
+      "explanation": "Éviter les resets globaux qui suppriment les indicateurs de focus"
+    },
+    {
+      "error": "Indicateur de focus présent mais au contraste à vérifier manuellement",
+      "example": "a:focus { outline: 1px solid #cccccc; } /* sur fond blanc */",
+      "correction": "a:focus { outline: 2px solid #0066cc; outline-offset: 2px; }",
+      "explanation": "L'outline n'est pas supprimé : ce n'est pas une violation ferme, mais le contraste réel de l'indicateur ne se constate qu'au rendu. Émettre un warning et vérifier manuellement, au clavier, que la prise de focus est nettement visible."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#10.7",
+    "https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html",
+    "https://www.sarasoueidan.com/blog/focus-indicators/"
+  ]
+}

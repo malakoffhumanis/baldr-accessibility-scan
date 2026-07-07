@@ -1,0 +1,174 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.11",
+  "ruleId": "media-caption-translation-lang",
+  "title": "Multimédia - Langue des sous-titres de traduction",
+  "description": "La piste des sous-titres de traduction est-elle correctement définie (présence d'un attribut srclang) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.11",
+  "wcagReference": null,
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Cette règle s'applique aux éléments vidéo HTML5 disposant de sous-titres de traduction (track kind='subtitles').",
+    "signals": {
+      "selectors": [
+        "video track[kind='subtitles']",
+        "video track[kind='captions']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Vidéos sans sous-titres",
+      "Sous-titres synchronisés dans la langue originale uniquement",
+      "Médias audio uniquement (pas de vidéo)"
+    ]
+  },
+  "testScenarios": {
+    "media-caption-translation-lang-check": {
+      "description": "Test de la présence et validité de l'attribut srclang sur les pistes de sous-titres de traduction",
+      "tests": [
+        {
+          "id": "4.11.1",
+          "rgaaTestRef": "Test 4.11.1",
+          "description": "Chaque piste de sous-titres de traduction (track kind='subtitles') possède-t-elle un attribut srclang valide ?",
+          "methodology": [
+            "Identifier les éléments <track> avec kind='subtitles'",
+            "Vérifier la présence de l'attribut srclang",
+            "Valider que srclang contient un code de langue valide (ISO 639-1)",
+            "Vérifier que le code de langue correspond à la langue des sous-titres"
+          ],
+          "selector": "video track[kind='subtitles'], video track[kind='captions']",
+          "expected": "Chaque track kind='subtitles' possède un attribut srclang avec un code ISO 639-1 valide correspondant à la langue des sous-titres",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Vérifiez que tous les éléments <track kind='subtitles'> ont un attribut srclang avec un code de langue ISO 639-1 valide (fr, en, es, de, etc.)."
+          }
+        },
+        {
+          "id": "4.11.2",
+          "rgaaTestRef": "Test 4.11.2",
+          "description": "L'attribut srclang correspond-il réellement à la langue des sous-titres fournis ?",
+          "methodology": [
+            "Examiner le contenu du fichier WebVTT référencé",
+            "Identifier la langue réelle des sous-titres",
+            "Comparer avec le code srclang déclaré",
+            "Vérifier la cohérence"
+          ],
+          "selector": "video track[kind='subtitles'][srclang], video track[kind='captions'][srclang]",
+          "expected": "Le code de langue srclang correspond à la langue réelle du contenu des sous-titres",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "guidance": "Analysez le contenu du fichier de sous-titres pour vérifier que la langue déclarée dans srclang correspond à la langue réelle du texte."
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.11 - langue des sous-titres de traduction). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (présence et format de l'attribut srclang sur les pistes track). Tu réserves la violation aux défauts objectifs (srclang absent ou code non conforme à ISO 639-1) et tu demandes une vérification manuelle (warning) dès que la CORRESPONDANCE entre le code déclaré et la langue réelle du fichier de sous-titres ne peut être tranchée depuis le DOM.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video track[kind='subtitles']",
+        "video track[kind='captions']"
+      ],
+      "steps": [
+        "Localiser tous les éléments <track> avec kind='subtitles' ou 'captions'",
+        "Extraire la valeur de l'attribut srclang",
+        "Valider que srclang est un code ISO 639-1 valide",
+        "Analyser le contenu WebVTT pour déterminer la langue réelle"
+      ]
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les pistes de sous-titres : video <track kind='subtitles'> et <track kind='captions'>. Si AUCUNE n'est présente, conclure NON APPLICABLE (compliant=true, severity='minor', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque track, relever la présence et la valeur exacte de l'attribut srclang.",
+        "ÉTAPE 2 (violation objective) — Si srclang est ABSENT, ou si sa valeur n'est PAS un code ISO 639-1 valide (ex. 'francais', 'EN-US' non conforme, valeur vide), émettre un finding type='violation' : ces défauts sont objectivement vérifiables dans le DOM par simple analyse de l'attribut.",
+        "ÉTAPE 3 (doute → warning) — La CORRESPONDANCE entre le code srclang déclaré et la langue RÉELLE du contenu du fichier .vtt ne peut être vérifiée depuis le DOM (fichier distant). Émettre un finding type='warning' demandant une vérification manuelle ; ne pas conclure à une violation sur cette base.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur la valeur RÉELLE de srclang ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Pour chaque track non conforme, proposer une correction concrète (ajout/normalisation de srclang en code ISO 639-1)."
+      ],
+      "important": [
+        "Déterminisme : la présence et le format de srclang sont des signaux DOM fiables ; même signal, même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : srclang absent ou code non conforme à ISO 639-1.",
+        "La correspondance code/langue réelle du .vtt n'est pas vérifiable depuis le DOM : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucune piste de sous-titres: compliant=true, severity='minor', findings=[] (non applicable).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "structure": {
+          "ruleId": "string",
+          "compliant": "boolean",
+          "severity": "critical | serious | moderate | minor",
+          "summary": "string (max 200 chars)",
+          "totalElements": "number",
+          "findings": "array (max 5)"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      }
+    },
+    "enabled": true
+  },
+  "automatedChecks": [
+    "Détection des éléments <track kind='subtitles'>",
+    "Vérification de la présence de l'attribut srclang",
+    "Validation du format du code de langue (2 lettres ISO 639-1)",
+    "Liste des codes ISO 639-1 valides reconnus"
+  ],
+  "manualChecks": [
+    "Vérification manuelle du contenu des fichiers WebVTT",
+    "Confirmation que la langue déclarée correspond au contenu réel",
+    "Test de sélection des pistes de sous-titres dans le lecteur",
+    "Validation de l'affichage correct selon la langue"
+  ],
+  "commonErrors": [
+    {
+      "error": "Absence de l'attribut srclang sur les sous-titres de traduction",
+      "example": "<video controls>\n  <source src=\"video.mp4\" type=\"video/mp4\">\n  <track kind=\"subtitles\" src=\"sous-titres-en.vtt\" label=\"English\">\n</video>",
+      "correction": "<video controls>\n  <source src=\"video.mp4\" type=\"video/mp4\">\n  <track kind=\"subtitles\" src=\"sous-titres-en.vtt\" srclang=\"en\" label=\"English\">\n</video>",
+      "explanation": "L'attribut srclang est obligatoire pour identifier la langue des sous-titres de traduction."
+    },
+    {
+      "error": "Code de langue invalide ou non standardisé",
+      "example": "<track kind=\"subtitles\" src=\"st-francais.vtt\" srclang=\"francais\" label=\"Français\">",
+      "correction": "<track kind=\"subtitles\" src=\"st-francais.vtt\" srclang=\"fr\" label=\"Français\">",
+      "explanation": "srclang doit utiliser un code ISO 639-1 à 2 lettres (fr, en, es, etc.), pas un nom de langue complet."
+    },
+    {
+      "error": "Code srclang ne correspondant pas à la langue réelle des sous-titres",
+      "example": "<track kind=\"subtitles\" src=\"subtitles-english.vtt\" srclang=\"fr\" label=\"Français\">",
+      "correction": "<track kind=\"subtitles\" src=\"subtitles-english.vtt\" srclang=\"en\" label=\"English\">",
+      "explanation": "Le code srclang doit correspondre à la langue réelle du contenu du fichier WebVTT."
+    },
+    {
+      "error": "Confusion entre kind='captions' et kind='subtitles'",
+      "example": "<track kind=\"captions\" src=\"traduction-es.vtt\" srclang=\"es\" label=\"Español\">",
+      "correction": "<track kind=\"subtitles\" src=\"traduction-es.vtt\" srclang=\"es\" label=\"Español\">",
+      "explanation": "kind='subtitles' est pour les traductions, kind='captions' pour les sous-titres synchronisés dans la langue originale (incluant sons et effets sonores)."
+    }
+  ],
+  "resources": [
+    "RGAA 4.1.2 - Critère 4.11 : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.11",
+    "MDN - HTMLTrackElement.srclang : https://developer.mozilla.org/fr/docs/Web/API/HTMLTrackElement/srclang",
+    "ISO 639-1 Language Codes : https://www.loc.gov/standards/iso639-2/php/code_list.php",
+    "WebVTT Specification : https://www.w3.org/TR/webvtt1/",
+    "HTML Standard - Track Element : https://html.spec.whatwg.org/multipage/media.html#the-track-element"
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "1.6",
+  "ruleId": "image-complex-description",
+  "title": "Images - Description détaillée",
+  "description": "Chaque image porteuse d'information a-t-elle, si nécessaire, une description détaillée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 1.6",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A)",
+  "theme": "Images",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux images complexes (graphiques, diagrammes, schémas, infographies, cartes) dont l'information ne peut être restituée par une simple alternative courte.",
+    "signals": {
+      "selectors": [
+        "img",
+        "svg",
+        "canvas",
+        "[role='img']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune image présente",
+      "Aucune image complexe nécessitant une description détaillée"
+    ]
+  },
+  "testScenarios": {
+    "detailedDescription": {
+      "description": "Présence d'une description détaillée pour les images complexes.",
+      "tests": [
+        {
+          "id": "1.6.1",
+          "rgaaTestRef": "Test 1.6.1",
+          "description": "Chaque image complexe dispose-t-elle d'une description détaillée accessible (via aria-describedby vers un élément présent, lien adjacent, ou texte adjacent identifié) ?",
+          "methodology": [
+            "Identifier les images complexes (graphiques, schémas, infographies, cartes)",
+            "Vérifier la présence d'une description détaillée : aria-describedby pointant vers un id existant, lien/texte adjacent",
+            "Vérifier que la description est réellement accessible et présente dans la page"
+          ],
+          "selector": "img, svg, canvas, [role='img']",
+          "expected": "Toute image complexe doit disposer d'une description détaillée accessible",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectComplexImage": true,
+            "checkDescriptionPresence": true
+          }
+        },
+        {
+          "id": "1.6.9",
+          "rgaaTestRef": "Test 1.6.9",
+          "description": "Lorsqu'une image utilise aria-describedby, l'identifiant référencé existe-t-il et contient-il la description détaillée ?",
+          "methodology": [
+            "Vérifier que la valeur de aria-describedby correspond à l'id d'un élément présent dans la page",
+            "Vérifier que cet élément contient effectivement la description détaillée"
+          ],
+          "selector": "img[aria-describedby], svg[aria-describedby], [role='img'][aria-describedby]",
+          "expected": "L'identifiant référencé par aria-describedby doit exister et contenir la description",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "images": {
+        "selectors": [
+          "img",
+          "svg",
+          "canvas",
+          "[role='img']",
+          "[id]"
+        ],
+        "attributes": [
+          "alt",
+          "longdesc",
+          "aria-describedby",
+          "src",
+          "role"
+        ],
+        "content": {
+          "imageAlt": true,
+          "surroundingContext": 500
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier les images COMPLEXES (graphique, diagramme, infographie, schéma, carte) dont l'information ne tient pas dans une alternative courte.",
+        "Si aucune image complexe n'est détectée, conclure non applicable (compliant=true, findings=[]).",
+        "Pour chaque image complexe, vérifier la présence d'une description détaillée accessible : aria-describedby pointant vers un id EXISTANT dans la page, lien adjacent vers la description, ou texte adjacent clairement associé.",
+        "Vérifier que la description est réellement présente dans la page (pas seulement référencée) et accessible à tous (pas masquée en display:none sans équivalent).",
+        "Signaler (type=\"violation\") toute image complexe sans description détaillée, et tout aria-describedby pointant vers un id inexistant.",
+        "Ne pas évaluer ici la QUALITÉ de la description (exhaustivité) : cela relève du critère 1.7.",
+        "Proposer une méthode d'implémentation concrète lorsque la description manque (aria-describedby + bloc de description, ou lien adjacent)."
+      ],
+      "important": [
+        "Si aucune image complexe détectée : compliant=true, severity='minor', summary='Aucune image complexe détectée, critère non applicable', findings=[].",
+        "Une description référencée par aria-describedby doit pointer vers un id réellement présent.",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'image-complex-description'",
+          "compliant": "boolean - true si conforme ou si aucune image complexe (non applicable)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre d'images complexes détectées",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Méthode d'implémentation de la description détaillée",
+          "wcagReference": "string - Ex: 1.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 1.6), spécialisé dans l'identification des images complexes et la vérification de la présence d'une description détaillée accessible."
+  },
+  "automatedChecks": [
+    "Présence de longdesc",
+    "Présence de aria-describedby",
+    "Validation de l'existence des id référencés par aria-describedby"
+  ],
+  "manualChecks": [
+    "Identification des images complexes nécessitant une description détaillée",
+    "Accessibilité effective de la description (lien fonctionnel, élément visible)"
+  ],
+  "commonErrors": [
+    {
+      "error": "Graphique complexe sans description détaillée",
+      "example": "<img src=\"graph-sales-2024.png\" alt=\"Graphique des ventes 2024\">",
+      "correction": "<img src=\"graph-sales-2024.png\" alt=\"Graphique des ventes 2024\" aria-describedby=\"graph-desc\">\n<div id=\"graph-desc\">Description détaillée : ventes en hausse de 15 % en janvier, 22 % en février...</div>",
+      "explanation": "Une image complexe nécessite une description détaillée restituant l'ensemble des données qu'elle véhicule."
+    },
+    {
+      "error": "aria-describedby pointant vers un identifiant inexistant",
+      "example": "<img src=\"schema.png\" alt=\"Schéma\" aria-describedby=\"desc\">",
+      "correction": "<img src=\"schema.png\" alt=\"Schéma\" aria-describedby=\"schema-desc\">\n<p id=\"schema-desc\">Description détaillée du schéma...</p>",
+      "explanation": "L'identifiant référencé par aria-describedby doit exister et contenir la description complète."
+    },
+    {
+      "error": "Description détaillée masquée en display:none sans équivalent accessible",
+      "example": "<img src=\"diagram.png\" alt=\"Diagramme\">\n<div style=\"display:none\">Description...</div>",
+      "correction": "<img src=\"diagram.png\" alt=\"Diagramme\" aria-describedby=\"diagram-desc\">\n<details><summary>Description détaillée</summary><div id=\"diagram-desc\">...</div></details>",
+      "explanation": "La description doit rester accessible (un contenu en display:none n'est pas restitué via aria-describedby de manière fiable)."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#1.6",
+    "https://www.w3.org/WAI/tutorials/images/complex/",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+  ]
+}

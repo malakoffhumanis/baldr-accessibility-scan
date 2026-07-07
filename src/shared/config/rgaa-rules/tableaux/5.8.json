@@ -1,0 +1,199 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "5.8",
+  "ruleId": "table-no-layout-headers",
+  "title": "Tableaux - Pas d'éléments structurants dans tableau de mise en forme",
+  "description": "Chaque tableau de mise en forme ne doit pas utiliser d'éléments propres aux tableaux de données. Cette règle est-elle respectée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 5.8",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Tableaux",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux tableaux utilisés uniquement pour la mise en forme",
+    "signals": {
+      "selectors": [
+        "table[role='presentation']",
+        "table:not(:has(th))"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun tableau de mise en forme",
+      "Uniquement des tableaux de données"
+    ]
+  },
+  "testScenarios": {
+    "layoutTableNoDataElements": {
+      "description": "Absence d'éléments de tableaux de données dans tableaux de mise en forme",
+      "tests": [
+        {
+          "id": "5.8.1",
+          "rgaaTestRef": "Test 5.8.1",
+          "description": "Le tableau de mise en forme ne contient-il pas de balise <caption> ?",
+          "methodology": [
+            "Identifier les tableaux de mise en forme (role=\"presentation\")",
+            "Vérifier l'absence de balise <caption>"
+          ],
+          "selector": "table[role='presentation'] caption, table[role='none'] caption",
+          "expected": "Aucun <caption> dans un tableau de mise en forme",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "5.8.2",
+          "rgaaTestRef": "Test 5.8.2",
+          "description": "Le tableau de mise en forme ne contient-il pas de balise <th> ?",
+          "methodology": [
+            "Identifier les tableaux de mise en forme",
+            "Vérifier l'absence de balises <th>"
+          ],
+          "selector": "table[role='presentation'] th, table[role='none'] th",
+          "expected": "Aucun <th> dans un tableau de mise en forme",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "5.8.3",
+          "rgaaTestRef": "Test 5.8.3",
+          "description": "Le tableau de mise en forme ne contient-il pas d'attributs scope, headers, ou summary ?",
+          "methodology": [
+            "Identifier les tableaux de mise en forme",
+            "Vérifier l'absence des attributs scope, headers, summary sur les cellules"
+          ],
+          "selector": "table[role='presentation'] [scope], table[role='presentation'] [headers], table[role='presentation'][summary]",
+          "expected": "Aucun attribut de tableau de données dans un tableau de mise en forme",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "5.8.4",
+          "rgaaTestRef": "Test 5.8.4",
+          "description": "Le tableau de mise en forme ne contient-il pas de balises <thead>, <tfoot>, ou <colgroup> ?",
+          "methodology": [
+            "Identifier les tableaux de mise en forme",
+            "Vérifier l'absence de balises structurantes (<thead>, <tfoot>, <colgroup>)"
+          ],
+          "selector": "table[role='presentation'] thead, table[role='presentation'] tfoot, table[role='presentation'] colgroup",
+          "expected": "Aucune balise structurante dans un tableau de mise en forme",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "table",
+        "caption",
+        "th",
+        "thead",
+        "tfoot",
+        "colgroup"
+      ],
+      "attributes": [
+        "role",
+        "scope",
+        "headers",
+        "summary"
+      ],
+      "context": {
+        "surroundingText": 100,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser les tableaux de MISE EN FORME : balises <table> portant role=\"presentation\"/\"none\", ou ne contenant initialement aucun signal de données. Pour chacun, relever de façon déterministe les éléments propres aux tableaux de DONNÉES présents dans le DOM extrait. Appliquer ensuite les étapes DANS L'ORDRE.",
+        "ÉTAPE 1 (non applicable) — Si la page ne contient aucun tableau de mise en forme, conclure NON APPLICABLE (compliant=true, severity='minor', summary='Aucun tableau de mise en forme détecté, critère non applicable', findings=[]).",
+        "ÉTAPE 2 (classification) — Confirmer qu'un tableau est bien de mise en forme : role=\"presentation\"/\"none\" est un signal explicite. Si la nature données vs mise en forme ne peut être tranchée par les signaux DOM, émettre un finding type=\"warning\" (vérification manuelle) et ne pas appliquer les étapes 3-4 comme des violations.",
+        "ÉTAPE 3 (éléments de données — défaut objectif) — Dans un tableau CONFIRMÉ de mise en forme, la présence d'un <caption>, d'un <th>, ou d'un attribut scope/headers/summary est un défaut OBJECTIF vérifiable dans le DOM : émettre un finding type=\"violation\", severity='serious', recommandant le retrait de l'élément (ou le remplacement du tableau par du CSS).",
+        "ÉTAPE 4 (balises structurantes) — La présence de <thead>, <tfoot> ou <colgroup> dans un tableau de mise en forme est un défaut de moindre gravité : émettre un finding type=\"warning\", severity='moderate' demandant le retrait.",
+        "ÉTAPE 5 (doute → warning) — En cas de DOUTE sur la nature du tableau, ne jamais conclure à une violation ; émettre au plus un finding type=\"warning\".",
+        "ÉTAPE 6 — Pour chaque défaut, recommander l'utilisation de CSS moderne (Grid/Flexbox) en remplacement du tableau."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'table-no-layout-headers'",
+          "compliant": "boolean - true si conforme ou si aucun tableau de mise en forme détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec code HTML corrigé",
+          "rgaaTestRef": "Test 5.8.1, 5.8.2, 5.8.3 ou 5.8.4",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (role=presentation/none, présence de <caption>/<th>/scope/headers/summary, de <thead>/<tfoot>/<colgroup>) donnent toujours le même verdict.",
+        "type='violation' (severity='serious') est réservé aux défauts OBJECTIFS dans un tableau confirmé de mise en forme : <caption>, <th>, ou attribut scope/headers/summary. Les balises <thead>/<tfoot>/<colgroup> => type='warning', severity='moderate'.",
+        "En cas de DOUTE sur la nature données vs mise en forme → type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun tableau de mise en forme détecté: compliant=true, severity='minor', summary='Aucun tableau de mise en forme détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères) ; toujours suggérer le retrait des éléments inappropriés et un remplacement par CSS.",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 5.8 - Éléments structurants dans un tableau de mise en forme), spécialisé dans la distinction tableaux de données vs mise en forme. Tu te fondes sur les signaux mécaniques du DOM (role=presentation/none, présence de <caption>/<th>/scope/headers/summary, de balises structurantes) pour un verdict reproductible. Tu réserves la violation aux éléments de données objectivement présents dans un tableau confirmé de mise en forme, et tu demandes une vérification manuelle (warning) dès que la nature du tableau est incertaine."
+  },
+  "automatedChecks": [
+    "Détection de <caption> dans table[role='presentation']",
+    "Détection de <th> dans table[role='presentation']",
+    "Détection d'attributs scope, headers, summary",
+    "Détection de <thead>, <tfoot>, <colgroup>"
+  ],
+  "manualChecks": [
+    "Vérification que le tableau est bien de mise en forme (pas de données)",
+    "Confirmation de la suppression nécessaire des éléments"
+  ],
+  "commonErrors": [
+    {
+      "error": "Tableau de mise en forme avec <th>",
+      "example": "<table role=\"presentation\">\n  <tr><th>Menu</th><td>Contenu</td></tr>\n</table>",
+      "correction": "<table role=\"presentation\">\n  <tr><td>Menu</td><td>Contenu</td></tr>\n</table>\n<!-- MIEUX : utiliser CSS -->\n<div style=\"display: grid; grid-template-columns: 200px 1fr;\">\n  <nav>Menu</nav>\n  <main>Contenu</main>\n</div>",
+      "explanation": "Ne pas utiliser <th> dans un tableau de mise en forme. Utiliser <td> ou mieux, CSS."
+    },
+    {
+      "error": "Tableau de mise en forme avec <caption>",
+      "example": "<table role=\"presentation\">\n  <caption>Mise en page</caption>\n  <tr><td>A</td><td>B</td></tr>\n</table>",
+      "correction": "<table role=\"presentation\">\n  <tr><td>A</td><td>B</td></tr>\n</table>",
+      "explanation": "<caption> est réservé aux tableaux de données"
+    },
+    {
+      "error": "Tableau de mise en forme avec attributs structurants",
+      "example": "<table role=\"presentation\">\n  <thead><tr><td>En-tête</td></tr></thead>\n  <tbody><tr><td scope=\"row\">Données</td></tr></tbody>\n</table>",
+      "correction": "<table role=\"presentation\">\n  <tr><td>En-tête</td></tr>\n  <tr><td>Données</td></tr>\n</table>",
+      "explanation": "Pas de <thead>, <tbody>, scope dans un tableau de mise en forme"
+    },
+    {
+      "error": "Nature du tableau incertaine avant d'appliquer le critère (à vérifier manuellement)",
+      "example": "<table>\n  <caption>Connexion</caption>\n  <tr><td>Identifiant</td><td><input type=\"text\"></td></tr>\n  <tr><td>Mot de passe</td><td><input type=\"password\"></td></tr>\n</table>",
+      "correction": "<!-- Si mise en forme : retirer <caption>, ajouter role=\"presentation\" ou utiliser CSS -->\n<div class=\"form-grid\">\n  <label>Identifiant <input type=\"text\"></label>\n  <label>Mot de passe <input type=\"password\"></label>\n</div>",
+      "explanation": "Avant de signaler un <caption> comme interdit, confirmer que le tableau est bien de mise en forme et non de données : si la nature n'est pas tranchable par les signaux DOM, signaler en warning pour vérification manuelle."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#5.8",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+  ]
+}

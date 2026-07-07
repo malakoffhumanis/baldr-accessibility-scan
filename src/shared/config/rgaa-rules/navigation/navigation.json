@@ -1,0 +1,302 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.1",
+  "ruleId": "navigation-systems",
+  "title": "Navigation - Systèmes de navigation",
+  "description": "Chaque ensemble de pages dispose-t-il de deux systèmes de navigation différents au moins (menu de navigation, plan du site, moteur de recherche) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.1",
+  "wcagReference": "WCAG 2.1 - 2.4.5 Accès multiples (AA)",
+  "theme": "Navigation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique aux ENSEMBLES de pages disposant d'une navigation répétée.",
+    "signals": {
+      "selectors": ["nav", "[role='navigation']"],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Document autonome / page unique sans navigation répétée (aucun <nav> ni role=navigation)",
+      "Page isolée ne faisant pas partie d'un ensemble de pages"
+    ]
+  },
+  "testScenarios": {
+    "navigationMenu": {
+      "description": "Menu de navigation principal",
+      "tests": [
+        {
+          "id": "12.1.1",
+          "description": "La page dispose-t-elle d'un menu de navigation principal (nav, role=\"navigation\") ?",
+          "selector": "nav, [role='navigation']",
+          "expected": "Un menu de navigation doit être présent",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractNavigationElements": true,
+            "checkNavigationStructure": true,
+            "verifyAccessibility": true
+          }
+        },
+        {
+          "id": "12.1.2",
+          "description": "Le menu de navigation est-il identifiable et correctement étiqueté (aria-label, aria-labelledby) ?",
+          "selector": "nav[aria-label], nav[aria-labelledby], [role='navigation'][aria-label], [role='navigation'][aria-labelledby]",
+          "expected": "Les menus doivent avoir des étiquettes descriptives",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.1.3",
+          "description": "Le menu de navigation principal est-il cohérent sur toutes les pages ?",
+          "selector": "nav, [role='navigation']",
+          "expected": "Le menu principal doit être identique sur l'ensemble du site",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "sitemap": {
+      "description": "Plan du site",
+      "tests": [
+        {
+          "id": "12.1.4",
+          "description": "Un plan du site est-il disponible et accessible depuis toutes les pages ?",
+          "selector": "a[href*='plan'], a[href*='sitemap']",
+          "expected": "Un lien vers le plan du site doit être présent",
+          "severity": "moderate",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "searchForSitemap": true,
+            "checkAccessibility": true,
+            "verifyLinkPresence": true
+          }
+        }
+      ]
+    },
+    "searchEngine": {
+      "description": "Moteur de recherche interne",
+      "tests": [
+        {
+          "id": "12.1.5",
+          "description": "Un moteur de recherche interne est-il disponible ?",
+          "selector": "form[role='search'], [role='search'], input[type='search']",
+          "expected": "Un formulaire de recherche doit être présent",
+          "severity": "moderate",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectSearchForm": true,
+            "verifySearchFunctionality": true,
+            "checkAccessibility": true
+          }
+        },
+        {
+          "id": "12.1.6",
+          "description": "Le moteur de recherche est-il identifiable (role=\"search\", aria-label) ?",
+          "selector": "[role='search'][aria-label], form[role='search'][aria-label]",
+          "expected": "Le formulaire de recherche doit être étiqueté",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "multipleNavigationSystems": {
+      "description": "Présence de plusieurs systèmes de navigation",
+      "tests": [
+        {
+          "id": "12.1.7",
+          "description": "Au moins deux systèmes de navigation différents sont-ils présents (menu + plan OU menu + recherche OU plan + recherche) ?",
+          "selector": "nav, [role='navigation'], [role='search'], a[href*='plan'], a[href*='sitemap']",
+          "expected": "Deux systèmes de navigation minimum doivent être disponibles",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "countNavigationSystems": true,
+            "identifySystemTypes": true,
+            "verifyMultipleAccess": true
+          }
+        }
+      ]
+    },
+    "breadcrumb": {
+      "description": "Fil d'Ariane (optionnel mais recommandé)",
+      "tests": [
+        {
+          "id": "12.1.8",
+          "description": "Un fil d'Ariane est-il présent (nav aria-label=\"breadcrumb\", ol/ul) ?",
+          "selector": "nav[aria-label*='breadcrumb'], nav[aria-label*='fil'], [role='navigation'][aria-label*='breadcrumb']",
+          "expected": "Un fil d'Ariane facilite la navigation hiérarchique",
+          "severity": "minor",
+          "aiAnalysis": true
+        },
+        {
+          "id": "12.1.9",
+          "description": "Le fil d'Ariane utilise-t-il une liste structurée (ol, ul) ?",
+          "selector": "nav[aria-label*='breadcrumb'] ol, nav[aria-label*='breadcrumb'] ul",
+          "expected": "Le fil d'Ariane doit utiliser une liste HTML",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "skipLinks": {
+      "description": "Liens d'évitement",
+      "tests": [
+        {
+          "id": "12.1.10",
+          "description": "Des liens d'évitement sont-ils présents pour accéder directement au contenu principal ?",
+          "selector": "a[href='#main'], a[href='#content'], a[href^='#'][class*='skip']",
+          "expected": "Des liens d'évitement facilitent l'accès au contenu",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "navigationElements": {
+        "selectors": [
+          "nav",
+          "[role='navigation']",
+          "[role='search']",
+          "a[href*='plan']",
+          "a[href*='sitemap']",
+          "form[role='search']",
+          "input[type='search']",
+          "a[href^='#']"
+        ],
+        "attributes": [
+          "role",
+          "aria-label",
+          "aria-labelledby",
+          "id",
+          "class",
+          "href",
+          "action",
+          "method"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": true,
+          "surroundingContext": 200
+        },
+        "contextExtraction": {
+          "parentElements": 2,
+          "siblingElements": true,
+          "textContent": true,
+          "documentPosition": true
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Si la page ne comporte AUCUN élément <nav> ni role=navigation (document autonome / page isolée), le critère 12.1 vise les ENSEMBLES de pages et est donc NON APPLICABLE : conclure IMMÉDIATEMENT compliant=true, findings=[], quel que soit le nombre d'autres éléments (un lien d'ancrage a[href^='#'] ou un lien d'évitement ne compte PAS comme système de navigation).",
+        "Recenser les SYSTÈMES de navigation présents via des signaux mécaniques du DOM, puis appliquer la procédure ci-dessous DANS L'ORDRE. Signaux : (a) menu principal = <nav> ou élément à role=\"navigation\" ; (b) moteur de recherche = <form role=\"search\">, élément à role=\"search\" ou <input type=\"search\"> ; (c) plan du site = lien dont l'href contient 'plan' ou 'sitemap'.",
+        "ÉTAPE 1 (déterministe) — Dénombrer les systèmes DISTINCTS effectivement présents dans le DOM parmi : menu de navigation, moteur de recherche, lien vers le plan du site. Chaque type ne compte qu'une fois.",
+        "ÉTAPE 2 (déterministe) — Si AUCUN système de navigation n'est présent (0 système : document autonome / page isolée sans navigation répétée) → conclure NON APPLICABLE (compliant=true, findings=[]), le critère visant les ensembles de pages. Si AU MOINS UN système est présent mais MOINS de deux systèmes distincts → finding type=\"violation\", severity serious ; préciser quels systèmes manquent.",
+        "ÉTAPE 3 (déterministe) — Étiquetage : si plusieurs éléments <nav>/role=\"navigation\" coexistent sans aria-label ni aria-labelledby distinctifs, le signaler (étiquetage manquant). Un moteur de recherche sans role=\"search\" identifiable peut être signalé comme amélioration.",
+        "ÉTAPE 4 (doute → warning) — La PERTINENCE et la qualité d'un libellé (aria-label explicite et compréhensible), la cohérence du menu d'une page à l'autre, le caractère réellement FONCTIONNEL du moteur de recherche ou du plan du site (contenu distant non observable ici) relèvent d'une appréciation : émettre un finding type=\"warning\" pour vérification manuelle, jamais une violation ferme.",
+        "ÉTAPE 5 — Le fil d'Ariane et les liens d'évitement sont des compléments : leur absence ne rend pas le critère non conforme à elle seule ; les mentionner au plus en recommendation.",
+        "ÉTAPE 6 — Le critère est NON APPLICABLE seulement si la page ne comporte aucun mécanisme de navigation (cas rare, ex. page isolée sans navigation répétée)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'navigation-systems'",
+          "compliant": "boolean",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre de systèmes de navigation détectés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec code HTML",
+          "wcagReference": "string - Ex: 2.4.5"
+        }
+      },
+      "important": [
+        "NON APPLICABLE aux documents autonomes / pages isolées : le critère 12.1 vise les ENSEMBLES de pages. Si la page ne comporte AUCUN système de navigation (aucun <nav> ou role=navigation, ni moteur de recherche, ni lien vers un plan du site) et n'appartient pas à un site multi-pages, conclure compliant=true, findings=[] (non applicable). Ne signaler '< 2 systèmes' en violation QUE si au moins un système de navigation est déjà présent.",
+        "Déterminisme : le décompte des systèmes de navigation (nav/role=navigation, role=search/input[type=search], lien plan/sitemap) repose sur des signaux DOM ; les mêmes signaux donnent toujours le même verdict.",
+        "type=\"violation\" est réservé au défaut OBJECTIF : moins de deux systèmes de navigation distincts détectés dans le DOM.",
+        "En cas de doute (pertinence d'un libellé, cohérence inter-pages, fonctionnement réel du moteur de recherche ou du plan distant) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Critère NON APPLICABLE si la page ne comporte aucun mécanisme de navigation.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après ; descriptions concises (max 200 caractères).",
+        "Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.1 - systèmes de navigation). Tu appliques une approche DÉTERMINISTE : tu recenses via des signaux mécaniques du DOM les systèmes de navigation distincts (menu nav/role=navigation, moteur de recherche role=search/input[type=search], lien vers le plan du site) et tu signales en violation ferme uniquement le cas objectif où moins de deux systèmes sont présents. Pour tout ce qui relève d'une appréciation (pertinence d'un libellé, cohérence inter-pages, fonctionnement réel), tu émets un warning de vérification manuelle plutôt qu'une violation."
+  },
+  "automatedChecks": [
+    "Présence de balises nav ou role=\"navigation\"",
+    "Présence d'un formulaire de recherche (role=\"search\", input[type='search'])",
+    "Détection de liens vers plan du site",
+    "Présence de liens d'évitement",
+    "Étiquetage des zones de navigation (aria-label)",
+    "Structure du fil d'Ariane (liste ol/ul)"
+  ],
+  "manualChecks": [
+    "Vérification que le menu est cohérent sur toutes les pages",
+    "Fonctionnalité du moteur de recherche",
+    "Accessibilité du plan du site",
+    "Pertinence des étiquettes de navigation",
+    "Nombre effectif de systèmes de navigation distincts"
+  ],
+  "commonErrors": [
+    {
+      "error": "Un seul système de navigation (menu uniquement)",
+      "example": "<nav>\n  <ul><li><a href=\"/\">Accueil</a></li></ul>\n</nav>",
+      "correction": "<nav aria-label=\"Menu principal\">\n  <ul><li><a href=\"/\">Accueil</a></li></ul>\n</nav>\n<!-- Ajouter aussi -->\n<form role=\"search\" aria-label=\"Recherche sur le site\">\n  <input type=\"search\" aria-label=\"Rechercher\">\n  <button type=\"submit\">Rechercher</button>\n</form>",
+      "explanation": "Fournir au moins deux moyens différents d'accéder au contenu (ex: menu + recherche)"
+    },
+    {
+      "error": "Menu de navigation sans étiquette",
+      "example": "<nav>\n  <ul><li><a href=\"/\">Accueil</a></li></ul>\n</nav>",
+      "correction": "<nav aria-label=\"Menu principal\">\n  <ul><li><a href=\"/\">Accueil</a></li></ul>\n</nav>",
+      "explanation": "Étiqueter les zones de navigation avec aria-label pour les identifier clairement"
+    },
+    {
+      "error": "Moteur de recherche non identifié",
+      "example": "<form>\n  <input type=\"text\" placeholder=\"Rechercher\">\n  <button>OK</button>\n</form>",
+      "correction": "<form role=\"search\" aria-label=\"Recherche sur le site\">\n  <input type=\"search\" aria-label=\"Rechercher\" placeholder=\"Rechercher\">\n  <button type=\"submit\">Rechercher</button>\n</form>",
+      "explanation": "Utiliser role=\"search\" et type=\"search\" pour identifier le moteur de recherche"
+    },
+    {
+      "error": "Fil d'Ariane sans structure de liste",
+      "example": "<nav aria-label=\"Fil d'Ariane\">\n  <a href=\"/\">Accueil</a> > <a href=\"/cat\">Catégorie</a> > Page\n</nav>",
+      "correction": "<nav aria-label=\"Fil d'Ariane\">\n  <ol>\n    <li><a href=\"/\">Accueil</a></li>\n    <li><a href=\"/cat\">Catégorie</a></li>\n    <li aria-current=\"page\">Page actuelle</li>\n  </ol>\n</nav>",
+      "explanation": "Utiliser une liste ordonnée (ol) pour structurer le fil d'Ariane"
+    },
+    {
+      "error": "Absence de lien d'évitement",
+      "example": "<!-- Pas de lien d'évitement -->",
+      "correction": "<body>\n  <a href=\"#main\" class=\"skip-link\">Aller au contenu principal</a>\n  <nav>...</nav>\n  <main id=\"main\">...</main>\n</body>",
+      "explanation": "Ajouter un lien d'évitement en début de page pour accéder directement au contenu"
+    },
+    {
+      "error": "Lien vers plan du site absent",
+      "example": "<!-- Pas de lien vers plan du site -->",
+      "correction": "<footer>\n  <a href=\"/plan-du-site\">Plan du site</a>\n</footer>",
+      "explanation": "Fournir un lien vers le plan du site dans le footer ou le menu"
+    },
+    {
+      "error": "Moteur de recherche présent mais fonctionnement à confirmer (vérification manuelle)",
+      "example": "<form role=\"search\" aria-label=\"Recherche\">\n  <input type=\"search\" aria-label=\"Rechercher\">\n  <button type=\"submit\">OK</button>\n</form>",
+      "correction": "<!-- Le balisage est correct (role=search détecté). Vérifier MANUELLEMENT que la recherche renvoie bien des résultats pertinents : ce comportement n'est pas observable dans le DOM. -->",
+      "explanation": "La présence du système se constate dans le DOM (signal mécanique), mais son fonctionnement effectif relève d'une vérification manuelle : émettre un warning, pas une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.1",
+    "https://www.w3.org/WAI/WCAG21/Understanding/multiple-ways.html",
+    "https://www.w3.org/WAI/tutorials/menus/",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/"
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "3.2",
+  "ruleId": "color-contrast",
+  "title": "Couleurs - Contraste",
+  "description": "Le contraste entre le texte et son arrière-plan est-il suffisant ?",
+  "rgaaReference": "RGAA 4.1 - Critère 3.2",
+  "wcagReference": "WCAG 2.1 - 1.4.3 Contraste (AA)",
+  "theme": "Couleurs",
+  "level": "AA",
+  "testScenarios": {
+    "textContrast": {
+      "description": "Contraste du texte normal",
+      "tests": [
+        {
+          "id": "3.2.1",
+          "description": "Le texte normal a-t-il un ratio de contraste ≥ 4.5:1 ?",
+          "selector": "body *:not(h1):not(h2):not(h3)",
+          "expected": "Ratio minimum 4.5:1",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "largeTextContrast": {
+      "description": "Contraste du texte agrandi",
+      "tests": [
+        {
+          "id": "3.2.2",
+          "description": "Le texte agrandi (≥18pt ou ≥14pt gras) a-t-il un ratio ≥ 3:1 ?",
+          "selector": "h1, h2, h3, [style*='font-size']",
+          "expected": "Ratio minimum 3:1 pour texte agrandi",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "texts": {
+        "selectors": [
+          "body *"
+        ],
+        "attributes": [
+          "style",
+          "class",
+          "color"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": false
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Axe-Core fait autorité pour le contraste mesuré : si les violations Axe-Core fournies ne contiennent AUCUNE entrée de contraste, conclure IMMÉDIATEMENT compliant=true, findings=[] sans analyser plus loin. N'estime JAMAIS un ratio à partir de couleurs non déterminées avec certitude (variable CSS type --level-color, classe, héritage, dégradé) et ne produis aucune violation sans couleurs effectives certaines ET signalement Axe (au plus un warning pour du texte sur image/dégradé).",
+        "Analyser CHAQUE élément textuel visible de la page en s'appuyant sur le DOM extrait (couleurs de texte et d'arrière-plan effectives, taille et graisse de police issues de style/class) ET sur la capture d'écran, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux MÉCANIQUES : couleur de texte (color) et couleur d'arrière-plan EFFECTIVES (héritage, background-color du parent le plus proche), taille de police en px/pt et graisse (font-weight). Si la couleur d'arrière-plan effective ne peut PAS être déterminée de façon certaine (fond hérité ambigu, image ou dégradé en arrière-plan, transparence), NE PAS calculer de ratio fiable : passer à l'étape 5.",
+        "ÉTAPE 2 — Classer chaque texte : « texte de grande taille » si ≥ 24px (≈18pt) sans graisse OU ≥ 18.5px (≈14pt) en gras (font-weight ≥ 700) ; sinon « texte normal ». Le seuil applicable est 3:1 pour le texte de grande taille, 4.5:1 pour le texte normal.",
+        "ÉTAPE 3 — Calculer le ratio de contraste selon WCAG 2.1 (luminance relative) à partir des deux couleurs effectives relevées à l'étape 1.",
+        "ÉTAPE 4 (violation OBJECTIVE) — Si les deux couleurs sont connues avec certitude et que le ratio calculé est INFÉRIEUR au seuil applicable (< 4.5:1 texte normal, < 3:1 texte de grande taille) → finding type=\"violation\", severity serious. Indiquer le ratio mesuré, le seuil attendu et proposer une couleur conforme.",
+        "ÉTAPE 5 (doute → warning) — Émettre un finding type=\"warning\" (vérification manuelle) sans conclure à une violation lorsque la conformité ne peut être tranchée avec certitude : arrière-plan indéterminé/transparent, texte superposé à une image ou un dégradé, texte sur un état au survol/focus non visible, ou cas particulier WCAG (texte de logo/marque, texte purement décoratif, texte désactivé). Ne PAS calculer de verdict ferme dans ces cas.",
+        "ÉTAPE 6 — Pour tout texte signalé (violation ou warning), proposer une correction concrète : couleur de texte ou d'arrière-plan atteignant le seuil requis, avec le nouveau ratio attendu.",
+        "ÉTAPE 7 — Le critère est NON APPLICABLE uniquement si la page ne contient AUCUN texte (compliant=true, findings=[])."
+      ],
+      "important": [
+        "AXE-CORE FAIT AUTORITÉ pour le contraste mesuré : s'il n'y a AUCUNE violation de contraste dans les résultats Axe-Core fournis, conclure compliant=true et findings=[]. Ne JAMAIS estimer ni deviner un ratio à partir de couleurs non déterminées avec certitude (variable CSS type --level-color, classe, héritage, dégradé) ni contredire Axe-Core : sans couleurs effectives certaines ET sans signalement Axe, le texte est réputé conforme (au plus un warning, jamais une violation, pour du texte superposé à une image ou un dégradé).",
+        "Déterminisme : les mêmes couleurs et tailles relevées dans le DOM doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux cas OBJECTIFS : deux couleurs effectives connues et ratio mesuré strictement inférieur au seuil (4.5:1 ou 3:1).",
+        "En cas de doute (arrière-plan indéterminé, image/dégradé, transparence, cas particulier WCAG), préférer type=\"warning\" (vérification manuelle) plutôt qu'une violation.",
+        "Si la page ne contient aucun texte : compliant=true, findings=[], critère non applicable.",
+        "Retourner UNIQUEMENT le JSON valide, sans texte avant ou après.",
+        "Limiter à 5 findings maximum, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'color-contrast'",
+          "compliant": "boolean",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec code CSS",
+          "wcagReference": "string - Ex: 1.4.3"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 3.2 - Couleurs), spécialisé dans la vérification déterministe du contraste entre le texte et son arrière-plan. Tu calcules le ratio WCAG 2.1 à partir des couleurs effectives du DOM et tu ne signales une violation que lorsque les deux couleurs sont connues avec certitude et que le ratio mesuré est inférieur au seuil (4.5:1 texte normal, 3:1 texte de grande taille). Dès qu'un arrière-plan est indéterminé, transparent, posé sur une image/un dégradé, ou qu'un cas particulier WCAG s'applique, tu demandes une vérification manuelle (warning) au lieu de conclure."
+  },
+  "automatedChecks": [
+    "Calcul automatique des ratios de contraste",
+    "Détection des couleurs de texte et arrière-plan",
+    "Classification texte normal vs agrandi"
+  ],
+  "manualChecks": [
+    "Vérification visuelle des contrastes",
+    "Test avec outils de simulation de daltonisme"
+  ],
+  "commonErrors": [
+    {
+      "error": "Texte gris sur fond blanc avec ratio insuffisant",
+      "example": "color: #999; background: #fff; (ratio 2.8:1)",
+      "correction": "color: #767676; background: #fff; (ratio 4.5:1)",
+      "explanation": "Le ratio doit être au minimum 4.5:1 pour le texte normal."
+    },
+    {
+      "error": "Liens avec contraste insuffisant",
+      "example": "a { color: #0088ff; } sur fond blanc (ratio 3.2:1)",
+      "correction": "a { color: #005fa3; } (ratio 4.5:1)",
+      "explanation": "Les liens, comme tout texte normal, doivent respecter le ratio minimum de 4.5:1."
+    },
+    {
+      "error": "Texte de grande taille sous le seuil 3:1",
+      "example": "h1 { color: #9b9b9b; background: #fff; font-size: 32px; } (ratio 2.6:1)",
+      "correction": "h1 { color: #767676; background: #fff; } (ratio 4.5:1, au-delà des 3:1 requis)",
+      "explanation": "Un texte de grande taille (≥24px, ou ≥18.5px en gras) doit atteindre au moins 3:1."
+    },
+    {
+      "error": "Texte sur image de fond : contraste à vérifier manuellement",
+      "example": "<h2 style=\"color:#fff\">Bienvenue</h2> posé sur une image hero variable",
+      "correction": "Ajouter un voile/overlay sombre garantissant un fond uni, ou un text-shadow/contour assurant un ratio ≥ 4.5:1 sur toute la zone du texte.",
+      "explanation": "Quand le texte est superposé à une image ou un dégradé, l'arrière-plan effectif n'est pas déterminable de façon fiable : ce cas relève d'une vérification manuelle (warning) et non d'une violation automatique."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#3.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html"
+  ]
+}

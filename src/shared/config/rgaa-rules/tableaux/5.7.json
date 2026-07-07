@@ -1,0 +1,183 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "5.7",
+  "ruleId": "table-layout-headers",
+  "title": "Tableaux - Mise en forme sans en-têtes",
+  "description": "Pour chaque tableau de mise en forme, le contenu linéarisé reste-t-il compréhensible ?",
+  "rgaaReference": "RGAA 4.1 - Critère 5.7",
+  "wcagReference": "WCAG 2.1 - 1.3.2 Ordre séquentiel logique (A)",
+  "theme": "Tableaux",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux tableaux utilisés uniquement pour la mise en forme (usage déconseillé)",
+    "signals": {
+      "selectors": [
+        "table[role='presentation']",
+        "table:not(:has(th))"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun tableau de mise en forme",
+      "Uniquement des tableaux de données",
+      "Utilisation de CSS Grid/Flexbox pour la mise en page"
+    ]
+  },
+  "testScenarios": {
+    "layoutTableLinearization": {
+      "description": "Compréhensibilité du contenu linéarisé",
+      "tests": [
+        {
+          "id": "5.7.1",
+          "rgaaTestRef": "Test 5.7.1",
+          "description": "Le tableau de mise en forme possède-t-il role=\"presentation\" ?",
+          "methodology": [
+            "Identifier les tableaux utilisés pour la mise en forme",
+            "Vérifier la présence de role=\"presentation\" ou role=\"none\"",
+            "Vérifier l'absence de balises <th>, <caption>, scope, headers"
+          ],
+          "selector": "table:not([role='presentation']):not([role='none']):not(:has(th))",
+          "expected": "Les tableaux de mise en forme doivent avoir role=\"presentation\"",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "5.7.2",
+          "rgaaTestRef": "Test 5.7.2",
+          "description": "Le contenu du tableau linéarisé reste-t-il compréhensible ?",
+          "methodology": [
+            "Lire le contenu du tableau cellule par cellule, ligne par ligne",
+            "Vérifier que l'ordre de lecture reste logique et compréhensible",
+            "S'assurer qu'aucune information n'est perdue lors de la linéarisation"
+          ],
+          "selector": "table[role='presentation'], table:not(:has(th))",
+          "expected": "Le contenu doit rester cohérent lorsque lu de manière linéaire",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "linearizeContent": true,
+            "checkReadingOrder": true,
+            "evaluateComprehension": true
+          }
+        },
+        {
+          "id": "5.7.3",
+          "rgaaTestRef": "Test 5.7.3",
+          "description": "Recommandation : remplacer le tableau de mise en forme par CSS",
+          "methodology": [
+            "Identifier les tableaux de mise en forme",
+            "Suggérer une mise en page moderne (CSS Grid, Flexbox)",
+            "Proposer une refonte HTML sémantique"
+          ],
+          "selector": "table[role='presentation'], table:not(:has(th))",
+          "expected": "Privilégier CSS pour la mise en page plutôt que des tableaux",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "table",
+        "tr",
+        "td",
+        "th"
+      ],
+      "attributes": [
+        "role",
+        "summary"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser tous les tableaux : balises <table> du DOM extrait. Pour chacun, relever les SIGNAUX MÉCANIQUES : présence/absence de <th>, de <caption>, de scope/headers, valeur de role (presentation/none). Appliquer ensuite les étapes DANS L'ORDRE.",
+        "ÉTAPE 1 (non applicable) — Si la page ne contient aucun tableau de MISE EN FORME (aucune <table>, ou uniquement des tableaux de données contenant <th>/scope/<caption>), conclure NON APPLICABLE (compliant=true, severity='minor', summary='Aucun tableau de mise en forme détecté, critère non applicable', findings=[]).",
+        "ÉTAPE 2 (classification déterministe) — Un tableau est présumé de MISE EN FORME s'il ne contient AUCUN <th>, <caption>, scope ni headers. Un tableau portant role=\"presentation\"/\"none\" est explicitement déclaré de mise en forme. Si les signaux DOM ne permettent pas de trancher données vs mise en forme, émettre un finding type=\"warning\" (vérification manuelle).",
+        "ÉTAPE 3 (role manquant) — Un tableau de mise en forme SANS role=\"presentation\"/\"none\" est un défaut de balisage de gravité limitée : émettre un finding type=\"warning\", severity='moderate' (recommander role=\"presentation\" ou, mieux, un remplacement par CSS). Ne pas en faire une violation ferme.",
+        "ÉTAPE 4 (linéarisation — appréciation → warning) — La compréhensibilité du contenu une fois LINÉARISÉ (lu cellule par cellule, ligne par ligne) relève d'une appréciation du sens : elle ne peut être tranchée mécaniquement. Quand l'ordre de lecture semble incohérent, émettre un finding type=\"warning\", severity='moderate' demandant une vérification manuelle. Ne produire une violation que si l'incohérence est OBJECTIVE et certaine.",
+        "ÉTAPE 5 (recommandation) — Pour tout tableau de mise en forme, proposer un finding type=\"recommendation\", severity='minor' invitant à remplacer la structure par du CSS moderne (Grid/Flexbox) et du HTML sémantique.",
+        "ÉTAPE 6 — En cas de DOUTE, privilégier type=\"warning\" plutôt qu'une violation."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'table-layout-headers'",
+          "compliant": "boolean - true si conforme ou si aucun tableau de mise en forme détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple CSS moderne",
+          "rgaaTestRef": "Test 5.7.1, 5.7.2 ou 5.7.3",
+          "wcagReference": "1.3.2"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence/absence de <th>/<caption>/scope, valeur de role) donnent toujours le même verdict.",
+        "type='violation' est réservé à une incohérence de linéarisation OBJECTIVE et certaine. Le caractère compréhensible du contenu linéarisé relève d'une appréciation → type='warning' (vérification manuelle).",
+        "Tableau de mise en forme sans role=presentation: type='warning', severity='moderate' (et non une violation ferme).",
+        "Si aucun tableau de mise en forme détecté: compliant=true, severity='minor', summary='Aucun tableau de mise en forme détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères) ; toujours recommander un remplacement par du CSS moderne.",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 5.7 - Tableaux de mise en forme), spécialisé dans la linéarisation. Tu te fondes sur les signaux mécaniques du DOM (absence de <th>/<caption>/scope, valeur de role) pour identifier les tableaux de mise en forme de façon reproductible. Comme la compréhensibilité du contenu linéarisé dépend d'une appréciation du sens, tu privilégies la vérification manuelle (warning) et ne réserves la violation qu'aux incohérences objectives et certaines."
+  },
+  "automatedChecks": [
+    "Détection de tableaux sans <th>",
+    "Présence de role=\"presentation\"",
+    "Détection de tableaux de mise en forme (heuristique)"
+  ],
+  "manualChecks": [
+    "Identification des tableaux de mise en forme vs données",
+    "Test de linéarisation du contenu",
+    "Évaluation de la compréhensibilité"
+  ],
+  "commonErrors": [
+    {
+      "error": "Tableau de mise en forme sans role=\"presentation\"",
+      "example": "<table>\n  <tr><td>Menu</td><td>Contenu principal</td></tr>\n</table>",
+      "correction": "<table role=\"presentation\">\n  <tr><td>Menu</td><td>Contenu principal</td></tr>\n</table>\n<!-- MIEUX : utiliser CSS Grid -->\n<div style=\"display: grid; grid-template-columns: 200px 1fr;\">\n  <nav>Menu</nav>\n  <main>Contenu principal</main>\n</div>",
+      "explanation": "Les tableaux de mise en forme doivent avoir role=\"presentation\", mais l'idéal est d'utiliser CSS moderne"
+    },
+    {
+      "error": "Contenu linéarisé incohérent",
+      "example": "<table>\n  <tr><td>Prix:</td><td>Nom:</td></tr>\n  <tr><td>10€</td><td>Produit A</td></tr>\n</table>",
+      "correction": "<!-- Ordre de lecture: Prix: Nom: 10€ Produit A (confus) -->\n<dl>\n  <dt>Nom:</dt><dd>Produit A</dd>\n  <dt>Prix:</dt><dd>10€</dd>\n</dl>",
+      "explanation": "Utiliser des balises sémantiques appropriées plutôt qu'un tableau"
+    },
+    {
+      "error": "Cohérence de la linéarisation à confirmer (à vérifier manuellement)",
+      "example": "<table role=\"presentation\">\n  <tr><td><img src=\"logo.png\" alt=\"Logo\"></td><td>Bienvenue sur notre site</td></tr>\n</table>",
+      "correction": "<!-- Linéarisation plausible (Logo puis texte) mais à confirmer ; idéalement remplacer par CSS -->\n<div style=\"display:flex; align-items:center; gap:1rem;\">\n  <img src=\"logo.png\" alt=\"Logo\">\n  <p>Bienvenue sur notre site</p>\n</div>",
+      "explanation": "Le maintien d'un ordre de lecture logique après linéarisation dépend du sens du contenu : quand il n'est pas objectivement incohérent, signaler en warning pour vérification manuelle plutôt que conclure à une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#5.7",
+    "https://www.w3.org/WAI/WCAG21/Understanding/meaningful-sequence.html"
+  ]
+}

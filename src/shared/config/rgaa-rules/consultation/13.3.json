@@ -1,0 +1,170 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "13.3",
+  "ruleId": "consultation-document-download",
+  "title": "Consultation - Téléchargement de fichier",
+  "description": "Dans chaque page web, chaque document bureautique en téléchargement possède-t-il, si nécessaire, une version accessible (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 13.3",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A) / 1.3.1 Information et relations (A)",
+  "theme": "Consultation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux documents bureautiques en téléchargement",
+    "signals": {
+      "selectors": [
+        "a[href$='.pdf']",
+        "a[href$='.doc']",
+        "a[href$='.docx']",
+        "a[href$='.xls']",
+        "a[href$='.xlsx']",
+        "a[href$='.ppt']",
+        "a[href$='.pptx']",
+        "a[href$='.odt']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun document bureautique en téléchargement",
+      "Documents créés avant le 23 septembre 2018 et non modifiés depuis"
+    ]
+  },
+  "testScenarios": {
+    "documentAccessibility": {
+      "description": "Accessibilité des documents en téléchargement",
+      "tests": [
+        {
+          "id": "13.3.1",
+          "rgaaTestRef": "Test 13.3.1",
+          "description": "Chaque document bureautique a-t-il une version accessible ou l'information est-elle disponible en HTML ?",
+          "methodology": [
+            "Identifier tous les liens vers des documents bureautiques",
+            "Vérifier la présence d'une version accessible du document",
+            "Ou vérifier que l'information est disponible en HTML sur le site",
+            "Ou vérifier que le document lui-même est accessible"
+          ],
+          "selector": "a[href$='.pdf'], a[href$='.doc'], a[href$='.docx'], a[href$='.xls'], a[href$='.xlsx'], a[href$='.ppt'], a[href$='.pptx']",
+          "expected": "Chaque document doit être accessible ou avoir une alternative accessible",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectDocumentLinks": true,
+            "checkAlternatives": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 13.3 - Document bureautique en téléchargement), spécialisé dans la détection déterministe des liens de documents et de leurs alternatives. Tu fondes ton verdict sur des signaux mécaniques du DOM (extension du href, libellés et liens voisins). Comme l'accessibilité réelle d'un fichier ne peut être évaluée sans l'ouvrir, tu privilégies le finding type=warning pour vérification manuelle et tu réserves la violation aux cas objectifs.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "a[href*='.pdf']",
+        "a[href*='.doc']",
+        "a[href*='.xls']",
+        "a[href*='.ppt']",
+        "a[href*='.odt']"
+      ],
+      "attributes": [
+        "href",
+        "download"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 (signaux DOM) — Identifier de façon mécanique tous les liens <a> dont le href se termine par une extension de document bureautique (.pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .odt, .ods, .odp). Relever, pour chaque lien, son libellé et les liens/textes immédiatement voisins (mêmes conteneur, item de liste ou paragraphe).",
+        "ÉTAPE 2 (non applicable) — Si AUCUN lien vers un document bureautique n'est présent dans le DOM extrait, conclure NON APPLICABLE : conclusion='non_applicable', findings=[].",
+        "ÉTAPE 3 (signal d'alternative présente) — Pour chaque document, rechercher dans le voisinage immédiat un signal MÉCANIQUE d'alternative : un autre lien vers une version HTML du même contenu, un second document portant une mention « version accessible / accessible / RGAA », ou une mention textuelle explicite que l'information est disponible en HTML. Si un tel signal est présent, ne pas signaler le document.",
+        "ÉTAPE 4 (doute → warning) — L'accessibilité intrinsèque d'un PDF ou d'un fichier Office (présence de balises, ordre de lecture, texte réel vs image scannée) N'EST PAS observable depuis le DOM. Pour un document SANS signal d'alternative voisine, NE PAS conclure à une violation ferme : émettre un finding type='warning' demandant un audit du fichier lui-même ou la fourniture d'une alternative accessible.",
+        "ÉTAPE 5 (cas particuliers) — Ne pas pénaliser un document explicitement daté d'avant le 23 septembre 2018 et non modifié depuis (cas particulier RGAA) : le signaler en warning pour confirmation manuelle de la date.",
+        "ÉTAPE 6 — Pour chaque document signalé, recommander concrètement de fournir une version HTML équivalente ou un PDF/Office accessible (balisé, texte réel)."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (extension du href, présence d'un lien d'alternative voisin) doivent toujours produire le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS du DOM ; l'accessibilité interne d'un fichier n'étant pas observable, privilégier type='warning' pour les documents sans alternative voisine.",
+        "En cas de doute (qualité réelle du document, date de publication) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Si aucun document détecté : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'consultation-document-download'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number - Nombre de documents",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple d'alternative",
+          "rgaaTestRef": "Test 13.3.1",
+          "wcagReference": "1.1.1 ou 1.3.1"
+        }
+      }
+    }
+  },
+  "automatedChecks": [
+    "Détection de liens vers documents bureautiques",
+    "Recherche de mentions d'alternatives"
+  ],
+  "manualChecks": [
+    "Audit d'accessibilité des documents PDF",
+    "Vérification des alternatives HTML",
+    "Test des documents avec lecteur d'écran",
+    "Vérification de la structure des documents"
+  ],
+  "commonErrors": [
+    {
+      "error": "PDF non accessible sans alternative",
+      "example": "<a href=\"rapport.pdf\">Télécharger le rapport</a>",
+      "correction": "<a href=\"rapport.pdf\">Télécharger le rapport (PDF)</a>\n<a href=\"rapport-accessible.pdf\">Version accessible (PDF)</a>\n<!-- OU -->\n<a href=\"rapport.html\">Consulter le rapport en ligne (HTML)</a>",
+      "explanation": "Fournir une version accessible ou alternative HTML"
+    },
+    {
+      "error": "Document Word sans indication d'accessibilité",
+      "example": "<a href=\"guide.docx\">Guide utilisateur</a>",
+      "correction": "<a href=\"guide.docx\">Guide utilisateur (Word)</a>\n<p>Ce document est accessible. Si vous rencontrez des difficultés, <a href=\"guide.html\">consultez la version HTML</a></p>",
+      "explanation": "Indiquer l'accessibilité et fournir alternative si nécessaire"
+    },
+    {
+      "error": "PDF scanné (image) non accessible",
+      "example": "<a href=\"formulaire-scan.pdf\">Formulaire</a> <!-- PDF scanné -->",
+      "correction": "<!-- PDF avec OCR et tags -->\n<a href=\"formulaire-accessible.pdf\">Formulaire accessible (PDF)</a>\n<!-- OU formulaire HTML interactif -->\n<a href=\"formulaire.html\">Formulaire en ligne</a>",
+      "explanation": "Les PDF scannés ne sont pas accessibles, utiliser PDF avec texte réel ou HTML"
+    },
+    {
+      "error": "Présentation PowerPoint sans alternative",
+      "example": "<a href=\"presentation.pptx\">Présentation</a>",
+      "correction": "<a href=\"presentation.pptx\">Présentation (PowerPoint)</a>\n<a href=\"presentation-notes.html\">Notes de la présentation (HTML)</a>",
+      "explanation": "Fournir les notes ou le contenu en format accessible"
+    },
+    {
+      "error": "Document sans alternative voisine, accessibilité interne inconnue (à vérifier manuellement)",
+      "example": "<a href=\"bilan-2025.pdf\">Bilan 2025</a> <!-- aucun lien HTML ni mention d'alternative à proximité -->",
+      "correction": "<!-- Auditer le PDF (balises, texte réel, ordre de lecture) -->\n<a href=\"bilan-2025.pdf\">Bilan 2025 (PDF)</a>\n<a href=\"bilan-2025.html\">Consulter le bilan en HTML</a>",
+      "explanation": "L'accessibilité réelle d'un document ne peut être déterminée depuis le DOM : auditer le fichier ou fournir une alternative accessible plutôt que de conclure automatiquement à une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#13.3",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html",
+    "https://www.access-for-all.ch/en/pdf-accessibility-checker.html"
+  ]
+}

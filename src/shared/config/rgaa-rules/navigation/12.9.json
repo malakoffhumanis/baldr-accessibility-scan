@@ -1,0 +1,169 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "12.9",
+  "ruleId": "navigation-menu-identification",
+  "title": "Navigation - Identification de menu",
+  "description": "Dans chaque page web, le menu de navigation principal et les menus de navigation secondaires sont-ils identifiés ?",
+  "rgaaReference": "RGAA 4.1 - Critère 12.9",
+  "wcagReference": "WCAG 2.1 - 2.4.1 Contourner des blocs (A) / 1.3.1 Information et relations (A)",
+  "theme": "Navigation",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages contenant des menus de navigation",
+    "signals": {
+      "selectors": [
+        "nav",
+        "[role='navigation']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun menu de navigation dans la page"
+    ]
+  },
+  "testScenarios": {
+    "menuIdentification": {
+      "description": "Identification des menus de navigation",
+      "tests": [
+        {
+          "id": "12.9.1",
+          "rgaaTestRef": "Test 12.9.1",
+          "description": "Les menus de navigation sont-ils balisés avec <nav> ou role='navigation' ?",
+          "methodology": [
+            "Identifier tous les menus de navigation de la page",
+            "Vérifier qu'ils utilisent la balise <nav>",
+            "Ou vérifier l'attribut role='navigation'",
+            "Distinguer menu principal et menus secondaires"
+          ],
+          "selector": "ul, ol, div",
+          "expected": "Chaque menu de navigation doit utiliser <nav> ou role='navigation'",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "12.9.2",
+          "rgaaTestRef": "Test 12.9.2",
+          "description": "Si plusieurs menus de navigation, sont-ils distingués par aria-label ou aria-labelledby ?",
+          "methodology": [
+            "Compter le nombre de <nav> ou role='navigation'",
+            "Si > 1, vérifier la présence d'aria-label ou aria-labelledby",
+            "Vérifier que les labels sont différents et explicites",
+            "Ex: 'Navigation principale', 'Navigation secondaire', 'Menu utilisateur'"
+          ],
+          "selector": "nav, [role='navigation']",
+          "expected": "Plusieurs menus doivent avoir des labels distincts",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.9 - identification des menus de navigation). Tu appliques une approche DÉTERMINISTE fondée sur les signaux du DOM : balise <nav> ou role=\"navigation\", nombre de menus, présence et unicité des aria-label/aria-labelledby. Tu signales en warning les menus non identifiés ou non distingués. Dès que la conformité dépend d'une appréciation (un bloc est-il vraiment un menu de navigation ? un libellé est-il pertinent ?), tu émets un warning de vérification manuelle plutôt qu'une violation. NON APPLICABLE si aucun menu de navigation n'est présent.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "nav",
+        "[role='navigation']",
+        "ul",
+        "ol"
+      ],
+      "attributes": [
+        "role",
+        "aria-label",
+        "aria-labelledby"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser via des signaux mécaniques du DOM les menus de navigation identifiés (balises <nav> et éléments à role=\"navigation\") et leurs attributs (aria-label, aria-labelledby), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (déterministe) — Si AUCUN <nav> ni role=\"navigation\" n'est présent dans le DOM → conclure NON APPLICABLE.",
+        "ÉTAPE 2 (déterministe) — Compter les menus identifiés (<nav> ou role=\"navigation\"). S'il existe PLUSIEURS menus identifiés, vérifier mécaniquement que chacun porte un aria-label ou aria-labelledby. Manque d'étiquette distinctive sur des menus multiples → finding type=\"warning\", severity moderate.",
+        "ÉTAPE 3 (déterministe) — Étiquettes en DOUBLON : si deux menus partagent la même valeur d'aria-label → finding type=\"warning\" (les libellés doivent être distincts).",
+        "ÉTAPE 4 (doute → warning) — Un bloc de liens (ul/ol/div) NON balisé <nav>/role peut être un menu de navigation à identifier, mais cette qualification dépend de son rôle réel dans la page (appréciation) : émettre un finding type=\"warning\" pour vérification manuelle plutôt qu'une violation ferme. De même, la PERTINENCE d'un libellé de menu relève d'une appréciation → warning.",
+        "ÉTAPE 5 — Se limiter à l'identification des menus : ne pas évaluer ici la cohérence inter-pages (12.2) ni l'intitulé des liens."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'navigation-menu-identification'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple d'identification correcte",
+          "rgaaTestRef": "Test 12.9.1 ou 12.9.2",
+          "wcagReference": "2.4.1 ou 1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : présence de <nav>/role=navigation, nombre de menus, présence et unicité des aria-label se lisent dans le DOM ; mêmes signaux, même verdict.",
+        "type=\"violation\" réservé aux défauts objectifs ; pour un menu sans nav/role ou des menus multiples sans labels distincts, utiliser type=\"warning\" severity=\"moderate\" comme prévu par les tests.",
+        "En cas de doute (un bloc de liens est-il un menu ? un libellé est-il pertinent ?) → type=\"warning\" pour vérification manuelle.",
+        "Critère NON APPLICABLE si aucun menu de navigation n'est présent.",
+        "Retourner UNIQUEMENT du JSON valide. Limiter à 5 findings maximum."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de balises <nav>",
+    "Détection de role='navigation'",
+    "Vérification d'aria-label sur <nav> multiples"
+  ],
+  "manualChecks": [
+    "Identification visuelle des menus de navigation",
+    "Pertinence des labels ARIA",
+    "Distinction claire entre menus"
+  ],
+  "commonErrors": [
+    {
+      "error": "Menu de navigation sans balise <nav>",
+      "example": "<div class=\"menu\">\n  <ul>\n    <li><a href=\"/\">Accueil</a></li>\n    <li><a href=\"/produits\">Produits</a></li>\n  </ul>\n</div>",
+      "correction": "<nav aria-label=\"Navigation principale\">\n  <ul>\n    <li><a href=\"/\">Accueil</a></li>\n    <li><a href=\"/produits\">Produits</a></li>\n  </ul>\n</nav>",
+      "explanation": "Utiliser la balise <nav> pour identifier les menus de navigation"
+    },
+    {
+      "error": "Plusieurs menus <nav> sans labels",
+      "example": "<nav>\n  <ul><!-- Menu principal --></ul>\n</nav>\n<nav>\n  <ul><!-- Menu footer --></ul>\n</nav>",
+      "correction": "<nav aria-label=\"Navigation principale\">\n  <ul><!-- Menu principal --></ul>\n</nav>\n<nav aria-label=\"Navigation secondaire\">\n  <ul><!-- Menu footer --></ul>\n</nav>",
+      "explanation": "Distinguer les menus avec aria-label quand il y en a plusieurs"
+    },
+    {
+      "error": "Labels identiques pour plusieurs menus",
+      "example": "<nav aria-label=\"Menu\">\n  <ul><!-- Menu 1 --></ul>\n</nav>\n<nav aria-label=\"Menu\">\n  <ul><!-- Menu 2 --></ul>\n</nav>",
+      "correction": "<nav aria-label=\"Navigation principale\">\n  <ul><!-- Menu 1 --></ul>\n</nav>\n<nav aria-label=\"Navigation utilisateur\">\n  <ul><!-- Menu 2 --></ul>\n</nav>",
+      "explanation": "Chaque menu doit avoir un label unique et descriptif"
+    },
+    {
+      "error": "Utilisation de role='navigation' sur div au lieu de <nav>",
+      "example": "<div role=\"navigation\">\n  <ul>Menu</ul>\n</div>",
+      "correction": "<nav>\n  <ul>Menu</ul>\n</nav>",
+      "explanation": "Préférer la balise <nav> à role='navigation' en HTML5"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#12.9",
+    "https://www.w3.org/WAI/WCAG21/Understanding/bypass-blocks.html",
+    "https://www.w3.org/WAI/tutorials/page-structure/regions/"
+  ]
+}

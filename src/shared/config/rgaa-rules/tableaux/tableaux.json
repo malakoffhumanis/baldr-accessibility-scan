@@ -1,0 +1,272 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "5.1",
+  "ruleId": "table-structure",
+  "title": "Tableaux - Structure et en-têtes",
+  "description": "Chaque tableau de données complexe a-t-il un résumé ?",
+  "rgaaReference": "RGAA 4.1 - Critère 5.1",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Tableaux",
+  "level": "A",
+  "testScenarios": {
+    "tablePresence": {
+      "description": "Détection de la présence de tableaux",
+      "tests": [
+        {
+          "id": "5.1.1",
+          "description": "Des tableaux sont-ils présents sur la page ?",
+          "selector": "table",
+          "expected": "Si aucun tableau, le critère est non applicable",
+          "severity": "minor",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectTables": true,
+            "countTables": true,
+            "determineApplicability": true
+          }
+        }
+      ]
+    },
+    "tableHeaders": {
+      "description": "En-têtes de tableaux",
+      "tests": [
+        {
+          "id": "5.1.2",
+          "description": "Chaque tableau de données a-t-il des en-têtes (th) ?",
+          "selector": "table",
+          "expected": "Les tableaux de données doivent avoir des en-têtes identifiés",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractTableHeaders": true,
+            "verifyHeaderPresence": true,
+            "checkHeaderScope": true
+          }
+        },
+        {
+          "id": "5.1.3",
+          "description": "Les en-têtes de tableau utilisent-ils l'attribut scope approprié (col, row, colgroup, rowgroup) ?",
+          "selector": "table th[scope]",
+          "expected": "Les en-têtes doivent indiquer leur portée avec scope",
+          "severity": "serious",
+          "aiAnalysis": true
+        },
+        {
+          "id": "5.1.4",
+          "description": "Les tableaux complexes utilisent-ils id/headers pour les associations ?",
+          "selector": "table td[headers], table th[id]",
+          "expected": "Les tableaux complexes nécessitent des associations explicites",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "tableCaption": {
+      "description": "Titre et résumé de tableau",
+      "tests": [
+        {
+          "id": "5.1.5",
+          "description": "Chaque tableau de données a-t-il un titre (caption) ?",
+          "selector": "table caption",
+          "expected": "Les tableaux doivent avoir un titre descriptif",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "5.1.6",
+          "description": "Les tableaux complexes ont-ils un résumé (aria-describedby, summary) ?",
+          "selector": "table[aria-describedby], table[summary]",
+          "expected": "Un résumé aide à comprendre les tableaux complexes",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "tableStructure": {
+      "description": "Structure sémantique",
+      "tests": [
+        {
+          "id": "5.1.7",
+          "description": "Les tableaux utilisent-ils thead, tbody, tfoot pour la structure ?",
+          "selector": "table thead, table tbody, table tfoot",
+          "expected": "Utiliser les balises sémantiques appropriées",
+          "severity": "minor",
+          "aiAnalysis": true
+        },
+        {
+          "id": "5.1.8",
+          "description": "Les tableaux sont-ils utilisés uniquement pour des données tabulaires (pas pour la mise en page) ?",
+          "selector": "table[role='presentation'], table:not([role])",
+          "expected": "Ne pas utiliser table pour la mise en page",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectLayoutTables": true,
+            "verifyDataPurpose": true,
+            "checkRolePresentation": true
+          }
+        }
+      ]
+    },
+    "responsiveTables": {
+      "description": "Accessibilité sur mobile",
+      "tests": [
+        {
+          "id": "5.1.9",
+          "description": "Les tableaux sont-ils accessibles sur mobile (scroll horizontal, version responsive) ?",
+          "selector": "table",
+          "expected": "Prévoir une solution pour les petits écrans",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "tables": {
+        "selectors": [
+          "table",
+          "table caption",
+          "table th",
+          "table td",
+          "table thead",
+          "table tbody",
+          "table tfoot"
+        ],
+        "attributes": [
+          "scope",
+          "headers",
+          "id",
+          "role",
+          "aria-describedby",
+          "summary",
+          "aria-label",
+          "aria-labelledby"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": true,
+          "surroundingContext": 200
+        },
+        "contextExtraction": {
+          "parentElements": 1,
+          "tableStructure": true,
+          "cellCount": true,
+          "headerCount": true
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser tous les tableaux : balises <table> présentes dans le DOM extrait. Pour chaque tableau, relever les SIGNAUX MÉCANIQUES disponibles (présence de <th>, de scope, de <caption>, de aria-label/aria-labelledby/aria-describedby, de role=\"presentation\"/\"none\", de colspan/rowspan, de <thead>/<tbody>/<tfoot>) avant de conclure. Appliquer ensuite les étapes DANS L'ORDRE.",
+        "ÉTAPE 1 (non applicable) — Si la page ne contient AUCUNE balise <table>, conclure NON APPLICABLE (compliant=true, severity='minor', summary='Aucun tableau détecté, critère non applicable', findings=[]).",
+        "ÉTAPE 2 (classification déterministe) — Pour chaque tableau, déterminer s'il s'agit d'un tableau de DONNÉES ou de MISE EN PAGE à partir des signaux DOM : présence d'au moins un <th>, d'un <caption>, de scope ou de headers => tableau de données ; role=\"presentation\"/\"none\" et absence totale de <th>/<caption>/scope/headers => tableau de mise en page. Si les signaux sont contradictoires ou insuffisants pour trancher, NE PAS conclure fermement et émettre un finding type=\"warning\" (vérification manuelle).",
+        "ÉTAPE 3 (en-têtes — défaut objectif) — Pour un tableau de DONNÉES ne contenant AUCUNE balise <th> (en-têtes simulés par des <td> en gras), émettre un finding type=\"violation\", severity='serious' : les relations en-tête/donnée ne sont pas restituables.",
+        "ÉTAPE 4 (scope — défaut objectif) — Pour un tableau de données simple dont un <th> ne porte PAS d'attribut scope (et sans association headers/id équivalente), émettre un finding type=\"violation\", severity='serious'. La valeur attendue est scope=\"col\" ou scope=\"row\".",
+        "ÉTAPE 5 (titre — défaut objectif) — Pour un tableau de données sans <caption> NI aria-label NI aria-labelledby, émettre un finding type=\"violation\", severity='moderate' (absence de titre). La PERTINENCE d'un titre présent relève de l'appréciation : en cas de titre générique présumé (\"tableau\", \"données\"), émettre un finding type=\"warning\" (vérification manuelle) plutôt qu'une violation.",
+        "ÉTAPE 6 (mise en page — défaut objectif) — Pour un tableau de mise en page contenant des éléments réservés aux données (<caption>, <th>, scope, headers, summary), émettre un finding type=\"violation\", severity='serious' : ces éléments doivent être retirés ou le tableau remplacé par du CSS (Grid/Flexbox).",
+        "ÉTAPE 7 (doute → warning) — Tout point dépendant d'une APPRÉCIATION (pertinence/qualité d'un caption, nécessité réelle d'un résumé pour un tableau complexe, cohérence de la linéarisation, nature données vs mise en page non tranchable par les signaux DOM, contenu non visible ou distant via aria-describedby) ne doit JAMAIS produire une violation : émettre au plus un finding type=\"warning\" invitant à une vérification manuelle.",
+        "ÉTAPE 8 (structure sémantique) — L'absence de <thead>/<tbody>/<tfoot> n'est PAS une violation ferme : au plus un finding type=\"recommendation\", severity='minor'."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'table-structure'",
+          "compliant": "boolean - true si aucun tableau ou si tableaux conformes",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Si aucun tableau: 'Aucun tableau détecté, critère non applicable'. Sinon: résumé des problèmes",
+          "totalElements": "number - Nombre de tableaux analysés (0 si aucun)",
+          "findings": "array - Vide si aucun tableau, sinon max 10 findings"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec code HTML",
+          "wcagReference": "string - Ex: 1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence/absence de <th>, scope, <caption>, role, colspan/rowspan) doivent toujours produire le même verdict.",
+        "type='violation' est RÉSERVÉ aux défauts OBJECTIFS vérifiables dans le DOM (tableau de données sans <th>, <th> sans scope, tableau de données sans titre, éléments de données dans un tableau de mise en page).",
+        "En cas de DOUTE (pertinence d'un titre, données vs mise en page non tranchable, contenu distant via aria-describedby) → type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun tableau détecté: compliant=true, severity='minor', summary='Aucun tableau détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT le JSON valide, sans texte avant ou après ; descriptions concises (max 200 caractères).",
+        "Limiter à 5 findings maximum."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (thématique 5 - Tableaux, critère 5.1), spécialisé dans l'analyse déterministe de la structure des tableaux. Tu te fondes sur les signaux mécaniques du DOM (présence/absence de <th>, scope, <caption>, role, colspan/rowspan) pour un verdict reproductible. Tu réserves la violation aux défauts objectifs et tu demandes une vérification manuelle (warning) dès que la conformité dépend d'une appréciation (pertinence d'un titre, nature données vs mise en page)."
+  },
+  "automatedChecks": [
+    "Présence de tableaux (table)",
+    "Présence d'en-têtes (th)",
+    "Utilisation de scope sur th",
+    "Présence de caption",
+    "Détection de tableaux de mise en page (sans th)",
+    "Utilisation de thead, tbody, tfoot"
+  ],
+  "manualChecks": [
+    "Pertinence des en-têtes de tableau",
+    "Qualité du titre (caption)",
+    "Nécessité d'un résumé pour tableaux complexes",
+    "Distinction tableau de données vs mise en page",
+    "Accessibilité sur mobile"
+  ],
+  "commonErrors": [
+    {
+      "error": "Tableau de données sans en-têtes (th)",
+      "example": "<table>\n  <tr><td>Nom</td><td>Prénom</td></tr>\n  <tr><td>Dupont</td><td>Jean</td></tr>\n</table>",
+      "correction": "<table>\n  <caption>Liste des utilisateurs</caption>\n  <thead>\n    <tr>\n      <th scope=\"col\">Nom</th>\n      <th scope=\"col\">Prénom</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>Dupont</td>\n      <td>Jean</td>\n    </tr>\n  </tbody>\n</table>",
+      "explanation": "Utiliser <th> avec scope pour identifier les en-têtes de colonnes ou de lignes"
+    },
+    {
+      "error": "En-têtes sans attribut scope",
+      "example": "<table>\n  <tr><th>Nom</th><th>Prénom</th></tr>\n  <tr><td>Dupont</td><td>Jean</td></tr>\n</table>",
+      "correction": "<table>\n  <tr>\n    <th scope=\"col\">Nom</th>\n    <th scope=\"col\">Prénom</th>\n  </tr>\n  <tr>\n    <td>Dupont</td>\n    <td>Jean</td>\n  </tr>\n</table>",
+      "explanation": "Ajouter scope=\"col\" ou scope=\"row\" pour indiquer la portée de l'en-tête"
+    },
+    {
+      "error": "Tableau sans titre (caption)",
+      "example": "<table>\n  <tr><th scope=\"col\">Nom</th></tr>\n  <tr><td>Dupont</td></tr>\n</table>",
+      "correction": "<table>\n  <caption>Liste des employés</caption>\n  <tr><th scope=\"col\">Nom</th></tr>\n  <tr><td>Dupont</td></tr>\n</table>",
+      "explanation": "Ajouter un <caption> pour décrire le contenu du tableau"
+    },
+    {
+      "error": "Tableau utilisé pour la mise en page",
+      "example": "<table>\n  <tr>\n    <td><nav>Menu</nav></td>\n    <td><main>Contenu</main></td>\n  </tr>\n</table>",
+      "correction": "<!-- Utiliser CSS pour la mise en page -->\n<div class=\"layout\">\n  <nav>Menu</nav>\n  <main>Contenu</main>\n</div>",
+      "explanation": "Ne jamais utiliser <table> pour la mise en page, utiliser CSS (Flexbox, Grid)"
+    },
+    {
+      "error": "Tableau complexe sans associations id/headers",
+      "example": "<table>\n  <tr><th>2024</th><th>Q1</th><th>Q2</th></tr>\n  <tr><th>Ventes</th><td>100</td><td>150</td></tr>\n</table>",
+      "correction": "<table>\n  <caption>Ventes trimestrielles 2024</caption>\n  <tr>\n    <th id=\"year\">2024</th>\n    <th id=\"q1\">Q1</th>\n    <th id=\"q2\">Q2</th>\n  </tr>\n  <tr>\n    <th id=\"sales\">Ventes</th>\n    <td headers=\"year q1 sales\">100</td>\n    <td headers=\"year q2 sales\">150</td>\n  </tr>\n</table>",
+      "explanation": "Pour tableaux complexes, utiliser id sur th et headers sur td"
+    },
+    {
+      "error": "Absence de structure sémantique (thead, tbody)",
+      "example": "<table>\n  <tr><th scope=\"col\">Nom</th></tr>\n  <tr><td>Dupont</td></tr>\n</table>",
+      "correction": "<table>\n  <caption>Utilisateurs</caption>\n  <thead>\n    <tr><th scope=\"col\">Nom</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Dupont</td></tr>\n  </tbody>\n</table>",
+      "explanation": "Structurer le tableau avec thead et tbody pour améliorer la compréhension"
+    },
+    {
+      "error": "Nature données vs mise en page non tranchable par le DOM (à vérifier manuellement)",
+      "example": "<table>\n  <tr><td>Étape 1</td><td>Étape 2</td></tr>\n  <tr><td>Choisir</td><td>Confirmer</td></tr>\n</table>",
+      "correction": "<!-- Si données : ajouter <th scope=\"col\"> et <caption>. Si mise en page : ajouter role=\"presentation\" ou utiliser CSS Grid -->\n<table>\n  <caption>Étapes du parcours</caption>\n  <thead><tr><th scope=\"col\">Étape 1</th><th scope=\"col\">Étape 2</th></tr></thead>\n  <tbody><tr><td>Choisir</td><td>Confirmer</td></tr></tbody>\n</table>",
+      "explanation": "Quand les seuls signaux DOM (absence de <th>, de role) ne permettent pas de trancher entre tableau de données et tableau de mise en page, ne pas conclure à une violation : signaler en warning pour vérification manuelle."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#5",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://www.w3.org/WAI/tutorials/tables/",
+    "https://developer.mozilla.org/fr/docs/Web/HTML/Element/table"
+  ]
+}

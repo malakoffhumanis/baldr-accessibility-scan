@@ -1,0 +1,178 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "7.2",
+  "ruleId": "script-no-keyboard-trap",
+  "title": "Scripts - Pas de piège au clavier",
+  "description": "Pour chaque script ayant une interface, la navigation au clavier estelle contrôlable par l'utilisateur ?",
+  "rgaaReference": "RGAA 4.1 - Critère 7.2",
+  "wcagReference": "WCAG 2.1 - 2.1.2 Pas de piège au clavier (A)",
+  "theme": "Scripts",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux composants JavaScript qui captent le focus clavier",
+    "signals": {
+      "selectors": [
+        "[role='dialog']",
+        "[role='alertdialog']",
+        "[tabindex]",
+        "[role='application']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun composant capturant le focus",
+      "Page entièrement statique"
+    ]
+  },
+  "testScenarios": {
+    "noKeyboardTrap": {
+      "description": "Absence de piège au clavier",
+      "tests": [
+        {
+          "id": "7.2.1",
+          "rgaaTestRef": "Test 7.2.1",
+          "description": "L'utilisateur peut-il sortir du composant par des méthodes clavier standard (Tab, Escape)?",
+          "methodology": [
+            "Tester chaque composant interactif (modal, menu, autocomplete)",
+            "Vérifier qu'on peut sortir avec Tab (focus hors composant)",
+            "Pour modales: vérifier qu'Escape ferme et libère le focus",
+            "Vérifier l'absence de boucles infinies de focus"
+          ],
+          "selector": "[role='dialog'], [role='menu'], [role='combobox']",
+          "expected": "Le focus ne doit jamais être piégé de manière irréversible",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectFocusTraps": true,
+            "checkEscapeKey": true,
+            "analyzeTabNavigation": true
+          }
+        },
+        {
+          "id": "7.2.2",
+          "rgaaTestRef": "Test 7.2.2",
+          "description": "Si focus trap intentionnel (modal), est-il documenté et permet-il de sortir ?",
+          "methodology": [
+            "Identifier les composants avec focus trap intentionnel (modales)",
+            "Vérifier qu'Escape ferme le composant",
+            "Vérifier documentation ou indication visuelle de sortie"
+          ],
+          "selector": "[role='dialog'], [role='alertdialog']",
+          "expected": "Les modales doivent se fermer avec Escape et avoir bouton fermeture visible",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 7.2 - Pas de piège au clavier, WCAG 2.1.2), spécialisé dans une analyse DÉTERMINISTE des composants captant le focus. Le piège au clavier est un comportement RUNTIME qui n'est pas directement observable dans un DOM statique : tu réserves la violation aux défauts STRUCTURELS objectifs (modale sans aucun mécanisme de fermeture exposé dans le DOM) et tu émets un warning de vérification manuelle dès que le verdict dépend de l'exécution du script (gestion d'Escape, cycle de Tab).",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "[role='dialog']",
+        "[role='alertdialog']",
+        "[role='menu']",
+        "[role='combobox']",
+        "[role='application']",
+        "[tabindex]"
+      ],
+      "attributes": [
+        "role",
+        "tabindex",
+        "aria-modal",
+        "aria-hidden"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 — Recenser les composants susceptibles de capturer le focus à partir des SIGNAUX DOM : role=\"dialog\"/\"alertdialog\"/\"menu\"/\"combobox\"/\"application\", aria-modal=\"true\", éléments à tabindex. Si AUCUN de ces signaux n'est présent, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 2 (défaut structurel objectif) — Pour chaque modale (role=\"dialog\"/\"alertdialog\", a fortiori aria-modal=\"true\"), vérifier la présence dans le DOM d'AU MOINS UN mécanisme de fermeture EXPOSÉ : bouton de fermeture (<button> avec libellé/aria-label de type « Fermer », « × », ou data attribut de fermeture). Si aucun mécanisme de fermeture n'est présent dans le balisage, émettre un finding type=\"violation\", severity critical : l'absence de toute sortie exposée est un défaut objectif.",
+        "ÉTAPE 3 (doute → warning) — Si la modale possède un bouton de fermeture mais que la gestion de la touche Escape et le confinement/relâchement du focus dépendent du JavaScript (non visible dans le DOM extrait), NE PAS conclure à une violation : émettre un finding type=\"warning\" demandant de vérifier manuellement qu'Escape ferme la modale et que le focus est restitué au déclencheur.",
+        "ÉTAPE 4 (doute → warning) — Pour les menus, combobox et autres composants à focus géré par script : le piège (preventDefault sur Tab, focus() en boucle) n'est PAS observable statiquement. Émettre un finding type=\"warning\" invitant à tester manuellement que Tab et/ou Escape permettent de sortir du composant.",
+        "ÉTAPE 5 — Ne JAMAIS inférer un piège à partir de la seule présence d'un role ou d'un tabindex : un tabindex positif ou un role composite n'est pas en soi un piège. La présence d'un focus trap INTENTIONNEL (modale) est conforme tant qu'une sortie existe ; à défaut de preuve dans le DOM, classer en warning.",
+        "ÉTAPE 6 — Pour chaque violation ou warning, proposer une correction concrète : bouton de fermeture exposé, gestionnaire keydown sur Escape fermant le composant et restituant le focus, et autorisation de Tab pour sortir."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (role, aria-modal, présence/absence d'un bouton de fermeture) doivent toujours produire le même verdict.",
+        "Violation réservée au défaut STRUCTUREL objectif : modale sans aucun mécanisme de fermeture exposé dans le DOM.",
+        "Doute → type=\"warning\" (vérification manuelle) : gestion d'Escape, confinement/relâchement du focus, cycle de Tab — comportements runtime non visibles statiquement.",
+        "Non applicable si aucun composant capturant le focus n'est détecté : compliant=true, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'script-no-keyboard-trap'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple de code JavaScript pour gestion Escape",
+          "rgaaTestRef": "Test 7.2.1 ou Test 7.2.2",
+          "wcagReference": "2.1.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    }
+  },
+  "automatedChecks": [
+    "Détection de composants avec role='dialog' ou role='menu'",
+    "Vérification de aria-modal sur dialogs"
+  ],
+  "manualChecks": [
+    "Test réel de navigation au clavier dans chaque composant",
+    "Vérification qu'on peut sortir de chaque composant",
+    "Test de la touche Escape sur les modales"
+  ],
+  "commonErrors": [
+    {
+      "error": "Modale sans gestion de la touche Escape",
+      "example": "<div role=\"dialog\" aria-modal=\"true\">\n  <h2>Titre</h2>\n  <p>Contenu</p>\n  <!-- Pas de bouton fermeture, pas d'Escape handler -->\n</div>",
+      "correction": "<div role=\"dialog\" aria-modal=\"true\" id=\"myModal\">\n  <h2>Titre</h2>\n  <p>Contenu</p>\n  <button onclick=\"closeModal()\" aria-label=\"Fermer\">×</button>\n</div>\n<script>\ndocument.addEventListener('keydown', (e) => {\n  if (e.key === 'Escape' && document.getElementById('myModal')) {\n    closeModal();\n  }\n});\n</script>",
+      "explanation": "Les modales doivent se fermer avec Escape et avoir un bouton fermeture visible"
+    },
+    {
+      "error": "Menu déroulant piégeant le focus",
+      "example": "// JavaScript qui empêche Tab de sortir du menu\nmenu.addEventListener('keydown', (e) => {\n  if (e.key === 'Tab') e.preventDefault();\n});",
+      "correction": "// Permettre Tab pour sortir, ou gérer cycle avec focus trap approprié\nmenu.addEventListener('keydown', (e) => {\n  if (e.key === 'Escape') {\n    closeMenu();\n    triggerButton.focus();\n  }\n  // Laisser Tab fonctionner normalement\n});",
+      "explanation": "Ne jamais empêcher Tab de manière permanente. Utiliser Escape pour fermer."
+    },
+    {
+      "error": "Modale avec bouton de fermeture mais gestion clavier à vérifier (warning)",
+      "example": "<div role=\"dialog\" aria-modal=\"true\">\n  <h2>Confirmation</h2>\n  <button class=\"close\">Fermer</button>\n</div>\n<!-- Aucune gestion d'Escape visible dans le DOM -->",
+      "correction": "<!-- Vérification manuelle : confirmer qu'Escape ferme la modale et que le focus revient au déclencheur -->\nmodal.addEventListener('keydown', (e) => {\n  if (e.key === 'Escape') { closeModal(); trigger.focus(); }\n});",
+      "explanation": "Le bouton de fermeture est présent (signal DOM correct), mais le confinement du focus et la gestion d'Escape dépendent du script : à confirmer par un test clavier manuel (warning), pas une violation ferme."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#7.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/no-keyboard-trap.html",
+    "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.8",
+  "ruleId": "media-non-temporal-alternative",
+  "title": "Multimédia - Alternative pour média non temporel",
+  "description": "Chaque média non temporel a-t-il, si nécessaire, une alternative ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.8",
+  "wcagReference": "WCAG 2.1 - 1.1.1 Contenu non textuel (A)",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias non temporels (animations, SVG animés, etc.)",
+    "signals": {
+      "selectors": [
+        "object[type='application/x-shockwave-flash']",
+        "embed[type='application/x-shockwave-flash']",
+        "svg[class*='animated']",
+        "canvas[class*='animation']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média non temporel présent",
+      "Média servant uniquement de décoration"
+    ]
+  },
+  "testScenarios": {
+    "nonTemporalAlternative": {
+      "description": "Alternative pour média non temporel",
+      "tests": [
+        {
+          "id": "4.8.1",
+          "rgaaTestRef": "Test 4.8.1",
+          "description": "Chaque média non temporel a-t-il une alternative textuelle ?",
+          "methodology": [
+            "Identifier les médias non temporels (Flash, SVG animé, Canvas)",
+            "Vérifier la présence d'une alternative textuelle",
+            "Vérifier que l'alternative décrit le contenu et la fonction"
+          ],
+          "selector": "object, embed, svg, canvas",
+          "expected": "Une alternative textuelle accessible doit décrire le contenu et la fonction",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.8 - alternative des médias non temporels : Flash, SVG animé, Canvas). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (présence d'aria-label/aria-describedby/title/role, texte adjacent, déclaration décorative). Tu réserves la violation aux défauts objectifs (média non temporel informatif sans aucune alternative) et tu demandes une vérification manuelle (warning) dès que la nature informative ou la pertinence de l'alternative dépend d'une appréciation.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "object",
+        "embed",
+        "svg[class*='anim']",
+        "canvas",
+        "applet"
+      ],
+      "attributes": [
+        "type",
+        "aria-label",
+        "aria-describedby",
+        "role",
+        "title"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les médias NON temporels : <object>/<embed> (notamment Flash application/x-shockwave-flash), <svg> animé, <canvas>, <applet>. Si AUCUN n'est présent, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque média, relever : présence d'une alternative (aria-label, aria-describedby, title, role='img' + <title>/<desc> pour un SVG, contenu de repli textuel), et présence d'une déclaration décorative explicite (aria-hidden='true', role='presentation').",
+        "ÉTAPE 2 (respect du décoratif) — Si le média porte une déclaration décorative explicite (aria-hidden='true', role='presentation'), le considérer CONFORME et ne rien signaler, sauf indice objectif qu'il est porteur d'information.",
+        "ÉTAPE 3 (violation objective) — Si un média non temporel manifestement informatif (animation de données, schéma, visualisation) ne présente AUCUNE alternative ni déclaration décorative, émettre un finding type='violation' : l'absence d'alternative est un défaut objectif vérifiable dans le DOM.",
+        "ÉTAPE 4 (doute → warning) — Si une alternative EXISTE mais que sa pertinence/exhaustivité ne peut être tranchée, ou si la nature informative vs décorative reste ambiguë depuis le DOM, NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 5 (déterminisme) — Se fonder uniquement sur les attributs et relations RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 6 — Proposer une correction concrète (role='img' + aria-labelledby vers <title>/<desc> pour un SVG, aria-label + repli textuel pour un canvas)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-non-temporal-alternative'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence d'alternative, déclaration décorative) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : média non temporel informatif sans aucune alternative ni déclaration décorative.",
+        "Respecter une déclaration décorative explicite (aria-hidden='true', role='presentation') : CONFORME, ne pas signaler.",
+        "En cas de doute sur la nature informative ou la pertinence d'une alternative : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun média non temporel: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de médias non temporels",
+    "Présence d'attributs aria-label ou aria-describedby"
+  ],
+  "manualChecks": [
+    "Pertinence de l'alternative",
+    "Exhaustivité de la description",
+    "Accessibilité de l'alternative"
+  ],
+  "commonErrors": [
+    {
+      "error": "Animation SVG sans alternative",
+      "example": "<svg class=\"animated-diagram\" width=\"400\" height=\"300\">...</svg>",
+      "correction": "<svg class=\"animated-diagram\" width=\"400\" height=\"300\" role=\"img\" aria-labelledby=\"svg-title svg-desc\">\n  <title id=\"svg-title\">Diagramme animé</title>\n  <desc id=\"svg-desc\">Description détaillée de l'animation et de son contenu informationnel</desc>\n  ...\n</svg>",
+      "explanation": "Les SVG animés doivent avoir une alternative textuelle via title et desc."
+    },
+    {
+      "error": "Canvas sans alternative",
+      "example": "<canvas id=\"animation\"></canvas>",
+      "correction": "<canvas id=\"animation\" role=\"img\" aria-label=\"Visualisation des données de vente\">\n  <p>Alternative textuelle : Les ventes ont augmenté de 25% ce trimestre...</p>\n</canvas>",
+      "explanation": "Les Canvas doivent avoir une alternative textuelle accessible."
+    },
+    {
+      "error": "Canvas/SVG animé : nature informative ou décorative à confirmer (à vérifier manuellement)",
+      "example": "<canvas id=\"bg-particles\" class=\"animation\"></canvas>",
+      "correction": "<canvas id=\"bg-particles\" class=\"animation\" aria-hidden=\"true\"></canvas>\n<!-- Si l'animation est purement décorative : aria-hidden='true'. Si elle porte de l'information : role='img' + aria-label -->",
+      "explanation": "Quand le DOM ne permet pas de trancher entre média décoratif et porteur d'information, ne pas conclure à une violation : cas à vérifier manuellement (warning). Une déclaration décorative explicite (aria-hidden) est conforme."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.8",
+    "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+  ]
+}

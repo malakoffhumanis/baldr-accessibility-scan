@@ -1,0 +1,194 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "5.3",
+  "ruleId": "table-headers",
+  "title": "Tableaux - En-têtes",
+  "description": "Pour chaque tableau de données, les en-têtes de colonnes et de lignes sont-ils correctement déclarés ?",
+  "rgaaReference": "RGAA 4.1 - Critère 5.3",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Tableaux",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux tableaux de données avec en-têtes",
+    "signals": {
+      "selectors": [
+        "table"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun tableau présent",
+      "Tableaux sans en-têtes"
+    ]
+  },
+  "testScenarios": {
+    "tableHeadersDeclaration": {
+      "description": "Déclaration correcte des en-têtes de tableau",
+      "tests": [
+        {
+          "id": "5.3.1",
+          "rgaaTestRef": "Test 5.3.1",
+          "description": "Les en-têtes de colonnes et de lignes sont-ils correctement balisés avec <th> ?",
+          "methodology": [
+            "Identifier les cellules d'en-tête du tableau",
+            "Vérifier que ces cellules utilisent la balise <th> (pas <td>)",
+            "Vérifier que toutes les cellules de données utilisent <td>"
+          ],
+          "selector": "table",
+          "expected": "Utiliser <th> pour les en-têtes, <td> pour les données",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "analyzeTableStructure": true,
+            "identifyHeaders": true,
+            "checkThUsage": true
+          }
+        },
+        {
+          "id": "5.3.2",
+          "rgaaTestRef": "Test 5.3.2",
+          "description": "Chaque en-tête <th> possède-t-il un attribut scope approprié ?",
+          "methodology": [
+            "Pour chaque <th>, vérifier la présence de l'attribut scope",
+            "Vérifier que scope=\"col\" pour les en-têtes de colonne",
+            "Vérifier que scope=\"row\" pour les en-têtes de ligne",
+            "Pour tableaux complexes, vérifier scope=\"colgroup\" ou \"rowgroup\""
+          ],
+          "selector": "table th",
+          "expected": "Chaque <th> doit avoir scope=\"col\" ou scope=\"row\"",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "5.3.3",
+          "rgaaTestRef": "Test 5.3.3",
+          "description": "Pour les tableaux complexes, les associations headers/id sont-elles correctes ?",
+          "methodology": [
+            "Identifier les tableaux avec en-têtes multiples ou structure complexe",
+            "Vérifier que chaque <th> a un attribut id unique",
+            "Vérifier que chaque <td> a un attribut headers référençant les id appropriés"
+          ],
+          "selector": "table",
+          "expected": "Utiliser headers/id pour tableaux complexes",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "table",
+        "th",
+        "td",
+        "thead",
+        "tbody",
+        "tfoot"
+      ],
+      "attributes": [
+        "scope",
+        "headers",
+        "id",
+        "colspan",
+        "rowspan"
+      ],
+      "context": {
+        "surroundingText": 100,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Recenser tous les tableaux de DONNÉES : balises <table> contenant au moins un <th>, un <caption> ou un attribut scope/headers. Pour chacun, relever les SIGNAUX MÉCANIQUES : nombre et position des <th>, présence/valeur de scope sur chaque <th>, présence de headers/id, de colspan/rowspan, de <thead>/<tbody>/<tfoot>. Appliquer ensuite les étapes DANS L'ORDRE.",
+        "ÉTAPE 1 (non applicable) — Si la page ne contient aucun tableau de données, conclure NON APPLICABLE (compliant=true, severity='minor', summary='Aucun tableau de données détecté, critère non applicable', findings=[]).",
+        "ÉTAPE 2 (en-têtes manquants — défaut objectif) — Si un tableau de données ne contient AUCUNE balise <th> alors que la première ligne ou la première colonne joue manifestement le rôle d'en-tête (cellules <td> mises en gras, fond distinct), émettre un finding type=\"violation\", severity='critical' : les en-têtes ne sont pas balisés sémantiquement. Quand le rôle d'en-tête n'est PAS clairement identifiable, préférer un finding type=\"warning\" (vérification manuelle).",
+        "ÉTAPE 3 (scope — défaut objectif) — Pour un tableau de données SIMPLE, vérifier mécaniquement que chaque <th> porte un attribut scope. Un <th> sans scope (et sans association headers/id équivalente) => finding type=\"violation\", severity='serious'. Valeurs attendues : scope=\"col\" (en-tête de colonne) ou scope=\"row\" (en-tête de ligne).",
+        "ÉTAPE 4 (tableau complexe — association → warning) — Identifier les tableaux COMPLEXES via les signaux DOM (colspan/rowspan multiples, plusieurs niveaux d'en-têtes). Pour ces tableaux, l'usage correct de headers/id dépend d'une analyse de la structure : si headers/id sont absents, émettre un finding type=\"warning\", severity='serious' (vérification manuelle). Ne pas conclure à une violation ferme dès lors que l'association correcte ne peut être tranchée avec certitude.",
+        "ÉTAPE 5 (doute → warning) — La PERTINENCE du contenu d'un en-tête, ou le caractère réellement complexe d'un tableau ambigu, relève d'une appréciation : émettre au plus un finding type=\"warning\", jamais une violation, sur ces seuls motifs."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'table-headers'",
+          "compliant": "boolean - true si conforme ou si aucun tableau de données détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML de structure corrigée",
+          "rgaaTestRef": "Test 5.3.1, 5.3.2 ou 5.3.3",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence de <th>, valeur de scope, headers/id, colspan/rowspan) donnent toujours le même verdict.",
+        "type='violation' est réservé aux défauts OBJECTIFS : tableau de données sans aucun <th> avec en-tête manifeste (severity='critical'), ou <th> sans scope dans un tableau simple (severity='serious').",
+        "En cas de DOUTE (rôle d'en-tête non identifiable, tableau complexe sans headers/id, pertinence d'un en-tête) → type='warning' (vérification manuelle), jamais de violation ferme.",
+        "Si aucun tableau de données détecté: compliant=true, severity='minor', summary='Aucun tableau de données détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères) ; toujours proposer la structure HTML correcte.",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 5.3 - En-têtes de tableau), spécialisé dans la vérification déterministe du balisage des en-têtes. Tu te fondes sur les signaux mécaniques du DOM (présence de <th>, attribut scope, associations headers/id, colspan/rowspan) : la violation est réservée aux défauts objectifs (absence de <th>, <th> sans scope), et tu demandes une vérification manuelle (warning) dès que le verdict dépend d'une appréciation (rôle d'en-tête ambigu, association headers/id d'un tableau complexe)."
+  },
+  "automatedChecks": [
+    "Présence de <th> dans les tableaux",
+    "Présence de l'attribut scope sur <th>",
+    "Validité des valeurs de scope (col, row, colgroup, rowgroup)",
+    "Validation des références headers/id"
+  ],
+  "manualChecks": [
+    "Identification correcte des cellules d'en-tête vs données",
+    "Choix approprié entre scope et headers/id selon la complexité",
+    "Pertinence du contenu des en-têtes"
+  ],
+  "commonErrors": [
+    {
+      "error": "<td> utilisé pour un en-tête au lieu de <th>",
+      "example": "<table>\n  <tr><td><strong>Nom</strong></td><td><strong>Âge</strong></td></tr>\n  <tr><td>Alice</td><td>30</td></tr>\n</table>",
+      "correction": "<table>\n  <tr><th scope=\"col\">Nom</th><th scope=\"col\">Âge</th></tr>\n  <tr><td>Alice</td><td>30</td></tr>\n</table>",
+      "explanation": "Les en-têtes doivent utiliser <th>, pas <td> avec mise en forme"
+    },
+    {
+      "error": "<th> sans attribut scope",
+      "example": "<table>\n  <tr><th>Produit</th><th>Prix</th></tr>\n  <tr><td>Pomme</td><td>1€</td></tr>\n</table>",
+      "correction": "<table>\n  <tr><th scope=\"col\">Produit</th><th scope=\"col\">Prix</th></tr>\n  <tr><td>Pomme</td><td>1€</td></tr>\n</table>",
+      "explanation": "Chaque <th> doit avoir un attribut scope pour indiquer sa portée"
+    },
+    {
+      "error": "Tableau complexe sans headers/id",
+      "example": "<table>\n  <tr><th>T1</th><th colspan=\"2\">T2</th></tr>\n  <tr><th>A</th><th>B</th><th>C</th></tr>\n  <tr><td>1</td><td>2</td><td>3</td></tr>\n</table>",
+      "correction": "<table>\n  <tr><th id=\"t1\" scope=\"col\">T1</th><th id=\"t2\" scope=\"colgroup\" colspan=\"2\">T2</th></tr>\n  <tr><th id=\"a\" scope=\"col\">A</th><th id=\"b\" scope=\"col\">B</th><th id=\"c\" scope=\"col\">C</th></tr>\n  <tr><td headers=\"t1 a\">1</td><td headers=\"t2 b\">2</td><td headers=\"t2 c\">3</td></tr>\n</table>",
+      "explanation": "Les tableaux complexes nécessitent headers/id pour associer correctement données et en-têtes"
+    },
+    {
+      "error": "Cellule de première ligne ambiguë : en-tête ou donnée (à vérifier manuellement)",
+      "example": "<table>\n  <caption>Suivi</caption>\n  <tr><td>Jour</td><td>Lundi</td><td>Mardi</td></tr>\n  <tr><td>Présence</td><td>Oui</td><td>Non</td></tr>\n</table>",
+      "correction": "<!-- Si la 1re ligne et la 1re colonne sont des en-têtes -->\n<table>\n  <caption>Suivi</caption>\n  <tr><td></td><th scope=\"col\">Lundi</th><th scope=\"col\">Mardi</th></tr>\n  <tr><th scope=\"row\">Présence</th><td>Oui</td><td>Non</td></tr>\n</table>",
+      "explanation": "Quand le rôle d'en-tête des cellules <td> n'est pas tranchable par les seuls signaux DOM (pas de mise en forme distinctive nette), signaler en warning pour vérification manuelle plutôt que conclure à une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#5.3",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://www.w3.org/WAI/tutorials/tables/"
+  ]
+}

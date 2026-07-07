@@ -1,0 +1,149 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "8.6",
+  "ruleId": "mandatory-element-validable-code",
+  "title": "Éléments obligatoires - Code valide",
+  "description": "Pour chaque page web, le code source est-il valide selon le type de document spécifié (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 8.6",
+  "wcagReference": "WCAG 2.1 - 4.1.1 Analyse syntaxique (A)",
+  "theme": "Éléments obligatoires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web",
+    "signals": {
+      "selectors": [
+        "html"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": []
+  },
+  "testScenarios": {
+    "codeValidation": {
+      "description": "Validation du code HTML",
+      "tests": [
+        {
+          "id": "8.6.1",
+          "rgaaTestRef": "Test 8.6.1",
+          "description": "Le code source de chaque page est-il valide selon le type de document spécifié (hors cas particuliers) ?",
+          "methodology": [
+            "Valider le code HTML avec le validateur W3C",
+            "Vérifier l'absence d'erreurs de syntaxe",
+            "Vérifier que les balises sont correctement fermées",
+            "Vérifier l'absence d'attributs dupliqués",
+            "Vérifier l'absence d'ID dupliqués"
+          ],
+          "selector": "html",
+          "expected": "Le code HTML doit être valide selon le DOCTYPE déclaré",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "html",
+        "head",
+        "body"
+      ],
+      "attributes": [
+        "id",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 0,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Objectif : vérifier le critère RGAA 8.6 (validité du code source selon le type de document). S'appuyer sur les signaux MÉCANIQUES vérifiables dans le DOM extrait, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (signal mécanique) — Relever les défauts STRUCTURELS objectivement détectables : valeurs d'attribut id RÉPÉTÉES (deux éléments ou plus partageant le même id), attributs DUPLIQUÉS sur un même élément (ex. deux class), balises mal imbriquées ou non fermées visibles dans le DOM.",
+        "ÉTAPE 2 (violation objective) — Pour chaque id dupliqué constaté entre plusieurs éléments → finding type=\"violation\", severity serious : l'unicité des id est une contrainte vérifiable sans interprétation.",
+        "ÉTAPE 3 (violation objective) — Pour chaque attribut dupliqué sur un même élément, ou chaque balise manifestement non fermée / mal imbriquée → finding type=\"violation\", severity serious : défaut de syntaxe objectif.",
+        "ÉTAPE 4 (doute → warning) — Les autres erreurs de validation (attributs non standard, valeurs hors énumération, cas particuliers tolérés par le RGAA, fragments injectés par des composants tiers) ne peuvent pas être tranchées de façon certaine à partir du seul DOM rendu : émettre un finding type=\"warning\" recommandant une validation via le validateur W3C plutôt qu'une violation ferme.",
+        "ÉTAPE 5 (conforme) — Si aucun défaut structurel objectif n'est détecté, ne produire AUCUN finding (compliant=true) ; la validation exhaustive W3C reste recommandée manuellement.",
+        "ÉTAPE 6 — Ce critère s'applique toujours (toute page a un code source) : pas de conclusion non applicable."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (id dupliqués, attributs dupliqués, balises non fermées) doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux défauts structurels OBJECTIFS (id dupliqué, attribut dupliqué, balise non fermée/mal imbriquée).",
+        "En cas de doute (erreur de validation fine, cas particulier RGAA, fragment tiers) → type=\"warning\" renvoyant vers le validateur W3C, jamais de violation ferme.",
+        "Ce critère s'applique toujours : pas de conclusion non applicable.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Limiter à 5 findings maximum, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'mandatory-element-validable-code'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML corrigé",
+          "rgaaTestRef": "Test 8.6.1",
+          "wcagReference": "4.1.1"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 8.6 - Code valide), spécialisé dans la détection déterministe des défauts de validité HTML. Tu signales en violation ferme uniquement les défauts structurels objectifs du DOM (id dupliqués, attributs dupliqués, balises non fermées) et tu renvoies vers une vérification manuelle au validateur W3C (warning) pour les erreurs de validation fines ou les cas particuliers tolérés par le RGAA."
+  },
+  "automatedChecks": [
+    "Validation HTML W3C",
+    "Détection d'ID dupliqués",
+    "Détection d'attributs dupliqués",
+    "Vérification de fermeture des balises"
+  ],
+  "manualChecks": [
+    "Analyse des erreurs de validation",
+    "Vérification de la pertinence des erreurs (cas particuliers acceptés)"
+  ],
+  "commonErrors": [
+    {
+      "error": "ID dupliqués",
+      "example": "<div id=\"content\">...</div>\n<div id=\"content\">...</div>",
+      "correction": "<div id=\"content-1\">...</div>\n<div id=\"content-2\">...</div>",
+      "explanation": "Chaque ID doit être unique dans la page : un id répété est un défaut de validité objectif (violation)."
+    },
+    {
+      "error": "Attributs dupliqués",
+      "example": "<input type=\"text\" class=\"field\" class=\"required\">",
+      "correction": "<input type=\"text\" class=\"field required\">",
+      "explanation": "Un attribut ne peut apparaître qu'une seule fois par élément : duplication = violation objective."
+    },
+    {
+      "error": "Balises non fermées",
+      "example": "<div><p>Texte</div>",
+      "correction": "<div><p>Texte</p></div>",
+      "explanation": "Toutes les balises doivent être correctement fermées et imbriquées : défaut structurel objectif (violation)."
+    },
+    {
+      "error": "Erreur de validation fine à confirmer manuellement",
+      "example": "<input type=\"text\" autocapitalize=\"words\" data-custom=\"x\">",
+      "correction": "<!-- Vérifier via le validateur W3C que les attributs sont admis pour ce DOCTYPE -->",
+      "explanation": "Certaines erreurs (attributs non standard, valeurs hors énumération, cas particuliers RGAA) ne se tranchent pas sur le seul DOM rendu : émettre un warning et renvoyer au validateur W3C."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#8.6",
+    "https://validator.w3.org/",
+    "https://www.w3.org/WAI/WCAG21/Understanding/parsing.html"
+  ]
+}

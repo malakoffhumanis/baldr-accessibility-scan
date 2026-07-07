@@ -1,0 +1,151 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "13.2",
+  "ruleId": "consultation-flashing-content",
+  "title": "Consultation - Contenus clignotants",
+  "description": "Dans chaque page web, l'ouverture d'une nouvelle fenêtre ne doit pas être déclenchée sans action de l'utilisateur. Cette règle est-elle respectée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 13.2",
+  "wcagReference": "WCAG 2.1 - 3.2.5 Changement à la demande (AAA)",
+  "theme": "Consultation",
+  "level": "AAA",
+  "applicability": {
+    "description": "Ce critère s'applique aux pages avec des ouvertures de fenêtres",
+    "signals": {
+      "selectors": [
+        "a[target='_blank']",
+        "[onclick*='window.open']",
+        "script"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucune ouverture de nouvelle fenêtre"
+    ]
+  },
+  "testScenarios": {
+    "noAutoPopup": {
+      "description": "Absence d'ouverture automatique de fenêtre",
+      "tests": [
+        {
+          "id": "13.2.1",
+          "rgaaTestRef": "Test 13.2.1",
+          "description": "Les nouvelles fenêtres s'ouvrent-elles uniquement suite à une action utilisateur ?",
+          "methodology": [
+            "Vérifier l'absence de window.open() au chargement de la page",
+            "Vérifier l'absence de target='_blank' sur des éléments non cliquables",
+            "Détecter les popups automatiques",
+            "Vérifier que toutes les ouvertures sont déclenchées par click explicite"
+          ],
+          "selector": "script, a[target='_blank']",
+          "expected": "Aucune fenêtre ne doit s'ouvrir automatiquement au chargement",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 13.2 - Ouverture de nouvelle fenêtre / changement à la demande), spécialisé dans l'analyse déterministe du déclenchement des nouvelles fenêtres. Tu fondes ton verdict sur des signaux mécaniques du DOM (window.open dans les scripts, gestionnaires onload, attributs target). Comme le déclenchement réel dépend souvent d'un comportement JavaScript exécuté à l'exécution, tu privilégies le finding type=warning pour vérification manuelle et tu ne conclus à une violation que pour un défaut objectif et certain.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "script",
+        "a[target]",
+        "[onclick]"
+      ],
+      "attributes": [
+        "target",
+        "onclick",
+        "src"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 1 (signaux DOM) — Relever les signaux MÉCANIQUES : présence d'appels window.open(...) dans les scripts inline, association de window.open à un gestionnaire de chargement (window.onload, addEventListener('load'...), DOMContentLoaded) SANS interaction préalable, présence d'attributs target='_blank' et nature de l'élément porteur (lien/bouton interactif vs élément non interactif).",
+        "ÉTAPE 2 (non applicable) — Si AUCUN window.open et AUCUN target='_blank' ne sont présents dans le DOM extrait, conclure NON APPLICABLE : conclusion='non_applicable', findings=[].",
+        "ÉTAPE 3 (signal objet d'ouverture automatique) — Si un window.open est rattaché de façon observable à un événement de chargement (onload / load / DOMContentLoaded) sans aucune action utilisateur, signaler une ouverture automatique. Le critère 13.2 étant de niveau AAA et le déclenchement effectif dépendant de l'exécution JavaScript, émettre un finding type='warning', severity='moderate' invitant à confirmer par un test de chargement de page.",
+        "ÉTAPE 4 (doute → warning) — Pour un window.open dont le déclencheur n'est PAS clairement identifiable (fonction appelée depuis du code non observable, dépendance à une condition d'exécution) : NE PAS conclure à une violation ferme ; émettre un finding type='warning' demandant de tester le chargement de la page et les scripts externes.",
+        "ÉTAPE 5 (target sur élément interactif) — Un target='_blank' porté par un lien <a> ou un bouton réellement actionnable n'est PAS une ouverture automatique : il est déclenché par l'utilisateur, donc CONFORME au regard de 13.2. Ne pas le signaler ici (l'indication « nouvelle fenêtre » relève d'un autre critère).",
+        "ÉTAPE 6 — Pour chaque ouverture automatique suspectée, recommander de supprimer le déclenchement au chargement et de n'ouvrir la fenêtre qu'après une action explicite de l'utilisateur."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (window.open au chargement, target sur élément non interactif) doivent toujours produire le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS et certains du DOM ; ici le déclenchement réel dépend du JavaScript, donc privilégier type='warning'.",
+        "En cas de doute (déclencheur non observable) → type='warning' pour vérification manuelle, jamais de violation ferme.",
+        "Si aucune ouverture de fenêtre détectée : conclusion='non_applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après.",
+        "Maximum 5 findings."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'consultation-flashing-content'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string",
+          "rgaaTestRef": "Test 13.2.1",
+          "wcagReference": "3.2.5"
+        }
+      }
+    }
+  },
+  "automatedChecks": [
+    "Détection de window.open dans scripts",
+    "Détection de target='_blank'"
+  ],
+  "manualChecks": [
+    "Test de chargement de page",
+    "Détection de popups automatiques",
+    "Vérification des scripts externes"
+  ],
+  "commonErrors": [
+    {
+      "error": "Popup publicitaire au chargement",
+      "example": "window.addEventListener('load', () => {\n  window.open('/popup-ad.html', '_blank');\n});",
+      "correction": "<!-- Pas de popup automatique -->\n<!-- Si nécessaire, afficher après interaction explicite -->",
+      "explanation": "Ne jamais ouvrir de fenêtre automatiquement au chargement"
+    },
+    {
+      "error": "Modale après X secondes",
+      "example": "setTimeout(() => {\n  openModal('newsletter');\n}, 5000);",
+      "correction": "<!-- Modale uniquement sur action utilisateur -->\n<button onclick=\"openModal('newsletter')\">S'abonner</button>",
+      "explanation": "Les modales doivent être déclenchées par l'utilisateur"
+    },
+    {
+      "error": "Lien ouvrant nouvelle fenêtre sans indication",
+      "example": "<a href=\"/doc.pdf\" target=\"_blank\">Document</a>",
+      "correction": "<a href=\"/doc.pdf\" target=\"_blank\">\n  Document <span class=\"sr-only\">(nouvelle fenêtre)</span>\n</a>",
+      "explanation": "Indiquer que le lien ouvre une nouvelle fenêtre"
+    },
+    {
+      "error": "Ouverture de fenêtre dont le déclencheur n'est pas observable (à vérifier manuellement)",
+      "example": "<script src=\"/vendor/ads.js\"></script> <!-- contient window.open(...), déclencheur inconnu -->",
+      "correction": "<!-- Tester le chargement de la page avec les scripts externes actifs -->\n<!-- Confirmer que la fenêtre ne s'ouvre qu'après une action de l'utilisateur -->",
+      "explanation": "Quand window.open provient d'un script externe ou d'un déclencheur non visible dans le DOM, on ne peut pas trancher automatiquement : confirmer par un test de chargement plutôt que de conclure à une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#13.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/change-on-request.html"
+  ]
+}

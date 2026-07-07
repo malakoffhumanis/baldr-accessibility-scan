@@ -1,0 +1,180 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "11.6",
+  "ruleId": "form-field-format-indication",
+  "title": "Formulaires - Format de saisie",
+  "description": "Dans chaque formulaire, les indications de format de saisie sont-elles présentes ?",
+  "rgaaReference": "RGAA 4.1 - Critère 11.6",
+  "wcagReference": "WCAG 2.1 - 3.3.2 Étiquettes ou instructions (A)",
+  "theme": "Formulaires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux champs de formulaire avec un format de saisie attendu",
+    "signals": {
+      "selectors": [
+        "input[type='tel']",
+        "input[type='email']",
+        "input[type='date']",
+        "input[pattern]",
+        "input[maxlength]"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Champs sans format de saisie spécifique",
+      "Champs avec masque de saisie automatique"
+    ]
+  },
+  "testScenarios": {
+    "formatIndication": {
+      "description": "Indication du format de saisie attendu",
+      "tests": [
+        {
+          "id": "11.6.1",
+          "rgaaTestRef": "Test 11.6.1",
+          "description": "Les champs avec format attendu ont-ils une indication du format ?",
+          "methodology": [
+            "Identifier les champs avec format spécifique (téléphone, date, code postal, etc.)",
+            "Vérifier la présence d'une indication du format attendu",
+            "Vérifier que l'indication est accessible (visible, dans label, aria-describedby, placeholder informatif)"
+          ],
+          "selector": "input[type='tel'], input[type='email'], input[type='date'], input[pattern]",
+          "expected": "Le format attendu doit être clairement indiqué",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectFormatRequirements": true,
+            "checkFormatIndication": true
+          }
+        },
+        {
+          "id": "11.6.2",
+          "rgaaTestRef": "Test 11.6.2",
+          "description": "L'indication de format est-elle accessible ?",
+          "methodology": [
+            "Vérifier que l'indication n'est pas uniquement dans un attribut title",
+            "Vérifier la présence d'aria-describedby pointant vers l'indication",
+            "Ou vérifier que l'indication fait partie du label",
+            "Ou vérifier un placeholder informatif en complément"
+          ],
+          "selector": "input[type='tel'], input[type='email'], input[pattern]",
+          "expected": "L'indication doit être accessible via label, aria-describedby ou texte visible",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "input",
+        "label",
+        "[aria-describedby]",
+        "[id]"
+      ],
+      "attributes": [
+        "type",
+        "pattern",
+        "maxlength",
+        "minlength",
+        "placeholder",
+        "aria-describedby",
+        "title"
+      ],
+      "context": {
+        "surroundingText": 400,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier, à partir des attributs RÉELS du DOM, les champs ayant un format de saisie attendu : type='tel'/'email'/'date', présence de pattern, de maxlength/minlength contraignant. Appliquer ensuite la procédure DANS L'ORDRE.",
+        "ÉTAPE 0 — Si aucun champ avec format de saisie spécifique n'est détecté, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 — Relever les signaux MÉCANIQUES de l'indication de format : présence d'un aria-describedby pointant vers un id EXISTANT, contenu d'indication dans le <label> associé, placeholder informatif, ou indication présente UNIQUEMENT dans l'attribut title.",
+        "ÉTAPE 2 (violation objective) — Indication de format présente UNIQUEMENT dans l'attribut title (aucun label, aria-describedby ni texte visible) → finding type=\"violation\" : title n'est pas restitué de façon fiable par les technologies d'assistance.",
+        "ÉTAPE 3 (violation objective) — aria-describedby pointant vers un id INEXISTANT → finding type=\"violation\" : l'indication référencée n'existe pas.",
+        "ÉTAPE 4 (doute → warning) — Champ à format contraint (pattern, type spécifique) SANS aucune indication détectable dans le contexte extrait : émettre un finding type=\"warning\" demandant une vérification manuelle, car l'indication peut figurer dans un texte d'aide visible non rattaché ou distant, non tranchable avec certitude.",
+        "ÉTAPE 5 (doute → warning) — Pertinence/clarté d'une indication présente (exemple compréhensible, format réellement décrit) : relève d'une appréciation éditoriale → type=\"warning\".",
+        "ÉTAPE 6 — Pour chaque finding, proposer une indication accessible (texte lié via aria-describedby, ou complément dans le label) avec un exemple concret."
+      ],
+      "important": [
+        "Déterminisme : les signaux DOM (title seul, aria-describedby valide/cassé, présence d'un texte d'indication lié) produisent toujours le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS : indication uniquement dans title, ou aria-describedby vers un id inexistant.",
+        "En cas de doute (indication possible mais non rattachée, pertinence d'un libellé d'aide) → type=\"warning\" (vérification manuelle), jamais de violation ferme.",
+        "Si aucun champ avec format spécifique détecté: compliant=true, severity='minor', summary='Aucun champ avec format de saisie détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; maximum 5 findings, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'form-field-format-indication'",
+          "compliant": "boolean - true si conforme ou si aucun champ obligatoire détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple d'indication de format",
+          "rgaaTestRef": "Test 11.6.1 ou 11.6.2",
+          "wcagReference": "3.3.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 11.6 - Formulaires), spécialisé dans les indications de format de saisie. Tu appliques une approche déterministe : tu signales en violation une indication restituée uniquement par title ou un aria-describedby cassé, et tu demandes une vérification manuelle (warning) dès que l'indication peut exister dans un contenu distant ou que sa pertinence dépend d'une appréciation."
+  },
+  "automatedChecks": [
+    "Détection de champs avec pattern sans indication",
+    "Vérification de la présence d'aria-describedby"
+  ],
+  "manualChecks": [
+    "Pertinence des indications de format",
+    "Accessibilité des indications",
+    "Clarté des exemples fournis"
+  ],
+  "commonErrors": [
+    {
+      "error": "Champ téléphone sans indication de format (à vérifier manuellement)",
+      "example": "<label for=\"tel\">Téléphone</label>\n<input id=\"tel\" type=\"tel\" pattern=\"[0-9]{10}\">",
+      "correction": "<label for=\"tel\">Téléphone</label>\n<span id=\"tel-format\">Format: 10 chiffres (ex: 0123456789)</span>\n<input id=\"tel\" type=\"tel\" pattern=\"[0-9]{10}\" aria-describedby=\"tel-format\">",
+      "explanation": "Indiquer clairement le format attendu avec un exemple. En l'absence d'indication rattachée détectable, préférer une vérification manuelle (warning) car l'aide peut figurer dans un texte distant."
+    },
+    {
+      "error": "Indication uniquement dans l'attribut title",
+      "example": "<label for=\"postal\">Code postal</label>\n<input id=\"postal\" type=\"text\" title=\"5 chiffres\">",
+      "correction": "<label for=\"postal\">Code postal <span id=\"postal-format\">(5 chiffres)</span></label>\n<input id=\"postal\" type=\"text\" aria-describedby=\"postal-format\">",
+      "explanation": "L'attribut title n'est pas suffisamment accessible"
+    },
+    {
+      "error": "aria-describedby pointant vers un id inexistant",
+      "example": "<label for=\"code\">Code</label>\n<input id=\"code\" pattern=\"[A-Z]{2}[0-9]{4}\" aria-describedby=\"code-format\">\n<!-- aucun élément id=\"code-format\" -->",
+      "correction": "<label for=\"code\">Code</label>\n<span id=\"code-format\">Format: 2 lettres majuscules suivies de 4 chiffres (ex: AB1234)</span>\n<input id=\"code\" pattern=\"[A-Z]{2}[0-9]{4}\" aria-describedby=\"code-format\">",
+      "explanation": "Un aria-describedby qui référence un id absent ne restitue aucune indication : la description doit exister dans la page."
+    },
+    {
+      "error": "Date sans indication de format",
+      "example": "<label for=\"birthdate\">Date de naissance</label>\n<input id=\"birthdate\" type=\"text\" placeholder=\"jj/mm/aaaa\">",
+      "correction": "<label for=\"birthdate\">Date de naissance</label>\n<span id=\"date-format\">Format: jj/mm/aaaa</span>\n<input id=\"birthdate\" type=\"text\" placeholder=\"Ex: 15/03/1990\" aria-describedby=\"date-format\">",
+      "explanation": "Indiquer le format explicitement avec aria-describedby"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#11.6",
+    "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html",
+    "https://www.w3.org/WAI/tutorials/forms/instructions/"
+  ]
+}

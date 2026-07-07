@@ -1,0 +1,144 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.9",
+  "ruleId": "media-relevant-captions",
+  "title": "Multimédia - Pertinence des sous-titres",
+  "description": "Chaque média temporel a-t-il, si nécessaire, des sous-titres synchronisés pertinents ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.9",
+  "wcagReference": "WCAG 2.1 - 1.2.2 / 1.2.4 Sous-titres",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique aux médias avec sous-titres",
+    "signals": {
+      "selectors": [
+        "video track[kind='captions']",
+        "video track[kind='subtitles']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média avec sous-titres"
+    ]
+  },
+  "testScenarios": {
+    "captionsRelevance": {
+      "description": "Pertinence des sous-titres",
+      "tests": [
+        {
+          "id": "4.9.1",
+          "rgaaTestRef": "Test 4.9.1",
+          "description": "Les sous-titres sont-ils pertinents (dialogues, sons importants, identification des locuteurs) ?",
+          "methodology": [
+            "Activer les sous-titres",
+            "Vérifier que tous les dialogues sont sous-titrés",
+            "Vérifier que les sons importants sont décrits",
+            "Vérifier l'identification des locuteurs si nécessaire",
+            "Vérifier l'absence d'erreurs et la lisibilité"
+          ],
+          "selector": "track[kind='captions'], track[kind='subtitles']",
+          "expected": "Les sous-titres doivent être complets, exacts et inclure les sons importants",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": false
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": false,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.9 - pertinence des sous-titres synchronisés). Tu appliques une démarche DÉTERMINISTE : depuis le DOM, tu détectes la présence des pistes de sous-titres, mais la PERTINENCE (exhaustivité des dialogues, sons importants, identification des locuteurs) suppose d'inspecter le contenu .vtt, non accessible. Tu privilégies donc systématiquement le warning (vérification manuelle) et ne conclus jamais à une violation sur la seule présence d'un track.",
+    "inputs": {
+      "dom": true,
+      "screenshots": false,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "video",
+        "track[kind='captions']",
+        "track[kind='subtitles']"
+      ],
+      "attributes": [
+        "src",
+        "kind",
+        "srclang",
+        "label"
+      ],
+      "context": {
+        "surroundingText": 200,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les vidéos disposant d'un <track kind='captions'> ou <track kind='subtitles'>. Si AUCUN track de sous-titres n'est présent, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Relever la présence des pistes de sous-titres et leurs attributs (src, srclang, label, default). C'est le seul niveau déterministe accessible depuis le DOM.",
+        "ÉTAPE 2 (doute → warning, systématique) — La PERTINENCE des sous-titres (exhaustivité des dialogues, description des sons importants, identification des locuteurs, exactitude, lisibilité) exige l'inspection du contenu .vtt, NON accessible depuis le DOM. Émettre un finding type='warning' demandant une vérification manuelle ; ne JAMAIS conclure à une violation sur la seule présence d'un track.",
+        "ÉTAPE 3 (déterminisme) — Se fonder uniquement sur les signaux RÉELLEMENT présents dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 4 — Rappeler dans la recommandation les points à contrôler manuellement (dialogues complets, sons importants, locuteurs identifiés)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-relevant-captions'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      },
+      "important": [
+        "Déterminisme : la présence des tracks de sous-titres est le seul signal DOM fiable ; même signal, même verdict.",
+        "La pertinence ne peut être tranchée depuis le DOM (contenu .vtt non inspectable) : type='warning' (vérification manuelle) systématique, jamais de violation.",
+        "Si aucun sous-titre: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Présence de fichiers de sous-titres (track src)"
+  ],
+  "manualChecks": [
+    "Exhaustivité des dialogues sous-titrés",
+    "Description des sons importants (musique, bruits)",
+    "Identification des locuteurs si nécessaire",
+    "Exactitude et synchronisation",
+    "Lisibilité et durée d'affichage appropriée"
+  ],
+  "commonErrors": [
+    {
+      "error": "Sous-titres incomplets (dialogues manquants)",
+      "example": "WEBVTT\n\n00:00:01.000 --> 00:00:03.000\nBonjour\n\n<!-- Manque plusieurs répliques -->",
+      "correction": "WEBVTT\n\n00:00:01.000 --> 00:00:03.000\nBonjour tout le monde\n\n00:00:03.500 --> 00:00:05.000\nComment allez-vous ?\n\n00:00:05.500 --> 00:00:07.000\n[Applaudissements]",
+      "explanation": "Tous les dialogues et sons importants doivent être sous-titrés."
+    },
+    {
+      "error": "Absence d'identification des locuteurs",
+      "example": "00:00:01.000 --> 00:00:03.000\nJe suis d'accord",
+      "correction": "00:00:01.000 --> 00:00:03.000\n<v Marie>Je suis d'accord</v>",
+      "explanation": "Quand plusieurs personnes parlent, les identifier aide à suivre la conversation."
+    },
+    {
+      "error": "Sons importants non décrits",
+      "example": "00:00:10.000 --> 00:00:12.000\nRegardez !",
+      "correction": "00:00:09.500 --> 00:00:10.000\n[Bruit de porte qui claque]\n\n00:00:10.000 --> 00:00:12.000\nRegardez !",
+      "explanation": "Les sons qui apportent des informations importantes doivent être décrits."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.9",
+    "https://www.w3.org/WAI/WCAG21/Understanding/captions-prerecorded.html"
+  ]
+}

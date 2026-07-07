@@ -1,0 +1,173 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "8.9",
+  "ruleId": "mandatory-element-page-title",
+  "title": "Éléments obligatoires - Titre de page",
+  "description": "Dans chaque page web, les balises ne doivent pas être utilisées uniquement à des fins de présentation. Cette règle est-elle respectée ?",
+  "rgaaReference": "RGAA 4.1 - Critère 8.9",
+  "wcagReference": "WCAG 2.1 - 1.3.1 Information et relations (A)",
+  "theme": "Éléments obligatoires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web",
+    "signals": {
+      "selectors": [
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "p",
+        "ul",
+        "ol",
+        "blockquote",
+        "table"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": []
+  },
+  "testScenarios": {
+    "semanticUse": {
+      "description": "Utilisation sémantique des balises",
+      "tests": [
+        {
+          "id": "8.9.1",
+          "rgaaTestRef": "Test 8.9.1",
+          "description": "Les balises ne sont-elles pas utilisées uniquement à des fins de présentation ?",
+          "methodology": [
+            "Identifier les balises sémantiques (h1-h6, p, ul, ol, blockquote, table, etc.)",
+            "Vérifier que chaque balise est utilisée pour sa valeur sémantique",
+            "Détecter les usages de présentation (ex: <h1> juste pour grossir du texte)",
+            "Vérifier l'absence de tableaux de mise en page",
+            "Vérifier l'absence de listes pour espacer du texte"
+          ],
+          "selector": "h1, h2, h3, h4, h5, h6, ul, ol, blockquote, table",
+          "expected": "Chaque balise doit être utilisée pour sa valeur sémantique, pas uniquement pour la présentation",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectPresentationalUse": true,
+            "evaluateSemantics": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 8.9 - balises non utilisées à des fins uniquement de présentation), spécialisé dans l'analyse déterministe de l'usage sémantique des balises HTML. Tu signales en violation ferme uniquement les détournements OBJECTIVEMENT vérifiables dans le DOM (table de mise en page sans th/caption, liste à élément unique, blockquote sans citation) et tu demandes une vérification manuelle (warning) dès que l'intention sémantique d'une balise relève d'une appréciation du contenu.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "p",
+        "ul",
+        "ol",
+        "blockquote",
+        "table",
+        "strong",
+        "em"
+      ],
+      "attributes": [
+        "class",
+        "style"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Objectif : vérifier le critère RGAA 8.9 (les balises ne sont pas utilisées uniquement à des fins de présentation). S'appuyer sur le DOM extrait ET sur la capture d'écran, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 (signal mécanique) — Relever des indices STRUCTURELS objectifs : pour chaque <table>, présence/absence d'éléments <th>, <caption> et de role=\"presentation\"/\"none\" ; pour chaque <ul>/<ol>, nombre d'éléments <li> ; pour chaque <blockquote>, présence d'attributs cite et nature du contenu ; styles inline détournant une balise sémantique.",
+        "ÉTAPE 2 (violation objective) — Tableau présentant des signaux clairs de MISE EN PAGE (aucun <th>, aucune <caption>, structure de cellules servant manifestement au layout) sans role=\"presentation\" → finding type=\"violation\", severity serious.",
+        "ÉTAPE 3 (violation objective) — Liste <ul>/<ol> ne contenant qu'un seul <li> et servant manifestement à espacer ou indenter (pas une liste de données) → finding type=\"violation\" ; <blockquote> dont le contenu n'est objectivement PAS une citation (utilisé pour indenter) → finding type=\"violation\".",
+        "ÉTAPE 4 (doute → warning) — Pour les usages dont la nature SÉMANTIQUE dépend d'une appréciation éditoriale (un titre h1-h6 employé pour la taille du texte vs un vrai titre, un tableau ambigu comportant à la fois des données et de la mise en forme, une liste plausible) → NE PAS conclure à une violation : émettre un finding type=\"warning\" demandant une vérification manuelle.",
+        "ÉTAPE 5 (correction) — Pour chaque finding, proposer une alternative déplaçant la présentation vers CSS et réservant la balise sémantique à sa fonction (titre, liste de données, citation, tableau de données avec th/caption).",
+        "ÉTAPE 6 (conforme) — Si toutes les balises analysées sont utilisées conformément à leur sémantique, ne produire AUCUN finding."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'mandatory-element-page-title'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple HTML et CSS corrects",
+          "rgaaTestRef": "Test 8.9.1",
+          "wcagReference": "1.3.1"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (absence de th/caption, li unique, blockquote sans citation) doivent toujours produire le même verdict.",
+        "type=\"violation\" est réservé aux détournements OBJECTIFS et vérifiables (table de mise en page sans th/caption, liste à élément unique servant d'espacement, blockquote non-citation).",
+        "En cas de doute sur l'intention sémantique (titre employé pour la taille, tableau mixte, liste plausible) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Toujours proposer une alternative avec CSS pour la présentation.",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après. Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Détection de tableaux sans th ou role='presentation'",
+    "Détection de listes avec un seul élément",
+    "Détection de hiérarchie invalide de titres"
+  ],
+  "manualChecks": [
+    "Évaluation de l'intention sémantique vs présentation",
+    "Vérification du contenu des balises sémantiques",
+    "Analyse de la structure documentaire"
+  ],
+  "commonErrors": [
+    {
+      "error": "Tableau utilisé pour la mise en page",
+      "example": "<table><tr><td>Menu</td><td>Contenu</td></tr></table>",
+      "correction": "<div class=\"layout\">\n  <nav>Menu</nav>\n  <main>Contenu</main>\n</div>\n/* CSS avec Grid ou Flexbox */",
+      "explanation": "Un tableau sans th ni caption servant au layout est un détournement objectif : utiliser CSS Grid ou Flexbox (violation)."
+    },
+    {
+      "error": "Liste utilisée uniquement pour espacer",
+      "example": "<ul><li>Texte</li></ul><ul><li>Autre texte</li></ul>",
+      "correction": "<p>Texte</p>\n<p>Autre texte</p>\n/* CSS */\np { margin-bottom: 1em; }",
+      "explanation": "Une liste à élément unique servant d'espacement est un détournement objectif : utiliser des paragraphes et CSS (violation)."
+    },
+    {
+      "error": "Blockquote utilisé pour indenter",
+      "example": "<blockquote>Ce n'est pas une citation</blockquote>",
+      "correction": "<p class=\"indented\">Ce n'est pas une citation</p>\n/* CSS */\n.indented { margin-left: 2em; }",
+      "explanation": "Réserver blockquote aux citations ; l'utiliser pour indenter du texte non cité est un détournement (violation). Utiliser CSS pour l'indentation."
+    },
+    {
+      "error": "Titre employé pour la taille du texte (à vérifier manuellement)",
+      "example": "<h1>Prix: 29.99€</h1>",
+      "correction": "<p class=\"price-large\">Prix: 29.99€</p>\n/* CSS */\n.price-large { font-size: 2em; font-weight: bold; }",
+      "explanation": "Savoir si un h1-h6 est un vrai titre ou un simple effet de taille relève d'une appréciation du contenu : à confirmer manuellement (warning) avant de conclure."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#8.9",
+    "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html",
+    "https://developer.mozilla.org/fr/docs/Web/HTML/Element"
+  ]
+}

@@ -1,0 +1,320 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://baldr.dev/schemas/rgaa-rule-1.0.json",
+  "title": "RGAA Rule",
+  "description": "Contrat d'une règle d'audit RGAA BALDR (v1.0).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "ruleId", "title", "description", "rgaaReference", "wcagReference",
+    "theme", "level", "testScenarios", "aiAnalysisConfig",
+    "automatedChecks", "manualChecks", "commonErrors", "resources"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Référence au schéma JSON (autocomplétion + validation éditeur)."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Identifiant du critère RGAA, au format \"N.N\" (ex. \"1.2\", \"4.10\")."
+    },
+    "ruleId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Identifiant technique en kebab-case (ex. \"image-alt\"). Sert de clé dans rules-index.json."
+    },
+    "title": {
+      "type": "string",
+      "description": "Titre lisible de la règle."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description ou question de conformité de la règle."
+    },
+    "rgaaReference": {
+      "type": "string",
+      "description": "Référence RGAA (ex. \"RGAA 4.1.2 - Critère 1.2\")."
+    },
+    "wcagReference": {
+      "type": ["string", "null"],
+      "description": "Référence WCAG en texte libre (ex. \"WCAG 2.1 - 1.1.1 ...\"), ou null."
+    },
+    "theme": {
+      "type": "string",
+      "description": "Thématique RGAA (ex. \"Images\", \"Multimédia\", \"Formulaires\")."
+    },
+    "level": {
+      "enum": ["A", "AA", "AAA", null],
+      "description": "Niveau WCAG : A, AA, AAA, ou null."
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "nonApplicableCases"],
+      "description": "Conditions d'applicabilité de la règle (optionnel).",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Quand la règle s'applique."
+        },
+        "signals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["selectors", "minimumCount"],
+          "description": "Signaux DOM déclenchant l'applicabilité.",
+          "properties": {
+            "selectors": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Sélecteurs CSS déclencheurs."
+            },
+            "minimumCount": {
+              "type": "number",
+              "description": "Nombre minimal d'éléments correspondants requis."
+            }
+          }
+        },
+        "nonApplicableCases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Cas documentés où la règle ne s'applique pas."
+        }
+      }
+    },
+    "testScenarios": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Scénarios de test, indexés par clé de scénario.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "tests"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Description du scénario de test."
+          },
+          "tests": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/testCase" },
+            "description": "Cas de test du scénario."
+          }
+        }
+      }
+    },
+    "aiAnalysisConfig": { "$ref": "#/definitions/aiAnalysisConfig" },
+    "automatedChecks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Vérifications automatiques (libellés)."
+    },
+    "manualChecks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Vérifications manuelles (libellés)."
+    },
+    "commonErrors": {
+      "type": "array",
+      "description": "Erreurs courantes documentées avec correction.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error", "example", "correction", "explanation"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Intitulé de l'erreur."
+          },
+          "example": {
+            "type": "string",
+            "description": "Exemple de code erroné."
+          },
+          "correction": {
+            "type": "string",
+            "description": "Exemple de code corrigé."
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Explication de la correction."
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Liens et ressources de référence."
+    }
+  },
+  "definitions": {
+    "testCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "selector", "expected", "severity"],
+      "description": "Cas de test individuel d'un scénario.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifiant du test (ex. \"1.2.1\")."
+        },
+        "rgaaTestRef": {
+          "type": "string",
+          "description": "Référence du test RGAA officiel (ex. \"Test 1.2.1\")."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description du test."
+        },
+        "methodology": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Étapes méthodologiques du test."
+        },
+        "selector": {
+          "type": ["string", "null"],
+          "description": "Sélecteur CSS ciblé, ou null."
+        },
+        "expected": {
+          "type": "string",
+          "description": "Résultat attendu."
+        },
+        "severity": {
+          "enum": ["critical", "serious", "moderate", "minor"],
+          "description": "Sévérité : critical, serious, moderate ou minor."
+        },
+        "type": {
+          "enum": ["violation", "warning", "recommendation"],
+          "description": "Type de constat : violation, warning ou recommendation."
+        },
+        "automatable": {
+          "type": "boolean",
+          "description": "Le test peut-il être automatisé ?"
+        },
+        "aiAnalysis": {
+          "type": "boolean",
+          "description": "Le test nécessite-t-il l'analyse IA ?"
+        },
+        "aiPromptContext": {
+          "type": "object",
+          "description": "Contexte libre transmis au prompt IA pour ce test."
+        }
+      }
+    },
+    "aiAnalysisConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled"],
+      "description": "Configuration de l'analyse IA de la règle.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Analyse IA activée. Si true, analysisPrompt.outputFormat est requis."
+        },
+        "systemRole": {
+          "type": "string",
+          "description": "Rôle système pour l'IA (emplacement canonique : niveau aiAnalysisConfig)."
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Entrées nécessaires à l'analyse IA.",
+          "properties": {
+            "dom": {
+              "type": "boolean",
+              "description": "Inclure le DOM."
+            },
+            "screenshots": {
+              "type": "boolean",
+              "description": "Inclure les captures d'écran."
+            },
+            "ruleMetadata": {
+              "type": "boolean",
+              "description": "Inclure les métadonnées de la règle."
+            }
+          }
+        },
+        "extractionRules": {
+          "type": "object",
+          "description": "Règles d'extraction DOM (forme libre, propre à chaque règle)."
+        },
+        "analysisPrompt": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Configuration du prompt IA.",
+          "properties": {
+            "tasks": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Tâches d'analyse à effectuer."
+            },
+            "important": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Instructions importantes pour le prompt (emplacement canonique)."
+            },
+            "outputFormat": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["structure", "findingsFormat"],
+              "description": "Format de sortie JSON imposé à l'IA.",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "Description du format de sortie."
+                },
+                "strictJsonOnly": {
+                  "type": "boolean",
+                  "description": "Exiger du JSON strict uniquement."
+                },
+                "structure": {
+                  "type": "object",
+                  "minProperties": 1,
+                  "additionalProperties": { "type": "string" },
+                  "description": "Forme de l'objet de sortie (clé -> description du champ)."
+                },
+                "findingsFormat": {
+                  "type": "object",
+                  "minProperties": 1,
+                  "additionalProperties": { "type": "string" },
+                  "description": "Forme d'un finding (clé -> description du champ)."
+                }
+              }
+            }
+          }
+        },
+        "correctionSuggestions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "includeCodeExamples", "prioritization"],
+          "description": "Paramètres des suggestions de correction.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Suggestions de correction activées."
+            },
+            "includeCodeExamples": {
+              "type": "boolean",
+              "description": "Inclure des exemples de code."
+            },
+            "prioritization": {
+              "type": "string",
+              "description": "Stratégie de priorisation (ex. \"severity\")."
+            }
+          }
+        }
+      },
+      "if": {
+        "required": ["enabled"],
+        "properties": { "enabled": { "const": true } }
+      },
+      "then": {
+        "required": ["analysisPrompt"],
+        "properties": {
+          "analysisPrompt": { "required": ["outputFormat"] }
+        }
+      }
+    }
+  }
+}

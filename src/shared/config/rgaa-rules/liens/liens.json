@@ -1,0 +1,304 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "6.1",
+  "ruleId": "link-purpose",
+  "title": "Liens - Intitulé de lien",
+  "description": "Chaque lien est-il explicite ?",
+  "rgaaReference": "RGAA 4.1 - Critère 6.1",
+  "wcagReference": "WCAG 2.1 - 2.4.4 Fonction du lien (selon le contexte) (A), 2.4.9 Fonction du lien (selon l'intitulé uniquement) (AAA)",
+  "theme": "Liens",
+  "level": "A",
+  "testScenarios": {
+    "linkText": {
+      "description": "Intitulé du lien",
+      "tests": [
+        {
+          "id": "6.1.1",
+          "description": "Chaque lien a-t-il un intitulé ?",
+          "selector": "a[href]",
+          "expected": "Tous les liens doivent avoir un intitulé accessible",
+          "severity": "critical",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "extractLinkText": true,
+            "extractAriaLabel": true,
+            "extractTitle": true,
+            "checkEmptyLinks": true
+          }
+        },
+        {
+          "id": "6.1.2",
+          "description": "L'intitulé du lien est-il pertinent et explicite (hors contexte) ?",
+          "selector": "a[href]",
+          "expected": "L'intitulé doit permettre de comprendre la destination ou l'action",
+          "severity": "serious",
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "evaluateLinkClarity": true,
+            "detectGenericText": true,
+            "extractSurroundingContext": true,
+            "contextRadius": 250
+          }
+        },
+        {
+          "id": "6.1.3",
+          "description": "L'intitulé ne contient-il pas de texte générique seul ('cliquez ici', 'en savoir plus', 'lire la suite') ?",
+          "selector": "a[href]",
+          "expected": "Éviter les intitulés génériques sans contexte",
+          "severity": "serious",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "linkImages": {
+      "description": "Liens-images",
+      "tests": [
+        {
+          "id": "6.1.4",
+          "description": "Les liens contenant uniquement une image ont-ils une alternative textuelle ?",
+          "selector": "a[href] > img:only-child, a[href] > svg:only-child",
+          "expected": "L'image doit avoir un alt décrivant la destination du lien",
+          "severity": "critical",
+          "aiAnalysis": true
+        },
+        {
+          "id": "6.1.5",
+          "description": "Les liens contenant texte + image ont-ils des alternatives cohérentes ?",
+          "selector": "a[href]:has(img), a[href]:has(svg)",
+          "expected": "Éviter la redondance entre le texte du lien et l'alt de l'image",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "linkContext": {
+      "description": "Contexte des liens",
+      "tests": [
+        {
+          "id": "6.1.6",
+          "description": "Les liens ayant le même intitulé ont-ils la même fonction ou destination ?",
+          "selector": "a[href]",
+          "expected": "Des intitulés identiques doivent pointer vers la même destination",
+          "severity": "moderate",
+          "aiAnalysis": true
+        },
+        {
+          "id": "6.1.7",
+          "description": "Les liens ayant des destinations différentes ont-ils des intitulés différents ?",
+          "selector": "a[href]",
+          "expected": "Des destinations différentes nécessitent des intitulés distincts",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "linkTitle": {
+      "description": "Attribut title sur les liens",
+      "tests": [
+        {
+          "id": "6.1.8",
+          "description": "L'attribut title (si présent) reprend-il ou complète-t-il l'intitulé du lien ?",
+          "selector": "a[href][title]",
+          "expected": "Le title doit être cohérent avec l'intitulé visible",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "externalLinks": {
+      "description": "Liens externes",
+      "tests": [
+        {
+          "id": "6.1.9",
+          "description": "Les liens externes sont-ils clairement identifiés (texte, icône, aria-label) ?",
+          "selector": "a[href^='http']:not([href*='twenty-campus.com']), a[target='_blank']",
+          "expected": "Indiquer qu'un lien ouvre un site externe",
+          "severity": "minor",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "downloadLinks": {
+      "description": "Liens de téléchargement",
+      "tests": [
+        {
+          "id": "6.1.10",
+          "description": "Les liens de téléchargement indiquent-ils le format et le poids du fichier ?",
+          "selector": "a[href$='.pdf'], a[href$='.doc'], a[href$='.docx'], a[href$='.xls'], a[href$='.xlsx'], a[href$='.zip']",
+          "expected": "Informer sur le type et la taille du fichier téléchargé",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "ariaLabels": {
+      "description": "Utilisation d'ARIA",
+      "tests": [
+        {
+          "id": "6.1.11",
+          "description": "Les attributs aria-label ou aria-labelledby (si utilisés) sont-ils pertinents ?",
+          "selector": "a[href][aria-label], a[href][aria-labelledby]",
+          "expected": "Les labels ARIA doivent améliorer la compréhension du lien",
+          "severity": "moderate",
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "links": {
+        "selectors": [
+          "a[href]"
+        ],
+        "attributes": [
+          "href",
+          "title",
+          "aria-label",
+          "aria-labelledby",
+          "aria-describedby",
+          "target",
+          "download",
+          "rel"
+        ],
+        "content": {
+          "textContent": true,
+          "innerHTML": true,
+          "imageAlt": true,
+          "surroundingContext": 250
+        },
+        "contextExtraction": {
+          "parentElements": 2,
+          "siblingElements": true,
+          "textContent": true,
+          "nearbyText": 150
+        }
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Analyser CHAQUE lien <a href> de la page à partir du DOM extrait (intitulé calculé, attributs réels, contenu, destination href) et, si disponible, de la capture d'écran, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux MÉCANIQUES du DOM pour chaque lien : présence/absence d'un texte visible non vide, valeur de aria-label / aria-labelledby / title, présence d'une image enfant (<img>, <svg>) avec ou sans alternative (alt, aria-label, <title>), valeur de href, présence de target=\"_blank\", de download, de rel, et le texte visible immédiatement adjacent (phrase porteuse).",
+        "ÉTAPE 2 (déterministe → violation) — Calculer l'intitulé accessible (texte visible, sinon aria-label/aria-labelledby, sinon alt de l'image enfant, sinon title). Si ce calcul aboutit à un intitulé VIDE (lien sans texte, ou lien-image dont l'unique image n'a aucune alternative), c'est un défaut OBJECTIF : finding type=\"violation\", severity critical.",
+        "ÉTAPE 3 (déterministe → violation) — Si l'intitulé calculé est STRICTEMENT un texte générique fermé et isolé ('cliquez ici', 'clic ici', 'en savoir plus', 'lire la suite', 'lire plus', 'plus d'infos', 'voir', 'voir plus', 'détails', 'télécharger', 'ici', 'en savoir +') SANS complément ni aria-label/title enrichissant : défaut objectif vérifiable dans le DOM, finding type=\"violation\", severity serious. Proposer un intitulé reprenant le sujet du contexte.",
+        "ÉTAPE 4 (doute → warning) — Pour un intitulé NON vide et NON strictement générique, la pertinence/explicité hors contexte relève d'une APPRÉCIATION éditoriale : ne PAS conclure à une violation. Si l'intitulé paraît ambigu, trop court, ou seulement compréhensible grâce au contexte voisin, émettre au plus un finding type=\"warning\" demandant une vérification manuelle.",
+        "ÉTAPE 5 (doute → warning) — Cohérence des intitulés (critère 6.1 tests 6.1.6/6.1.7) : signaler en type=\"warning\" (vérification manuelle) deux liens au MÊME intitulé pointant vers des href DIFFÉRENTS, ou des liens à intitulés différents pointant vers le même href ; ne pas conclure à une violation ferme, l'équivalence des destinations pouvant dépendre du contexte fonctionnel.",
+        "ÉTAPE 6 (doute → warning) — Lien-image avec texte + image : si l'alternative de l'image redouble exactement le texte visible, signaler en type=\"warning\" (suggérer alt=\"\" sur l'image décorative). Lien externe (href absolu vers un autre domaine ou target=\"_blank\") sans indication d'ouverture/de site externe, et lien de téléchargement (.pdf/.doc/.xls/.zip…) sans format ni poids : émettre type=\"recommendation\" ou type=\"warning\", car l'information peut être portée par une icône ou un libellé non extrait du DOM.",
+        "ÉTAPE 7 (doute → warning) — Attribut title ou aria-label/aria-labelledby présent : vérifier la cohérence avec l'intitulé visible. Une incohérence apparente relève d'une appréciation → type=\"warning\" pour vérification manuelle, pas de violation ferme.",
+        "ÉTAPE 8 — Le critère est NON APPLICABLE seulement si la page ne contient AUCUN lien <a href> (compliant=true, findings=[])."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (intitulé calculé vide, intitulé strictement générique, présence/absence d'alternative) produisent toujours le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS vérifiables dans le DOM : lien sans intitulé accessible, lien-image sans alternative, intitulé strictement générique isolé.",
+        "En cas de DOUTE (pertinence/qualité d'un libellé, nature éditoriale, cohérence des destinations, information portée hors DOM) → type=\"warning\" demandant une vérification manuelle, jamais de violation.",
+        "Si aucun lien <a href> détecté : compliant=true, severity='minor', summary indiquant le critère non applicable, findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après ; maximum 5 findings, descriptions concises (max 200 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'link-purpose'",
+          "compliant": "boolean",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string - Résumé en 2-3 phrases maximum",
+          "totalElements": "number - Nombre total de liens analysés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "string - Sélecteur CSS précis",
+          "issue": "string - Description concise du problème",
+          "recommendation": "string - Solution concrète avec code HTML et intitulé explicite",
+          "wcagReference": "string - Ex: 2.4.4, 2.4.9"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 6.1 - Liens), spécialisé dans l'analyse déterministe de l'intitulé et de la fonction des liens (WCAG 2.4.4 / 2.4.9). Tu signales en violation ferme uniquement les défauts objectifs vérifiables dans le DOM (lien sans intitulé accessible, lien-image sans alternative, intitulé strictement générique isolé). Dès que la conformité dépend d'une appréciation (pertinence d'un libellé, cohérence des destinations, information portée par une icône ou hors DOM), tu émets un warning demandant une vérification manuelle plutôt qu'une violation."
+  },
+  "automatedChecks": [
+    "Présence d'intitulé (texte, aria-label, aria-labelledby, title)",
+    "Détection de texte générique ('cliquez ici', 'en savoir plus', etc.)",
+    "Présence d'alt sur images dans les liens",
+    "Longueur de l'intitulé (trop court)",
+    "Cohérence des attributs ARIA"
+  ],
+  "manualChecks": [
+    "Pertinence contextuelle de l'intitulé",
+    "Explicité de l'intitulé hors contexte",
+    "Cohérence entre intitulés identiques et destinations",
+    "Indication des liens externes et de téléchargement"
+  ],
+  "commonErrors": [
+    {
+      "error": "Lien vide ou sans intitulé",
+      "example": "<a href=\"/page\"></a>",
+      "correction": "<a href=\"/page\">Accéder à la page d'accueil</a>",
+      "explanation": "Chaque lien doit avoir un intitulé permettant de comprendre sa destination. Un intitulé calculé vide est un défaut objectif (violation)."
+    },
+    {
+      "error": "Intitulé générique 'Cliquez ici'",
+      "example": "<p>Pour en savoir plus, <a href=\"/article\">cliquez ici</a>.</p>",
+      "correction": "<p><a href=\"/article\">Lire l'article sur l'accessibilité numérique</a>.</p>",
+      "explanation": "L'intitulé doit être explicite hors contexte pour les utilisateurs de lecteurs d'écran. Un intitulé strictement générique isolé est une violation."
+    },
+    {
+      "error": "Intitulé générique 'En savoir plus'",
+      "example": "<a href=\"/services\">En savoir plus</a>",
+      "correction": "<a href=\"/services\">En savoir plus sur nos services</a>",
+      "explanation": "Ajouter le contexte dans l'intitulé pour clarifier la destination."
+    },
+    {
+      "error": "Lien-image sans alternative",
+      "example": "<a href=\"/accueil\"><img src=\"logo.png\"></a>",
+      "correction": "<a href=\"/accueil\"><img src=\"logo.png\" alt=\"Retour à l'accueil\"></a>",
+      "explanation": "L'image unique contenu d'un lien doit avoir un alt décrivant la destination ou l'action : sans alternative, l'intitulé calculé est vide (violation)."
+    },
+    {
+      "error": "Redondance texte + alt dans un lien",
+      "example": "<a href=\"/contact\"><img src=\"mail.svg\" alt=\"Contact\"> Contact</a>",
+      "correction": "<a href=\"/contact\"><img src=\"mail.svg\" alt=\"\" role=\"presentation\"> Contact</a>",
+      "explanation": "Éviter la redondance en vidant l'alt si le texte est déjà présent. À vérifier manuellement car la redondance dépend du libellé."
+    },
+    {
+      "error": "Intitulés identiques pour destinations différentes",
+      "example": "<a href=\"/produit1\">Voir le produit</a>\n<a href=\"/produit2\">Voir le produit</a>",
+      "correction": "<a href=\"/produit1\">Voir le produit Chaise ergonomique</a>\n<a href=\"/produit2\">Voir le produit Bureau réglable</a>",
+      "explanation": "Différencier les intitulés pour permettre de distinguer les destinations. L'équivalence des destinations relève d'une vérification manuelle (warning)."
+    },
+    {
+      "error": "Lien externe sans indication",
+      "example": "<a href=\"https://example.com\">Site partenaire</a>",
+      "correction": "<a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\">Site partenaire <span class=\"sr-only\">(nouvelle fenêtre)</span></a>",
+      "explanation": "Indiquer qu'un lien ouvre un site externe ou une nouvelle fenêtre. L'information peut être portée par une icône non extraite du DOM : à confirmer manuellement."
+    },
+    {
+      "error": "Lien de téléchargement sans information",
+      "example": "<a href=\"/brochure.pdf\">Télécharger la brochure</a>",
+      "correction": "<a href=\"/brochure.pdf\">Télécharger la brochure (PDF, 2 Mo)</a>",
+      "explanation": "Indiquer le format et le poids du fichier pour informer l'utilisateur."
+    },
+    {
+      "error": "Attribut title incohérent avec l'intitulé",
+      "example": "<a href=\"/contact\" title=\"Formulaire\">Nous contacter</a>",
+      "correction": "<a href=\"/contact\" title=\"Nous contacter par formulaire\">Nous contacter</a>",
+      "explanation": "Le title doit reprendre ou compléter l'intitulé, pas le contredire. La cohérence relève d'une appréciation : vérification manuelle (warning)."
+    },
+    {
+      "error": "Intitulé court mais compréhensible seulement avec le contexte (à vérifier manuellement)",
+      "example": "<td>Facture 2024-03</td><td><a href=\"/factures/2024-03\">Voir</a></td>",
+      "correction": "<a href=\"/factures/2024-03\" aria-label=\"Voir la facture 2024-03\">Voir</a>",
+      "explanation": "Un intitulé non vide et non strictement générique dont la pertinence dépend du contexte ne constitue pas une violation automatique : émettre un warning pour vérification manuelle de l'explicité hors contexte."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#6",
+    "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-link-only.html"
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "11.2",
+  "ruleId": "form-label-correctly-associated",
+  "title": "Formulaires - Association étiquette/champ",
+  "description": "Chaque étiquette associée à un champ de formulaire est-elle pertinente (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 11.2",
+  "wcagReference": "WCAG 2.1 - 2.4.6 En-têtes et étiquettes (AA) / 3.3.2 Étiquettes ou instructions (A)",
+  "theme": "Formulaires",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les champs de formulaire",
+    "signals": {
+      "selectors": [
+        "input",
+        "select",
+        "textarea"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun formulaire dans la page",
+      "Champs cachés (type='hidden')",
+      "Boutons (type='submit', 'button', 'reset')"
+    ]
+  },
+  "testScenarios": {
+    "labelRelevance": {
+      "description": "Pertinence des étiquettes",
+      "tests": [
+        {
+          "id": "11.2.1",
+          "rgaaTestRef": "Test 11.2.1",
+          "description": "Chaque étiquette (élément <label> ou attribut title/aria-label/aria-labelledby) est-elle pertinente ?",
+          "methodology": [
+            "Identifier tous les champs de formulaire",
+            "Vérifier la présence d'une étiquette via <label>, title, aria-label ou aria-labelledby",
+            "Vérifier que l'étiquette décrit clairement le champ",
+            "Vérifier que l'étiquette n'est pas vide ou générique"
+          ],
+          "selector": "input:not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset']), select, textarea",
+          "expected": "Chaque champ doit avoir une étiquette pertinente et explicite",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkLabelPresence": true,
+            "evaluateLabelRelevance": true,
+            "detectGenericLabels": true
+          }
+        },
+        {
+          "id": "11.2.2",
+          "rgaaTestRef": "Test 11.2.2",
+          "description": "Les champs de même nature ont-ils des étiquettes cohérentes ?",
+          "methodology": [
+            "Repérer les groupes de champs similaires (nom, prénom, email, etc.)",
+            "Vérifier la cohérence des étiquettes dans tout le formulaire",
+            "Détecter les variations injustifiées (Ex: Email vs Adresse e-mail)"
+          ],
+          "selector": "input, select, textarea",
+          "expected": "Les étiquettes de champs similaires doivent être cohérentes",
+          "severity": "minor",
+          "type": "recommendation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "input",
+        "select",
+        "textarea",
+        "label",
+        "[aria-label]",
+        "[aria-labelledby]"
+      ],
+      "attributes": [
+        "id",
+        "name",
+        "type",
+        "for",
+        "aria-label",
+        "aria-labelledby",
+        "title",
+        "placeholder"
+      ],
+      "context": {
+        "surroundingText": 300,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier tous les champs de formulaire exposés (sauf type='hidden' et boutons submit/button/reset), à partir des attributs RÉELS du DOM extrait. Appliquer ensuite la procédure DANS L'ORDRE.",
+        "ÉTAPE 0 — Si aucun champ de formulaire exposé n'est présent, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 — Relever pour chaque champ les signaux MÉCANIQUES de l'étiquette : <label for=\"id\"> correspondant, imbrication dans un <label>, aria-labelledby pointant vers un id EXISTANT, aria-label non vide, title non vide, ou seul placeholder. Extraire le TEXTE effectif de l'étiquette restituée.",
+        "ÉTAPE 2 (violation objective) — Champ dont l'étiquette est MÉCANIQUEMENT vide ou inexistante : <label> associé sans contenu textuel, aria-label=\"\", aria-labelledby vers un id inexistant, ou placeholder utilisé comme SEULE étiquette → finding type=\"violation\", severity serious. Le placeholder ne constitue pas une étiquette.",
+        "ÉTAPE 3 (doute → warning) — Champ doté d'une étiquette NON vide mais dont la PERTINENCE dépend d'une appréciation éditoriale : libellé générique (« Champ », « Input », « Texte »), ambiguïté ou imprécision hors contexte (« Date » sans préciser laquelle). Émettre un finding type=\"warning\" demandant une vérification manuelle, sans violation ferme — la qualité d'un libellé ne se tranche pas mécaniquement.",
+        "ÉTAPE 4 (doute → recommendation) — Cohérence des libellés entre champs de même nature (Ex: « Email » vs « Adresse e-mail ») : relever les variations comme finding type=\"recommendation\", sans violation.",
+        "ÉTAPE 5 — Pour chaque finding, proposer un libellé d'étiquette plus explicite et conforme."
+      ],
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (présence/texte de l'étiquette, placeholder seul, aria-labelledby valide ou non) produisent toujours le même verdict.",
+        "type=\"violation\" est réservé aux défauts OBJECTIFS : étiquette vide/inexistante, aria-labelledby cassé, placeholder comme seule étiquette.",
+        "En cas de doute sur la pertinence ou la clarté d'un libellé non vide → type=\"warning\" (vérification manuelle), jamais de violation ferme.",
+        "Si aucun champ de formulaire détecté: compliant=true, severity='minor', summary='Aucun champ de formulaire détecté, critère non applicable', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide ; maximum 5 findings, descriptions concises (max 150 caractères)."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'form-label-correctly-associated'",
+          "compliant": "boolean - true si conforme ou si aucun champ de formulaire détecté (non applicable)",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple d'étiquette pertinente",
+          "rgaaTestRef": "Test 11.2.1 ou 11.2.2",
+          "wcagReference": "2.4.6 ou 3.3.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 11.2 - Formulaires), spécialisé dans la pertinence des étiquettes de champ. Tu appliques une approche déterministe fondée sur les signaux du DOM : tu signales en violation une étiquette mécaniquement vide ou inexistante (placeholder seul, aria-labelledby cassé), et tu demandes une vérification manuelle (warning) dès que le défaut relève de la pertinence ou de la clarté d'un libellé non vide."
+  },
+  "automatedChecks": [
+    "Détection d'étiquettes vides",
+    "Détection d'étiquettes génériques",
+    "Vérification de la présence d'étiquettes"
+  ],
+  "manualChecks": [
+    "Évaluation de la clarté des étiquettes",
+    "Vérification de la cohérence entre champs similaires",
+    "Test de compréhension hors contexte"
+  ],
+  "commonErrors": [
+    {
+      "error": "Étiquette générique",
+      "example": "<label for=\"field1\">Champ</label>\n<input id=\"field1\" type=\"text\">",
+      "correction": "<label for=\"field1\">Nom</label>\n<input id=\"field1\" type=\"text\">",
+      "explanation": "L'étiquette doit décrire précisément le champ"
+    },
+    {
+      "error": "Placeholder utilisé comme seule étiquette",
+      "example": "<input type=\"text\" placeholder=\"Votre nom\">",
+      "correction": "<label for=\"name\">Nom</label>\n<input id=\"name\" type=\"text\" placeholder=\"Ex: Dupont\">",
+      "explanation": "Le placeholder ne remplace pas l'étiquette, il peut la compléter"
+    },
+    {
+      "error": "Étiquette ambiguë (à vérifier manuellement)",
+      "example": "<label for=\"date\">Date</label>\n<input id=\"date\" type=\"date\">",
+      "correction": "<label for=\"date\">Date de naissance</label>\n<input id=\"date\" type=\"date\">",
+      "explanation": "Préciser le contexte de la date. Un libellé présent mais imprécis ne constitue pas une violation mécanique : sa pertinence relève d'une vérification manuelle (warning)."
+    },
+    {
+      "error": "Incohérence entre étiquettes similaires",
+      "example": "<label for=\"email1\">Email</label>\n...\n<label for=\"email2\">Adresse électronique</label>",
+      "correction": "<label for=\"email1\">Email</label>\n...\n<label for=\"email2\">Email</label>",
+      "explanation": "Utiliser la même terminologie pour des champs identiques"
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#11.2",
+    "https://www.w3.org/WAI/WCAG21/Understanding/headings-and-labels.html",
+    "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html"
+  ]
+}

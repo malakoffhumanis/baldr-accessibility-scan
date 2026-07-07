@@ -1,0 +1,153 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "4.7",
+  "ruleId": "media-transcript-access",
+  "title": "Multimédia - Accès à la transcription textuelle",
+  "description": "Chaque média temporel a-t-il, si nécessaire, une transcription textuelle ou une audiodescription synchronisée adjacente clairement identifiable ?",
+  "rgaaReference": "RGAA 4.1 - Critère 4.7",
+  "wcagReference": "WCAG 2.1 - 1.2.3 / 1.2.5 / 1.2.8",
+  "theme": "Multimédia",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à tous les médias temporels",
+    "signals": {
+      "selectors": [
+        "audio",
+        "video",
+        "object[type^='audio']",
+        "object[type^='video']"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun média temporel présent"
+    ]
+  },
+  "testScenarios": {
+    "transcriptAccess": {
+      "description": "Accessibilité de la transcription",
+      "tests": [
+        {
+          "id": "4.7.1",
+          "rgaaTestRef": "Test 4.7.1",
+          "description": "La transcription textuelle ou l'audiodescription est-elle adjacente au média ?",
+          "methodology": [
+            "Vérifier que la transcription/audiodescription est proche du média",
+            "Vérifier qu'elle est clairement identifiable (titre, lien, bouton)",
+            "Vérifier qu'elle est accessible au clavier"
+          ],
+          "selector": "audio, video",
+          "expected": "La transcription ou audiodescription doit être adjacente et clairement identifiée",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "checkProximity": true,
+            "checkLabeling": true,
+            "checkAccessibility": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 4.7 - alternative adjacente et clairement identifiable). Tu appliques une démarche DÉTERMINISTE fondée sur les signaux du DOM (proximité de l'alternative, présence d'un titre/lien/bouton explicite, relation aria-describedby). Tu réserves la violation aux défauts objectifs (aucune alternative repérable à proximité) et tu demandes une vérification manuelle (warning) dès que l'identification claire ou la proximité dépend d'une appréciation.",
+    "inputs": {
+      "dom": true,
+      "screenshots": true,
+      "ruleMetadata": true
+    },
+    "extractionRules": {
+      "selectors": [
+        "audio",
+        "video",
+        "[id*='transcript']",
+        "[class*='transcript']",
+        "details > summary",
+        "a[href*='transcript']",
+        "button[aria-expanded]"
+      ],
+      "attributes": [
+        "aria-describedby",
+        "aria-labelledby",
+        "id",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 600,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (applicabilité) — Détecter dans le DOM les médias temporels (<audio>, <video>, <object type^='audio'/'video'>). Si AUCUN n'est présent, conclure NON APPLICABLE (conclusion='non_applicable', severity='none', findings=[]).",
+        "ÉTAPE 1 (signaux mécaniques) — Pour chaque média, relever : présence d'un bloc transcription/audiodescription à PROXIMITÉ (mots-clés 'transcription'/'audiodescription' dans un id/class ou un titre adjacent), présence d'un lien (a[href*='transcript']) ou d'un bouton/details d'affichage, relation aria-describedby/aria-labelledby reliant le média à ce bloc.",
+        "ÉTAPE 2 (violation objective) — Si une alternative existe mais n'est reliée par AUCUN signal d'identification ou de proximité (pas de titre explicite, pas de lien/bouton, pas d'aria-describedby, bloc visiblement éloigné dans le DOM), émettre un finding type='violation' : le défaut d'accès est objectivement constatable.",
+        "ÉTAPE 3 (doute → warning) — Si un signal d'identification EXISTE mais que la PERTINENCE du libellé, la qualité de l'identification ou la proximité réelle (rendu visuel) ne peut être tranchée depuis le DOM, NE PAS conclure à une violation : émettre un finding type='warning' demandant une vérification manuelle.",
+        "ÉTAPE 4 (déterminisme) — Se fonder uniquement sur les relations et la position RÉELLEMENT présentes dans le DOM ; mêmes signaux, même verdict.",
+        "ÉTAPE 5 — Proposer une correction concrète (titre explicite, lien/bouton 'Transcription', relation aria-describedby vers le bloc adjacent)."
+      ],
+      "outputFormat": {
+        "strictJsonOnly": true,
+        "structure": {
+          "ruleId": "string - toujours 'media-transcript-access'",
+          "conclusion": "conforme|non_conforme|non_applicable",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "applicableElements": "number",
+          "findings": "array<=10"
+        },
+        "findingsFormat": {
+          "type": "violation | warning | recommendation",
+          "element": "CSS selector or null",
+          "issue": "string (max 200 chars)",
+          "recommendation": "string with HTML example",
+          "wcagReference": "string or null"
+        }
+      },
+      "important": [
+        "Déterminisme : les mêmes signaux DOM (proximité, titre/lien, aria-describedby) doivent toujours donner le même verdict.",
+        "type='violation' réservé aux défauts OBJECTIFS : alternative non identifiable ou manifestement éloignée, sans aucun lien/relation.",
+        "En cas de doute sur la pertinence du libellé ou la proximité réelle (rendu) : type='warning' (vérification manuelle), jamais de violation.",
+        "Si aucun média: conclusion='non_applicable', severity='none', findings=[].",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ni après.",
+        "Maximum 5 findings."
+      ]
+    }
+  },
+  "automatedChecks": [
+    "Proximité DOM entre média et transcription",
+    "Présence de mots-clés ('transcription', 'audiodescription') à proximité"
+  ],
+  "manualChecks": [
+    "Identification claire de la transcription",
+    "Pertinence du placement",
+    "Accessibilité du mécanisme d'accès"
+  ],
+  "commonErrors": [
+    {
+      "error": "Transcription non identifiée",
+      "example": "<video controls src=\"video.mp4\"></video>\n<p>Texte de la transcription...</p>",
+      "correction": "<video controls src=\"video.mp4\" aria-describedby=\"transcript-1\"></video>\n<div id=\"transcript-1\">\n  <h3>Transcription</h3>\n  <p>Texte de la transcription...</p>\n</div>",
+      "explanation": "La transcription doit être clairement identifiée avec un titre explicite."
+    },
+    {
+      "error": "Transcription trop éloignée",
+      "example": "<video controls src=\"video.mp4\"></video>\n<!-- 3 pages de contenu -->\n<div>Transcription...</div>",
+      "correction": "<video controls src=\"video.mp4\"></video>\n<details>\n  <summary>Afficher la transcription</summary>\n  <div>Texte de la transcription...</div>\n</details>",
+      "explanation": "La transcription doit être adjacente au média pour faciliter sa découverte."
+    },
+    {
+      "error": "Identification présente mais libellé à vérifier manuellement",
+      "example": "<video controls src=\"video.mp4\"></video>\n<details>\n  <summary>Détails</summary>\n  <p>Texte de la transcription...</p>\n</details>",
+      "correction": "<video controls src=\"video.mp4\"></video>\n<details>\n  <summary>Afficher la transcription</summary>\n  <p>Texte de la transcription...</p>\n</details>",
+      "explanation": "Le signal DOM (bloc adjacent avec mécanisme d'affichage) est présent : ne pas conclure à une violation. La clarté du libellé ('Détails' vs 'Transcription') relève d'une vérification manuelle (warning)."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#4.7"
+  ]
+}

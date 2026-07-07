@@ -1,0 +1,181 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "10.11",
+  "ruleId": "presentation-contrast-text",
+  "title": "Présentation - Contraste du texte",
+  "description": "Pour chaque page web, les contenus peuvent-ils être présentés sans perte d'information ou de fonctionnalité et sans avoir recours soit au défilement vertical pour une fenêtre ayant une hauteur de 256px, soit au défilement horizontal pour une fenêtre ayant une largeur de 320px (hors cas particuliers) ?",
+  "rgaaReference": "RGAA 4.1 - Critère 10.11",
+  "wcagReference": "WCAG 2.1 - 1.4.10 Reflow (AA)",
+  "theme": "Présentation",
+  "level": "AA",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les pages web",
+    "signals": {
+      "selectors": [
+        "body"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Images",
+      "Vidéos",
+      "Cartes",
+      "Diagrammes",
+      "Tableaux de données",
+      "Interfaces nécessitant une disposition 2D"
+    ]
+  },
+  "testScenarios": {
+    "reflow": {
+      "description": "Adaptation responsive sans perte d'information",
+      "tests": [
+        {
+          "id": "10.11.1",
+          "rgaaTestRef": "Test 10.11.1",
+          "description": "Les contenus sont-ils lisibles sans défilement horizontal à 320px de large ?",
+          "methodology": [
+            "Définir la largeur de la fenêtre à 320px",
+            "Zoomer à 400% si nécessaire",
+            "Vérifier l'absence de défilement horizontal",
+            "Vérifier que tout le contenu est accessible",
+            "Vérifier l'absence de texte tronqué"
+          ],
+          "selector": "body",
+          "expected": "Pas de défilement horizontal à 320px, tout le contenu accessible",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectFixedWidths": true,
+            "checkResponsiveness": true
+          }
+        },
+        {
+          "id": "10.11.2",
+          "rgaaTestRef": "Test 10.11.2",
+          "description": "Les contenus sont-ils lisibles sans défilement vertical à 256px de haut ?",
+          "methodology": [
+            "Définir la hauteur de la fenêtre à 256px",
+            "Vérifier l'absence de défilement vertical excessif",
+            "Vérifier que les fonctionnalités clés sont accessibles"
+          ],
+          "selector": "body",
+          "expected": "Défilement vertical acceptable, fonctionnalités accessibles",
+          "severity": "moderate",
+          "type": "violation",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "*"
+      ],
+      "attributes": [
+        "style",
+        "class"
+      ],
+      "context": {
+        "surroundingText": 100,
+        "includeComputedA11yTreeHints": false
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "ÉTAPE 0 (PRIORITAIRE) — Si la balise <meta name=viewport> autorise le zoom (pas de user-scalable=no ni maximum-scale < 2) et qu'aucun conteneur n'impose une largeur ou min-width fixe en px strictement > 320px, conclure IMMÉDIATEMENT compliant=true, findings=[]. Le reflow réel à 320px relève d'un test de rendu : ne produis NI violation NI warning sur la seule lecture du DOM.",
+        "Évaluer si le contenu peut être présenté sans défilement horizontal à 320px (ni perte d'information à 256px de haut), à partir des SIGNAUX MÉCANIQUES du DOM/CSS extraits (largeurs fixes, meta viewport, media queries), en appliquant les étapes ci-dessous DANS L'ORDRE.",
+        "ÉTAPE 1 — Relever les signaux DOM/CSS déterministes : présence du <meta name=\"viewport\"> (et son contenu), largeurs fixes en px (width / min-width) supérieures à 320px sur des conteneurs structurants, déclarations overflow-x sur body/html, présence de media queries / unités flexibles (%, max-width, flex, grid).",
+        "ÉTAPE 2 — Défaut OBJECTIF → finding type=\"violation\", severity moderate : un conteneur structurant avec une largeur fixe (width ou min-width en px) STRICTEMENT supérieure à 320px, qui force mécaniquement un défilement horizontal à 320px. La valeur étant lue dans le DOM/CSS, le constat est ferme.",
+        "ÉTAPE 3 — DOUTE vers warning (vérification manuelle) : (a) absence de <meta viewport> ou viewport figé (maximum-scale, user-scalable=no) — le reflow réel dépend de la mise en page globale ; (b) overflow-x:hidden sur body susceptible de masquer un débordement plutôt que de l'adapter ; (c) disposition possiblement non flexible sans largeur fixe franche. Émettre un finding type=\"warning\" demandant le test réel à 320px / zoom 400%.",
+        "ÉTAPE 4 — NE PAS produire de violation pour des largeurs relatives (%, max-width, vw) ni pour une largeur fixe ≤ 320px : réserver type=\"violation\" aux largeurs fixes > 320px objectivement détectées (étape 2).",
+        "ÉTAPE 5 — Conclure NON APPLICABLE pour les cas particuliers où une disposition 2D est indispensable (images, vidéos, cartes, diagrammes, tableaux de données) ou si la page est vide."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'presentation-contrast-text'",
+          "compliant": "boolean",
+          "severity": "critical|serious|moderate|minor|none",
+          "summary": "string",
+          "totalElements": "number",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation|warning|recommendation",
+          "element": "css selector",
+          "issue": "string<=200",
+          "recommendation": "string avec exemple CSS responsive",
+          "rgaaTestRef": "Test 10.11.1 ou 10.11.2",
+          "wcagReference": "1.4.10"
+        }
+      },
+      "important": [
+        "CONFORME PAR DÉFAUT : si la balise meta viewport est présente sans blocage du zoom (pas de user-scalable=no ni maximum-scale < 2) et qu'aucun conteneur n'impose une largeur ou min-width fixe en px strictement > 320px dans les styles fournis, conclure compliant=true, findings=[]. Le reflow effectif à 320px relève d'un test de rendu : ne pas émettre de violation ni de warning sur la seule lecture du DOM (la présence de media queries, de max-width ou d'un conteneur overflow-x:auto renforce la conformité).",
+        "Déterminisme : les mêmes signaux CSS (largeurs fixes, viewport, media queries) doivent toujours donner le même verdict.",
+        "type='violation' (severity='moderate') réservé au défaut OBJECTIF : conteneur avec largeur/min-width fixe en px strictement > 320px.",
+        "En cas de doute (viewport absent/figé, overflow-x:hidden, disposition non flexible non confirmée) → type='warning' pour test réel à 320px / zoom 400%.",
+        "Non applicable pour les cas particuliers nécessitant une disposition 2D (images, vidéos, cartes, diagrammes, tableaux de données).",
+        "Toujours suggérer des solutions responsive (%, max-width, flexbox) ; retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
+        "Maximum 5 findings."
+      ]
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 10.11 - reflow, présentation sans défilement horizontal à 320px), spécialisé dans l'analyse déterministe des largeurs CSS et du viewport. Tu ne signales en violation ferme que les largeurs fixes objectivement supérieures à 320px et tu demandes une vérification manuelle (warning) dès que l'adaptation réelle dépend du rendu (viewport, overflow, disposition globale)."
+  },
+  "automatedChecks": [
+    "Détection de min-width ou width fixes > 320px",
+    "Vérification du viewport meta tag",
+    "Détection de media queries"
+  ],
+  "manualChecks": [
+    "Test réel à 320px de large",
+    "Test réel à 256px de haut",
+    "Vérification de l'absence de défilement horizontal",
+    "Vérification de l'accessibilité du contenu"
+  ],
+  "commonErrors": [
+    {
+      "error": "Largeur fixe > 320px",
+      "example": ".container { width: 1200px; }",
+      "correction": ".container {\n  max-width: 1200px;\n  width: 100%;\n  padding: 0 20px;\n}",
+      "explanation": "Utiliser max-width et width: 100% pour permettre l'adaptation"
+    },
+    {
+      "error": "Absence de viewport meta tag",
+      "example": "<!-- Aucun viewport -->\n<head>...</head>",
+      "correction": "<head>\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n</head>",
+      "explanation": "Le viewport meta tag est essentiel pour le responsive"
+    },
+    {
+      "error": "Disposition non responsive",
+      "example": ".layout { display: inline-block; width: 400px; }",
+      "correction": ".layout {\n  display: block;\n  width: 100%;\n}\n@media (min-width: 768px) {\n  .layout { width: 50%; }\n}",
+      "explanation": "Utiliser des media queries et des unités flexibles"
+    },
+    {
+      "error": "Overflow horizontal caché",
+      "example": "body { overflow-x: hidden; }",
+      "correction": "/* Ne pas masquer le défilement, adapter le contenu */\nbody { overflow-x: auto; }\n.container { max-width: 100%; }",
+      "explanation": "Adapter le contenu plutôt que masquer le défilement"
+    },
+    {
+      "error": "Viewport figé empêchant le zoom (à vérifier manuellement)",
+      "example": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no\">",
+      "correction": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+      "explanation": "Un viewport bloquant le zoom n'empêche pas forcément le reflow mais le fragilise : émettre un warning et confirmer manuellement à 320px / zoom 400% l'absence de défilement horizontal et de perte d'information."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#10.11",
+    "https://www.w3.org/WAI/WCAG21/Understanding/reflow.html"
+  ]
+}

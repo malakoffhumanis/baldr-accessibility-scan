@@ -1,0 +1,168 @@
+{
+  "$schema": "../rgaa-rule.schema.json",
+  "id": "2.1",
+  "ruleId": "frame-title",
+  "title": "Cadres - Présence d'un titre de cadre",
+  "description": "Chaque cadre a-t-il un titre de cadre ?",
+  "rgaaReference": "RGAA 4.1 - Critère 2.1",
+  "wcagReference": "WCAG 2.1 - 4.1.2 Nom, rôle et valeur (A)",
+  "theme": "Cadres",
+  "level": "A",
+  "applicability": {
+    "description": "Ce critère s'applique à toutes les balises <iframe> et <frame>.",
+    "signals": {
+      "selectors": [
+        "iframe",
+        "frame"
+      ],
+      "minimumCount": 1
+    },
+    "nonApplicableCases": [
+      "Aucun cadre (iframe ou frame) présent sur la page"
+    ]
+  },
+  "testScenarios": {
+    "framePresence": {
+      "description": "Présence d'un titre de cadre accessible et non vide.",
+      "tests": [
+        {
+          "id": "2.1.1",
+          "rgaaTestRef": "Test 2.1.1",
+          "description": "Chaque cadre (<iframe> ou <frame>) a-t-il un attribut title non vide (ou à défaut aria-label/aria-labelledby) ?",
+          "methodology": [
+            "Repérer tous les éléments <iframe> et <frame>",
+            "Vérifier la présence d'un attribut title non vide",
+            "À défaut, vérifier la présence d'aria-label ou aria-labelledby"
+          ],
+          "selector": "iframe:not([title]):not([aria-label]):not([aria-labelledby]), frame:not([title]):not([aria-label]):not([aria-labelledby])",
+          "expected": "Tout cadre visible/exposé doit avoir un titre de cadre non vide",
+          "severity": "critical",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": false
+        },
+        {
+          "id": "2.1.2",
+          "rgaaTestRef": "Test 2.1.1",
+          "description": "Un cadre technique ou masqué sans titre relève-t-il d'une vérification manuelle plutôt que d'une violation ferme ?",
+          "methodology": [
+            "Identifier les cadres techniques/masqués (aria-hidden=\"true\", hidden, role=\"presentation\", tabindex=\"-1\", display:none, about:blank, tracking/publicité)",
+            "Pour ces cadres sans titre, demander une vérification manuelle"
+          ],
+          "selector": "iframe[aria-hidden='true'], iframe[hidden], iframe[tabindex='-1'], frame[aria-hidden='true']",
+          "expected": "Un cadre réellement hors restitution doit être confirmé manuellement (à masquer proprement ou à titrer)",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true,
+          "aiPromptContext": {
+            "detectTechnicalFrame": true,
+            "checkExposure": true
+          }
+        }
+      ]
+    }
+  },
+  "aiAnalysisConfig": {
+    "enabled": true,
+    "extractionRules": {
+      "selectors": [
+        "iframe",
+        "frame"
+      ],
+      "attributes": [
+        "title",
+        "src",
+        "name",
+        "id",
+        "aria-label",
+        "aria-labelledby",
+        "aria-hidden",
+        "hidden",
+        "role",
+        "tabindex",
+        "style"
+      ],
+      "context": {
+        "surroundingText": 150,
+        "includeComputedA11yTreeHints": true
+      }
+    },
+    "analysisPrompt": {
+      "tasks": [
+        "Identifier tous les cadres : balises <iframe> et <frame> présentes dans le DOM.",
+        "Si la page ne contient aucun cadre, conclure NON APPLICABLE (compliant=true, findings=[]).",
+        "ÉTAPE 1 (déterministe) — Pour chaque cadre, vérifier la présence d'un titre ACCESSIBLE et NON VIDE : attribut title non vide, ou à défaut aria-label / aria-labelledby. Se fonder sur les attributs RÉELS du DOM, pas sur une supposition.",
+        "ÉTAPE 2 — Cadre VISIBLE/exposé sans titre (title absent ou vide, et pas d'aria-label/aria-labelledby) → finding type=\"violation\", severity critical : l'utilisateur de lecteur d'écran ne peut pas identifier le contenu du cadre.",
+        "ÉTAPE 3 (doute → warning) — Cadre TECHNIQUE ou MASQUÉ sans titre (aria-hidden=\"true\", attribut hidden, role=\"presentation\"/\"none\", tabindex=\"-1\", style display:none / visibility:hidden, ou cadre de tracking/publicité de type about:blank) : NE PAS conclure à une violation ferme. Émettre un finding type=\"warning\" demandant une vérification manuelle (le cadre est-il réellement hors restitution ? à masquer proprement ou à titrer ?).",
+        "ÉTAPE 4 — Ne pas évaluer ici la PERTINENCE du titre (critère 2.2) : se limiter à la présence.",
+        "Pour chaque cadre sans titre, proposer un attribut title concret fondé sur le contenu ou l'URL src."
+      ],
+      "important": [
+        "La présence d'un titre est une vérification DÉTERMINISTE : un cadre VISIBLE sans title (ni aria-label/aria-labelledby) est une violation.",
+        "En cas de doute (cadre technique, masqué, aria-hidden, tracking) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Si aucun cadre détecté : compliant=true, severity='minor', summary='Aucun cadre détecté, critère non applicable', findings=[].",
+        "Maximum 5 findings, descriptions concises (max 150 caractères).",
+        "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après."
+      ],
+      "outputFormat": {
+        "description": "Format JSON strict à respecter",
+        "structure": {
+          "ruleId": "string - toujours 'frame-title'",
+          "compliant": "boolean - true si tous les cadres exposés ont un titre (ou aucun cadre)",
+          "severity": "string parmi: critical, serious, moderate, minor",
+          "summary": "string",
+          "totalElements": "number - Nombre de cadres détectés",
+          "findings": "array - Maximum 5 findings principaux"
+        },
+        "findingsFormat": {
+          "type": "violation, warning ou recommendation",
+          "element": "css selector",
+          "issue": "string<=150",
+          "recommendation": "string avec exemple HTML (attribut title)",
+          "wcagReference": "4.1.2"
+        }
+      }
+    },
+    "correctionSuggestions": {
+      "enabled": true,
+      "includeCodeExamples": true,
+      "prioritization": "severity"
+    },
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 2.1), spécialisé dans la vérification déterministe de la présence d'un titre de cadre. Tu signales en violation ferme uniquement les cadres exposés sans titre, et tu demandes une vérification manuelle (warning) pour les cadres techniques ou masqués."
+  },
+  "automatedChecks": [
+    "Présence de l'attribut title sur <iframe> et <frame>",
+    "Détection des titres vides",
+    "Détection des cadres techniques/masqués sans titre (aria-hidden, hidden, tabindex=-1)"
+  ],
+  "manualChecks": [
+    "Confirmation qu'un cadre sans titre masqué/technique est réellement hors restitution",
+    "Présence d'une alternative aria-label/aria-labelledby quand title est absent"
+  ],
+  "commonErrors": [
+    {
+      "error": "Cadre sans attribut title",
+      "example": "<iframe src=\"https://example.com/video\"></iframe>",
+      "correction": "<iframe src=\"https://example.com/video\" title=\"Vidéo de démonstration du produit\"></iframe>",
+      "explanation": "Chaque cadre exposé doit avoir un attribut title (ou aria-label/aria-labelledby) décrivant son contenu."
+    },
+    {
+      "error": "Titre de cadre vide",
+      "example": "<iframe src=\"map.html\" title=\"\"></iframe>",
+      "correction": "<iframe src=\"map.html\" title=\"Carte interactive de localisation\"></iframe>",
+      "explanation": "Un title vide équivaut à une absence de titre : il doit décrire le contenu du cadre."
+    },
+    {
+      "error": "Cadre technique/masqué sans titre (à vérifier manuellement)",
+      "example": "<iframe src=\"https://tracker.example/pixel\" aria-hidden=\"true\" style=\"display:none\"></iframe>",
+      "correction": "<iframe src=\"https://tracker.example/pixel\" aria-hidden=\"true\" tabindex=\"-1\" title=\"\" style=\"display:none\"></iframe>",
+      "explanation": "Un cadre purement technique non exposé n'apporte pas d'information ; confirmer manuellement qu'il est correctement masqué des technologies d'assistance plutôt que de conclure à une violation."
+    }
+  ],
+  "resources": [
+    "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/#2.1",
+    "https://www.w3.org/WAI/WCAG21/Understanding/name-role-value.html",
+    "https://www.w3.org/WAI/tutorials/page-structure/regions/"
+  ]
+}
