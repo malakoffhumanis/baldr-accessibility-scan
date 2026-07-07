@@ -1,33 +1,135 @@
-# BALDR-accessibility-scan — Audit d'accessibilité automatisé
+# BALDR Accessibility Scan
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
+![Version npm](https://img.shields.io/npm/v/baldr-accessibility-scan)
+![Téléchargements npm](https://img.shields.io/npm/dm/baldr-accessibility-scan)
+![Licence Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+![Node.js](https://img.shields.io/badge/node-%3E%3D22-green)
+![Build](https://github.com/malakoffhumanis/baldr-accessibility-scan/actions/workflows/ci.yml/badge.svg)
 
-BALDR-accessibility-scan est un outil d'audit d'accessibilité numérique conçu pour évaluer la conformité des sites web aux référentiels **RGAA** et **WCAG**. Il permet d'automatiser les contrôles d'accessibilité dans les phases de développement, de validation et d'exploitation.
-L'outil combine des contrôles automatiques et des analyses intelligentes afin d'identifier les écarts d'accessibilité, calculer un score de conformité et fournir des recommandations de correction exploitables.
-Les résultats sont consolidés dans des rapports détaillés aux formats **HTML**, **JSON** et **CSV**, facilitant leur exploitation par les développeurs, auditeurs et pipelines CI/CD
-### Fonctionnalités principales
-- Audit de conformité RGAA / WCAG
-- Navigation automatisée avec Puppeteer
-- Parcours multi-pages et gestion de l'authentification
-- Analyse automatique avec axe-core
-- Contrôles avancés enrichis par IA (LLM)
-- Intégration CI/CD
-- Rapports HTML, JSON et CSV
-- Scoring et recommandations de remédiation
-### Cas d'usage
+## Outil open source d'audit d'accessibilité RGAA et WCAG enrichie par l'Intelligence Artificelle (IA)
+
+BALDR Accessibility Scan est un outil open source permettant d'automatiser les audits d'accessibilité web et d'évaluer la conformité des sites et applications web aux référentiels **RGAA** et **WCAG**.
+
+Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **IA**, BALDR aide les équipes de développement, QA, accessibilité et conformité à détecter les défauts d'accessibilité, calculer un score de conformité et produire des recommandations de correction exploitables.
+
+---
+
+## Pourquoi BALDR ?
+
+✅ Audit d'accessibilité automatisé
+
+✅ Conformité RGAA et WCAG
+
+✅ Navigation navigateur automatisée avec Puppeteer
+
+✅ Parcours utilisateurs multi-pages
+
+✅ Gestion de l'authentification
+
+✅ Analyse enrichie par IA
+
+✅ Intégration CI/CD
+
+✅ Rapports HTML, JSON et CSV
+
+✅ Recommandations de remédiation
+
+✅ Scoring d'accessibilité
+
+---
+
+## Captures d'écran
+
+### Score de conformité
+
+![Score](docs/images/report-summary.png)
+
+### Tableau de bord
+
+![Dashboard](docs/images/dashboard.png)
+
+### Résultats détaillés
+
+![Résultats](docs/images/findings.png)
+
+
+
+---
+
+## Cas d'usage
+
 - Audit d'accessibilité pendant le développement
-- Contrôle automatique dans les pipelines CI/CD
-- Évaluation de conformité d'applications en recette ou en production
-- Suivi continu de la qualité d'accessibilité des applications web
+- Validation avant mise en production
+- Intégration dans les pipelines CI/CD
+- Contrôle qualité continu
+- Suivi de conformité RGAA
+- Suivi de conformité WCAG
+- Audits d'applications authentifiées
 
-Il s'utilise de deux façons, à partir du même paquet :
+---
 
-| Binaire  | Mode               | Usage                                                        |
-| -------- | ------------------ | ------------------------------------------------------------ |
-| `baldr`  | **CLI**            | Auditer une requête localement, exporter HTML/JSON/CSV.      |
-| `baldrd` | **API** (serveur HTTP) | Exposer `POST /api/v1/journey`, protégé par clé d'API.   |
+## Pour qui ?
+
+- Experts accessibilité
+- Développeurs front-end
+- Équipes QA
+- Product Owners
+- Administrations publiques
+- Grandes entreprises
+- Équipes DevSecOps
+- Auditeurs RGAA
+
+---
+
+## Comparaison
+
+| Fonctionnalité | BALDR | axe-core | Lighthouse | Pa11y |
+|---------------|--------|-----------|-------------|-------|
+| Audit d'accessibilité | ✅ | ✅ | ✅ | ✅ |
+| Support RGAA | ✅ | ❌ | ❌ | ❌ |
+| Support WCAG | ✅ | ✅ | ✅ | ✅ |
+| Parcours multi-pages | ✅ | ❌ | ❌ | ✅ |
+| Authentification | ✅ | ❌ | ❌ | ❌ |
+| Analyse IA | ✅ | ❌ | ❌ | ❌ |
+| Mode CLI | ✅ | ✅ | ✅ | ✅ |
+| Mode API | ✅ | ❌ | ❌ | ❌ |
+| Rapports HTML | ✅ | ❌ | ✅ | ✅ |
+| Intégration CI/CD | ✅ | ✅ | ✅ | ✅ |
+
+---
+
+## Fonctionnalités principales
+
+### Audit d'accessibilité
+
+- Contrôles RGAA
+- Contrôles WCAG
+- Analyse axe-core
+- Scoring de conformité
+- Recommandations de correction
+
+### Automatisation
+
+- Navigation Puppeteer
+- Gestion des cookies
+- Parcours complexes
+- Authentification automatique
+
+### Intégration entreprise
+
+- Interface CLI
+- API HTTP
+- Docker
+- CI/CD
+- Monitoring
+
+---
+
+## Mots-clés
+
+Accessibilité web, audit d'accessibilité, RGAA, WCAG, scanner d'accessibilité, accessibility testing, accessibility scanner, a11y, conformité numérique, accessibilité CI/CD, automatisation accessibilité, audit RGAA, audit WCAG.
+
+---
 
 ## Sommaire
 
@@ -45,6 +147,15 @@ Il s'utilise de deux façons, à partir du même paquet :
 - [Documentation détaillée & licence](#documentation-détaillée--licence)
 
 ## Architecture
+
+
+Il s'utilise de deux façons, à partir du même paquet :
+
+| Binaire  | Mode               | Usage                                                        |
+| -------- | ------------------ | ------------------------------------------------------------ |
+| `baldr`  | **CLI**            | Auditer une requête localement, exporter HTML/JSON/CSV.      |
+| `baldrd` | **API** (serveur HTTP) | Exposer `POST /api/v1/journey`, protégé par clé d'API.   |
+
 
 BALDR reçoit une **requête d'audit** (CLI ou API), pilote un navigateur headless
 pour parcourir les pages, lance un audit **axe-core** — enrichi au besoin par un
