@@ -6,11 +6,15 @@
 ![Node.js](https://img.shields.io/badge/node-%3E%3D22-green)
 ![Build](https://github.com/malakoffhumanis/baldr-accessibility-scan/actions/workflows/ci.yml/badge.svg)
 
-## Outil open source d'audit d'accessibilité RGAA et WCAG enrichie par l'Intelligence Artificelle (IA)
+## Outil open source d'audit d'accessibilité RGAA et WCAG enrichi par l'Intelligence Artificielle (IA)
+
+Automatisez vos audits d'accessibilité RGAA et WCAG avec axe-core, Puppeteer et l'intelligence artificielle
 
 BALDR Accessibility Scan est un outil open source permettant d'automatiser les audits d'accessibilité web et d'évaluer la conformité des sites et applications web aux référentiels **RGAA** et **WCAG**.
 
-Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **IA**, BALDR aide les équipes de développement, QA, accessibilité et conformité à détecter les défauts d'accessibilité, calculer un score de conformité et produire des recommandations de correction exploitables.
+Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intelligence Artificielle (IA)**, BALDR aide les équipes de développement, QA, accessibilité et conformité à détecter les défauts d'accessibilité, calculer un score de conformité et produire des recommandations de correction exploitables.
+
+**Contrairement aux scanners d'accessibilité traditionnels, BALDR analyse des parcours utilisateurs complets, y compris les zones authentifiées, les interactions dynamiques et des analyses enrichies par Intelligence Artificielle (IA).**
 
 ---
 
@@ -95,6 +99,8 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **IA**, 
 | Mode API | ✅ | ❌ | ❌ | ❌ |
 | Rapports HTML | ✅ | ❌ | ✅ | ✅ |
 | Intégration CI/CD | ✅ | ✅ | ✅ | ✅ |
+
+Cette comparaison est donnée à titre indicatif et reflète les fonctionnalités disponibles dans BALDR au moment de la rédaction.
 
 ---
 
