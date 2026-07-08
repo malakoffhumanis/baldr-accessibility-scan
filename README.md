@@ -1,33 +1,141 @@
-# BALDR-accessibility-scan — Audit d'accessibilité automatisé
+# BALDR Accessibility Scan
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
+![Version npm](https://img.shields.io/npm/v/baldr-accessibility-scan)
+![Téléchargements npm](https://img.shields.io/npm/dm/baldr-accessibility-scan)
+![Licence Apache-2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+![Node.js](https://img.shields.io/badge/node-%3E%3D22-green)
+![Build](https://github.com/malakoffhumanis/baldr-accessibility-scan/actions/workflows/ci.yml/badge.svg)
 
-BALDR-accessibility-scan est un outil d'audit d'accessibilité numérique conçu pour évaluer la conformité des sites web aux référentiels **RGAA** et **WCAG**. Il permet d'automatiser les contrôles d'accessibilité dans les phases de développement, de validation et d'exploitation.
-L'outil combine des contrôles automatiques et des analyses intelligentes afin d'identifier les écarts d'accessibilité, calculer un score de conformité et fournir des recommandations de correction exploitables.
-Les résultats sont consolidés dans des rapports détaillés aux formats **HTML**, **JSON** et **CSV**, facilitant leur exploitation par les développeurs, auditeurs et pipelines CI/CD
-### Fonctionnalités principales
-- Audit de conformité RGAA / WCAG
-- Navigation automatisée avec Puppeteer
-- Parcours multi-pages et gestion de l'authentification
-- Analyse automatique avec axe-core
-- Contrôles avancés enrichis par IA (LLM)
-- Intégration CI/CD
-- Rapports HTML, JSON et CSV
-- Scoring et recommandations de remédiation
-### Cas d'usage
+## Outil open source d'audit d'accessibilité RGAA et WCAG enrichi par l'Intelligence Artificielle (IA)
+
+Automatisez vos audits d'accessibilité RGAA et WCAG avec axe-core, Puppeteer et l'intelligence artificielle
+
+BALDR Accessibility Scan est un outil open source permettant d'automatiser les audits d'accessibilité web et d'évaluer la conformité des sites et applications web aux référentiels **RGAA** et **WCAG**.
+
+Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intelligence Artificielle (IA)**, BALDR aide les équipes de développement, QA, accessibilité et conformité à détecter les défauts d'accessibilité, calculer un score de conformité et produire des recommandations de correction exploitables.
+
+**Contrairement aux scanners d'accessibilité traditionnels, BALDR analyse des parcours utilisateurs complets, y compris les zones authentifiées, les interactions dynamiques et des analyses enrichies par Intelligence Artificielle (IA).**
+
+---
+
+## Pourquoi BALDR ?
+
+✅ Audit d'accessibilité automatisé
+
+✅ Conformité RGAA et WCAG
+
+✅ Navigation navigateur automatisée avec Puppeteer
+
+✅ Parcours utilisateurs multi-pages
+
+✅ Gestion de l'authentification
+
+✅ Analyse enrichie par IA
+
+✅ Intégration CI/CD
+
+✅ Rapports HTML, JSON et CSV
+
+✅ Recommandations de remédiation
+
+✅ Scoring d'accessibilité
+
+---
+
+## Captures d'écran
+
+### Score de conformité
+
+![Score](docs/images/report-summary.png)
+
+### Tableau de bord
+
+![Dashboard](docs/images/dashboard.png)
+
+### Résultats détaillés
+
+![Résultats](docs/images/findings.png)
+
+
+
+---
+
+## Cas d'usage
+
 - Audit d'accessibilité pendant le développement
-- Contrôle automatique dans les pipelines CI/CD
-- Évaluation de conformité d'applications en recette ou en production
-- Suivi continu de la qualité d'accessibilité des applications web
+- Validation avant mise en production
+- Intégration dans les pipelines CI/CD
+- Contrôle qualité continu
+- Suivi de conformité RGAA
+- Suivi de conformité WCAG
+- Audits d'applications authentifiées
 
-Il s'utilise de deux façons, à partir du même paquet :
+---
 
-| Binaire  | Mode               | Usage                                                        |
-| -------- | ------------------ | ------------------------------------------------------------ |
-| `baldr`  | **CLI**            | Auditer une requête localement, exporter HTML/JSON/CSV.      |
-| `baldrd` | **API** (serveur HTTP) | Exposer `POST /api/v1/journey`, protégé par clé d'API.   |
+## Pour qui ?
+
+- Experts accessibilité
+- Développeurs front-end
+- Équipes QA
+- Product Owners
+- Administrations publiques
+- Grandes entreprises
+- Équipes DevSecOps
+- Auditeurs RGAA
+
+---
+
+## Comparaison
+
+| Fonctionnalité | BALDR | axe-core | Lighthouse | Pa11y |
+|---------------|--------|-----------|-------------|-------|
+| Audit d'accessibilité | ✅ | ✅ | ✅ | ✅ |
+| Support RGAA | ✅ | ❌ | ❌ | ❌ |
+| Support WCAG | ✅ | ✅ | ✅ | ✅ |
+| Parcours multi-pages | ✅ | ❌ | ❌ | ✅ |
+| Authentification | ✅ | ❌ | ❌ | ❌ |
+| Analyse IA | ✅ | ❌ | ❌ | ❌ |
+| Mode CLI | ✅ | ✅ | ✅ | ✅ |
+| Mode API | ✅ | ❌ | ❌ | ❌ |
+| Rapports HTML | ✅ | ❌ | ✅ | ✅ |
+| Intégration CI/CD | ✅ | ✅ | ✅ | ✅ |
+
+Cette comparaison est donnée à titre indicatif et reflète les fonctionnalités disponibles dans BALDR au moment de la rédaction.
+
+---
+
+## Fonctionnalités principales
+
+### Audit d'accessibilité
+
+- Contrôles RGAA
+- Contrôles WCAG
+- Analyse axe-core
+- Scoring de conformité
+- Recommandations de correction
+
+### Automatisation
+
+- Navigation Puppeteer
+- Gestion des cookies
+- Parcours complexes
+- Authentification automatique
+
+### Intégration entreprise
+
+- Interface CLI
+- API HTTP
+- Docker
+- CI/CD
+- Monitoring
+
+---
+
+## Mots-clés
+
+Accessibilité web, audit d'accessibilité, RGAA, WCAG, scanner d'accessibilité, accessibility testing, accessibility scanner, a11y, conformité numérique, accessibilité CI/CD, automatisation accessibilité, audit RGAA, audit WCAG.
+
+---
 
 ## Sommaire
 
@@ -46,6 +154,15 @@ Il s'utilise de deux façons, à partir du même paquet :
 
 ## Architecture
 
+
+Il s'utilise de deux façons, à partir du même paquet :
+
+| Binaire  | Mode               | Usage                                                        |
+| -------- | ------------------ | ------------------------------------------------------------ |
+| `baldr`  | **CLI**            | Auditer une requête localement, exporter HTML/JSON/CSV.      |
+| `baldrd` | **API** (serveur HTTP) | Exposer `POST /api/v1/journey`, protégé par clé d'API.   |
+
+
 BALDR reçoit une **requête d'audit** (CLI ou API), pilote un navigateur headless
 pour parcourir les pages, lance un audit **axe-core** — enrichi au besoin par un
 **LLM** — et renvoie un rapport. Les deux seuls systèmes externes sont les
@@ -53,29 +170,29 @@ pour parcourir les pages, lance un audit **axe-core** — enrichi au besoin par 
 OpenAI).
 
 ```mermaid
-flowchart LR
-    Client["Client<br/>CLI baldr &nbsp;/&nbsp; HTTP baldrd"]
+flowchart TB
+    Client["Client - CLI baldr / HTTP baldrd"]
 
     subgraph BALDR
         direction TB
-        Orch["Orchestrateur<br/>de parcours"]
-        Browser["Navigateur headless<br/>Puppeteer · Chromium"]
-        Axe["Moteur axe-core<br/>RGAA / WCAG"]
-        LLMClient["Client LLM<br/>OpenAI-compatible"]
-        Report["Générateur de rapport<br/>HTML / JSON / CSV"]
+        Orch["Orchestrateur de parcours"]
+        Browser["Navigateur headless - Puppeteer / Chromium"]
+        Axe["Moteur axe-core - RGAA / WCAG"]
+        LLMClient["Client LLM - OpenAI-compatible"]
+        Report["Générateur de rapport - HTML / JSON / CSV"]
     end
 
     Sites["Sites audités"]
-    LLM["Provider LLM<br/>(OpenAI-compatible)"]
-    Out(["Rapport<br/>HTML / JSON / CSV"])
+    LLM["Provider LLM (OpenAI-compatible)"]
+    Out(["Rapport HTML / JSON / CSV"])
 
     Client -->|"requête : pages + actions"| Orch
     Orch --> Browser
     Orch --> Axe
     Orch --> LLMClient
     Orch --> Report
-    Browser -->|"navigue · exécute les actions<br/>(URL validée anti-SSRF)"| Sites
-    LLMClient -->|"résout les sélecteurs<br/>enrichit l'analyse a11y"| LLM
+    Browser -->|"navigation et exécution des actions"| Sites
+    LLMClient -->|"résolution des sélecteurs et analyse a11y"| LLM
     Report --> Out
     Out -.-> Client
 ```
@@ -85,29 +202,34 @@ Le déroulé d'un audit, page par page :
 ```mermaid
 sequenceDiagram
     actor Client
-    participant Baldr as BALDR
-    participant Browser as Chromium (Puppeteer)
-    participant Site as Site audité
-    participant Axe as axe-core
-    participant LLM as Provider LLM
+    participant BALDR
+    participant Chromium
+    participant Site
+    participant Axe
+    participant LLM
 
-    Client->>Baldr: requête d'audit { pages, actions }
-    loop pour chaque page
-        Baldr->>Browser: ouvre la page (goto, anti-SSRF)
-        Browser->>Site: navigue + auth éventuelle
-        opt action IA (click / fill / ai…)
-            Baldr->>LLM: décrit la cible en langage naturel
-            LLM-->>Baldr: sélecteur CSS
-            Baldr->>Browser: exécute l'action
+    Client->>BALDR: Requête d'audit
+
+    loop Pour chaque page
+        BALDR->>Chromium: Ouvre la page
+        Chromium->>Site: Navigation
+
+        opt Action assistée par IA
+            BALDR->>LLM: Description de la cible
+            LLM-->>BALDR: Sélecteur CSS
+            BALDR->>Chromium: Exécution de l'action
         end
-        Baldr->>Axe: scan RGAA / WCAG
-        Axe-->>Baldr: violations
-        opt analyse IA (intel / full)
-            Baldr->>LLM: enrichit l'analyse a11y
-            LLM-->>Baldr: recommandations
+
+        BALDR->>Axe: Analyse RGAA / WCAG
+        Axe-->>BALDR: Violations détectées
+
+        opt Analyse IA avancée
+            BALDR->>LLM: Enrichissement de l'analyse
+            LLM-->>BALDR: Recommandations
         end
     end
-    Baldr-->>Client: rapport HTML / JSON / CSV
+
+    BALDR-->>Client: Rapport HTML / JSON / CSV
 ```
 
 ## Installation
