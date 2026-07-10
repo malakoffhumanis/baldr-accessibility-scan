@@ -1,0 +1,54 @@
+.section {
+  margin-top: 2.5rem;
+}
+
+.title {
+  color: #eaf8ff;
+  margin-bottom: 1rem;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.card {
+  border: 1px solid rgba(0, 201, 255, 0.32);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(9, 47, 96, 0.66), rgba(5, 30, 68, 0.78));
+  padding: 1rem;
+}
+
+.card h3 {
+  margin: 0;
+  color: #dcf7ff;
+  font-size: 1rem;
+}
+
+.card p {
+  margin: 0.55rem 0 0;
+  color: #b5d3eb;
+  line-height: 1.5;
+}
+
+@media (max-width: 996px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (forced-colors: active) {
+  .title,
+  .card h3,
+  .card p {
+    color: CanvasText;
+  }
+
+  .card {
+    forced-color-adjust: auto;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+}

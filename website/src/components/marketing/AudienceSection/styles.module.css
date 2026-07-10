@@ -1,0 +1,38 @@
+.section {
+  margin-top: 2.6rem;
+}
+
+.section h2 {
+  margin: 0;
+  color: #eaf8ff;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+}
+
+.tags {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  border-radius: 999px;
+  border: 1px solid rgba(0, 208, 255, 0.44);
+  padding: 0.45rem 0.8rem;
+  color: #cff3ff;
+  background: rgba(5, 51, 108, 0.56);
+  font-size: 0.9rem;
+}
+
+@media (forced-colors: active) {
+  .section h2,
+  .tag {
+    color: CanvasText;
+  }
+
+  .tag {
+    forced-color-adjust: auto;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+}

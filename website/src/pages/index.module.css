@@ -1,0 +1,11 @@
+.homeShell {
+  width: min(1200px, 100% - 2rem);
+  margin: 2rem auto 4rem;
+}
+
+@media (max-width: 996px) {
+  .homeShell {
+    width: min(1200px, 100% - 1.3rem);
+    margin-top: 1rem;
+  }
+}

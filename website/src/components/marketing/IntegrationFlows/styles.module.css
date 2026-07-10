@@ -1,0 +1,78 @@
+.section {
+  margin-top: 2.8rem;
+}
+
+.title {
+  margin: 0;
+  color: #eaf8ff;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+}
+
+.stack {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.flow {
+  border: 1px solid rgba(0, 203, 255, 0.32);
+  border-radius: 18px;
+  padding: 0.9rem;
+  background: linear-gradient(180deg, rgba(9, 50, 102, 0.7), rgba(6, 33, 73, 0.76));
+}
+
+.flow h3 {
+  margin: 0;
+  color: #a8efff;
+  font-size: 1rem;
+}
+
+.steps {
+  margin-top: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.stepWrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.step {
+  border-radius: 10px;
+  border: 1px solid rgba(110, 224, 255, 0.45);
+  background: rgba(9, 82, 163, 0.5);
+  color: #f0fcff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.48rem 0.76rem;
+}
+
+.arrow {
+  color: #35ddff;
+  margin: 0 0.35rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .arrow {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .title,
+  .flow h3,
+  .step,
+  .arrow {
+    color: CanvasText;
+  }
+
+  .flow,
+  .step {
+    forced-color-adjust: auto;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+}

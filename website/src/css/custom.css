@@ -1,0 +1,87 @@
+:root {
+  --ifm-color-primary: #00c8ff;
+  --ifm-color-primary-dark: #00b4e6;
+  --ifm-color-primary-darker: #00a9d8;
+  --ifm-color-primary-darkest: #008ab1;
+  --ifm-color-primary-light: #1ed2ff;
+  --ifm-color-primary-lighter: #30d8ff;
+  --ifm-color-primary-lightest: #61e3ff;
+  --ifm-background-color: #03152f;
+  --ifm-font-family-base: 'Segoe UI', 'Noto Sans', 'Helvetica Neue', sans-serif;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 187, 255, 0.16);
+}
+
+[data-theme='dark'] {
+  --ifm-background-color: #03152f;
+  --ifm-color-primary: #37d8ff;
+  --ifm-color-primary-dark: #18cfff;
+  --ifm-color-primary-darker: #03cbff;
+  --ifm-color-primary-darkest: #00a6d2;
+  --ifm-color-primary-light: #56e0ff;
+  --ifm-color-primary-lighter: #68e4ff;
+  --ifm-color-primary-lightest: #94ecff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 187, 255, 0.25);
+}
+
+html,
+body {
+  background: #03152f;
+}
+
+.navbar {
+  backdrop-filter: blur(8px);
+  background: rgba(4, 28, 61, 0.78);
+  border-bottom: 1px solid rgba(0, 198, 255, 0.26);
+}
+
+.footer {
+  background: #031127;
+  border-top: 1px solid rgba(0, 198, 255, 0.22);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --ifm-color-primary: #7fe7ff;
+  }
+
+  .navbar,
+  .footer {
+    background: #000000;
+    border-color: #ffffff;
+  }
+
+  .button {
+    border-width: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  .navbar,
+  .footer,
+  .main-wrapper {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .button,
+  .pagination-nav__link,
+  .navbar__link,
+  .menu__link {
+    forced-color-adjust: auto;
+    background: ButtonFace;
+    color: ButtonText;
+    border: 1px solid ButtonText;
+  }
+
+  .button:hover,
+  .button:focus-visible,
+  .pagination-nav__link:hover,
+  .pagination-nav__link:focus-visible,
+  .navbar__link:focus-visible,
+  .menu__link:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
