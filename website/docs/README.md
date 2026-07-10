@@ -520,7 +520,7 @@ curl -X POST http://localhost:3000/api/v1/journey \
 
 Toutes les variables sont validées au démarrage ; une valeur requise manquante
 ou invalide stoppe le boot avec un message explicite. Modèle complet et
-commentaires : **[`.env.example`](./.env.example)**.
+commentaires : **[`.env.example`](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/.env.example)**.
 
 | Variable                | Requis | Défaut                      | Rôle                                            |
 | ----------------------- | :----: | --------------------------- | ----------------------------------------------- |
@@ -570,8 +570,8 @@ cp .env.example .env        # renseigner API_KEYS (obligatoire) + le LLM si beso
 Le serveur dev écoute sur `http://localhost:3000`.
 
 Avant de proposer une contribution, lire le guide
-**[CONTRIBUTING.md](./CONTRIBUTING.md)** (workflow, conventions, exigences de
-PR) et le [code de conduite](./CODE_OF_CONDUCT.md).
+**[CONTRIBUTING.md](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/CONTRIBUTING.md)** (workflow, conventions, exigences de
+PR) et le [code de conduite](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/CODE_OF_CONDUCT.md).
 
 ## Docker
 
@@ -579,7 +579,7 @@ L'image **ne build rien** : le `Dockerfile` copie un `dist/` et un
 `node_modules/` **déjà produits**, et installe Chromium via apt. Le pré-build
 doit tourner sur **linux** (runner CI ubuntu ou conteneur linux) avec
 `--omit=dev`, pour un `node_modules` compatible avec l'image `node:24-slim`.
-Tout passe par le [`Makefile`](./Makefile) :
+Tout passe par le [`Makefile`](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/Makefile) :
 
 ```bash
 # 1. Pré-build (sur linux) : produit dist/ + node_modules de production
@@ -620,4 +620,4 @@ make buildx IMAGE=<registre>/baldr TAG=1.0.0 PLATFORMS=linux/amd64,linux/arm64
 make release IMAGE=<registre>/baldr TAG=1.0.0   # raccourci : build + docker + push
 ```
 
-Apache-2.0 — voir [LICENSE](./LICENSE) et [NOTICE](./NOTICE).
+Apache-2.0 — voir [LICENSE](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/LICENSE) et [NOTICE](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/NOTICE).
