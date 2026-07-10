@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([["220"],{1912(s){s.exports=JSON.parse('{"blogBasePath":"/baldr-accessibility-scan/blog","blogTitle":"Blog","authorsListPath":"/baldr-accessibility-scan/blog/authors"}')}}]);
