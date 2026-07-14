@@ -76,7 +76,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
-    "fs-extra": "^11.3.3",
+    "fs-extra": "^11.3.6",
     "helmet": "^8.2.0",
     "https-proxy-agent": "^9.0.0",
     "jsonrepair": "^3.14.0",
