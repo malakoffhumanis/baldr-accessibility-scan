@@ -93,7 +93,7 @@ const config = {
           {to: '/blog', label: 'Actualites', position: 'left'},
           {
             href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan',
-            label: 'GitHub (nouvelle fenetre)',
+            label: 'GitHub',
             position: 'right',
           },
         ],
@@ -135,11 +135,11 @@ const config = {
             title: 'Projet',
             items: [
               {
-                label: 'README GitHub (nouvelle fenetre)',
+                label: 'README GitHub',
                 href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan#readme',
               },
               {
-                label: 'GitHub (nouvelle fenetre)',
+                label: 'GitHub',
                 href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan',
               },
             ],
