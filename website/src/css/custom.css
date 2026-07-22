@@ -66,11 +66,6 @@ body {
   text-underline-offset: 2px;
 }
 
-a[target='_blank']::after {
-  content: ' (nouvelle fenetre)';
-  font-size: 0.875em;
-}
-
 .footer {
   background: #031127;
   border-top: 1px solid rgba(0, 198, 255, 0.22);

@@ -12,7 +12,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 const config = {
   title: 'BALDR Accessibility Scan',
   tagline: 'Audit accessibilite RGAA/WCAG enrichi par Intelligence Artificielle',
-  favicon: 'img/logo.svg',
+  favicon: 'img/baldr-icone-blanc.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -80,8 +80,8 @@ const config = {
       navbar: {
         title: 'BALDR',
         logo: {
-          alt: '',
-          src: 'img/logo.svg',
+          alt: 'Logo BALDR - Outil d\'audit accessibilite RGAA/WCAG enrichi par Intelligence Artificielle',
+          src: 'img/baldr-icone-blanc.svg',
         },
         items: [
           {
@@ -93,7 +93,7 @@ const config = {
           {to: '/blog', label: 'Actualites', position: 'left'},
           {
             href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan',
-            label: 'GitHub',
+            label: 'GitHub (nouvelle fenetre)',
             position: 'right',
           },
         ],
@@ -127,7 +127,7 @@ const config = {
               },
               {
                 label: 'Plan du site',
-                href: 'https://malakoffhumanis.github.io/baldr-accessibility-scan/sitemap.xml',
+                to: '/docs/plan-du-site',
               },
             ],
           },
@@ -135,11 +135,11 @@ const config = {
             title: 'Projet',
             items: [
               {
-                label: 'README GitHub',
+                label: 'README GitHub (nouvelle fenetre)',
                 href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan#readme',
               },
               {
-                label: 'GitHub',
+                label: 'GitHub (nouvelle fenetre)',
                 href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan',
               },
             ],

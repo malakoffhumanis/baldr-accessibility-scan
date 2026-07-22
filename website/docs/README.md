@@ -46,15 +46,47 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
 
 ### Score de conformité
 
-![Score](../static/img/report-summary.png)
+<figure>
+  <img
+    src="../img/report-summary.png"
+    alt="Capture d'ecran du resume de rapport d'accessibilite BALDR"
+    aria-describedby="report-summary-details"
+  />
+  <figcaption id="report-summary-details">
+    Resume du rapport: score RGAA global affiche, repartition des criteres conformes/non conformes/non applicables,
+    et synthese numerique des pages auditees. Cette capture illustre la vue de score consolide du rapport.
+  </figcaption>
+</figure>
 
 ### Tableau de bord
 
-![Dashboard](../static/img/dashboard.png)
+<figure>
+  <img
+    src="../img/dashboard.png"
+    alt="Capture d'ecran du tableau de bord d'accessibilite BALDR"
+    aria-describedby="dashboard-details"
+  />
+  <figcaption id="dashboard-details">
+    Tableau recapitulatif des resultats d'audit: vue par page/URL avec score RGAA et repartition des criteres,
+    notamment conformes, non conformes et non applicables. Exemple de donnees affichees: 33 conformes,
+    20 non conformes et 53 non applicables.
+  </figcaption>
+</figure>
 
 ### Résultats détaillés
 
-![Résultats](../static/img/findings.png)
+<figure>
+  <img
+    src="../img/findings.png"
+    alt="Capture d'ecran des resultats detailles d'analyse d'accessibilite"
+    aria-describedby="findings-details"
+  />
+  <figcaption id="findings-details">
+    Vue detaillee des resultats d'analyse: liste des regles controlees, non-conformites detectees,
+    severites associees et elements impactes. Cette capture presente le detail des constats
+    utilises pour prioriser les corrections d'accessibilite.
+  </figcaption>
+</figure>
 
 
 
