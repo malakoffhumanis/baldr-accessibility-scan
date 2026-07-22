@@ -7,10 +7,25 @@ puis lancer un audit Axe-Core enrichi par IA, et produit un rapport
 
 ## Sommaire
 
-| Document | Contenu |
-| --- | --- |
-| [journey-api.md](./journey-api.md) | Endpoint principal `POST /api/v1/journey` : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples. |
-| [metrics.md](./metrics.md) | Endpoint `GET /metrics` : métriques Prometheus exposées et configuration de scraping. |
+<table>
+  <caption>Sommaire de la documentation API</caption>
+  <thead>
+    <tr>
+      <th scope="col">Document</th>
+      <th scope="col">Contenu</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="./journey-api.md">journey-api.md</a></td>
+      <td>Endpoint principal <code>POST /api/v1/journey</code> : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples.</td>
+    </tr>
+    <tr>
+      <td><a href="./metrics.md">metrics.md</a></td>
+      <td>Endpoint <code>GET /metrics</code> : métriques Prometheus exposées et configuration de scraping.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## URL de base
 
@@ -38,23 +53,62 @@ X-API-Key: <secret>
 - La comparaison du secret est faite en **temps constant**.
 - En cas de clé absente ou invalide : réponse **401**.
 
-| Endpoint | Protégé par `X-API-Key` |
-| --- | --- |
-| `POST /api/v1/journey` | ✅ Oui |
-| `GET /metrics` | ✅ Oui |
-| `GET /api/v1/health` | ❌ Non (sonde de vivacité) |
-| `GET /api/v1/health/diagnostic` | ❌ Non |
-| `GET /api/v1/docs` | ❌ Non (exposé seulement si `EXPOSE_API_DOCS=true`) |
+<table>
+  <caption>Authentification des endpoints</caption>
+  <thead>
+    <tr>
+      <th scope="col">Endpoint</th>
+      <th scope="col">Protege par <code>X-API-Key</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>POST /api/v1/journey</code></td><td>Oui</td></tr>
+    <tr><td><code>GET /metrics</code></td><td>Oui</td></tr>
+    <tr><td><code>GET /api/v1/health</code></td><td>Non (sonde de vivacité)</td></tr>
+    <tr><td><code>GET /api/v1/health/diagnostic</code></td><td>Non</td></tr>
+    <tr><td><code>GET /api/v1/docs</code></td><td>Non (exposé seulement si <code>EXPOSE_API_DOCS=true</code>)</td></tr>
+  </tbody>
+</table>
 
 ## Endpoints
 
-| Méthode | Chemin | Description |
-| --- | --- | --- |
-| `POST` | `/api/v1/journey` | Lance un parcours d'audit d'accessibilité multi-pages. Voir [journey-api.md](./journey-api.md). |
-| `GET` | `/api/v1/health` | Sonde de vivacité (toujours `200`). |
-| `GET` | `/api/v1/health/diagnostic` | Diagnostic complet (config + connectivité LLM). `200` si sain, `503` si dégradé. |
-| `GET` | `/metrics` | Métriques Prometheus. Voir [metrics.md](./metrics.md). |
-| `GET` | `/api/v1/docs` | Interface OpenAPI (si activée). |
+<table>
+  <caption>Endpoints disponibles</caption>
+  <thead>
+    <tr>
+      <th scope="col">Methode</th>
+      <th scope="col">Chemin</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>POST</code></td>
+      <td><code>/api/v1/journey</code></td>
+      <td>Lance un parcours d'audit d'accessibilité multi-pages. Voir <a href="./journey-api.md">journey-api.md</a>.</td>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td><code>/api/v1/health</code></td>
+      <td>Sonde de vivacité (toujours <code>200</code>).</td>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td><code>/api/v1/health/diagnostic</code></td>
+      <td>Diagnostic complet (config + connectivité LLM). <code>200</code> si sain, <code>503</code> si dégradé.</td>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td><code>/metrics</code></td>
+      <td>Métriques Prometheus. Voir <a href="./metrics.md">metrics.md</a>.</td>
+    </tr>
+    <tr>
+      <td><code>GET</code></td>
+      <td><code>/api/v1/docs</code></td>
+      <td>Interface OpenAPI (si activée).</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Format des erreurs
 
@@ -70,12 +124,22 @@ Toutes les erreurs suivent un contrat unique :
 }
 ```
 
-| Code HTTP | `error.code` | Cas |
-| --- | --- | --- |
-| `400` | `VALIDATION_ERROR` | Corps de requête invalide (échec de validation du schéma). |
-| `401` | `UNAUTHORIZED` | En-tête `X-API-Key` manquant ou invalide. |
-| `429` | _(message texte)_ | Trop de requêtes (rate limiting). |
-| `500` | `INTERNAL_SERVER_ERROR` | Erreur interne (un `requestId` est inclus dans le message pour le suivi). |
+<table>
+  <caption>Format des erreurs API</caption>
+  <thead>
+    <tr>
+      <th scope="col">Code HTTP</th>
+      <th scope="col"><code>error.code</code></th>
+      <th scope="col">Cas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>400</code></td><td><code>VALIDATION_ERROR</code></td><td>Corps de requête invalide (échec de validation du schéma).</td></tr>
+    <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>En-tête <code>X-API-Key</code> manquant ou invalide.</td></tr>
+    <tr><td><code>429</code></td><td>(message texte)</td><td>Trop de requêtes (rate limiting).</td></tr>
+    <tr><td><code>500</code></td><td><code>INTERNAL_SERVER_ERROR</code></td><td>Erreur interne (un <code>requestId</code> est inclus dans le message pour le suivi).</td></tr>
+  </tbody>
+</table>
 
 ## Limitation de débit (rate limiting)
 

@@ -22,15 +22,26 @@ loop, usage du tas (heap), garbage collection, descripteurs de fichiers, etc.
 
 ### Métriques applicatives
 
-| Métrique | Type | Labels | Description |
-| --- | --- | --- | --- |
-| `baldr_llm_calls_total` | Counter | `model`, `status` | Nombre total d'appels à l'API LLM. |
-| `baldr_llm_call_duration_seconds` | Histogram | `model` | Durée des appels LLM (buckets : 0.5, 1, 2, 5, 10, 30, 60, 120, 180 s). |
-| `baldr_llm_tokens_total` | Counter | `model`, `type` | Nombre total de tokens consommés (`type` = prompt/completion). |
-| `baldr_llm_cache_hits_total` | Counter | `source` | Nombre de hits du cache LLM (`source` = LRU ou replay). |
-| `baldr_audit_requests_total` | Counter | `status`, `apiKey` | Nombre total de requêtes d'audit. `apiKey` = identifiant **public** de la clé (jamais le secret), ou `anonymous`. |
-| `baldr_audit_duration_seconds` | Histogram | — | Durée des requêtes d'audit complètes (buckets : 5, 10, 30, 60, 120, 300, 600 s). |
-| `baldr_active_audits` | Gauge | — | Nombre d'audits actuellement en cours. |
+<table>
+  <caption>Metriques applicatives exposees</caption>
+  <thead>
+    <tr>
+      <th scope="col">Metrique</th>
+      <th scope="col">Type</th>
+      <th scope="col">Labels</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>baldr_llm_calls_total</code></td><td>Counter</td><td><code>model</code>, <code>status</code></td><td>Nombre total d'appels a l'API LLM.</td></tr>
+    <tr><td><code>baldr_llm_call_duration_seconds</code></td><td>Histogram</td><td><code>model</code></td><td>Duree des appels LLM (buckets : 0.5, 1, 2, 5, 10, 30, 60, 120, 180 s).</td></tr>
+    <tr><td><code>baldr_llm_tokens_total</code></td><td>Counter</td><td><code>model</code>, <code>type</code></td><td>Nombre total de tokens consommes (<code>type</code> = prompt/completion).</td></tr>
+    <tr><td><code>baldr_llm_cache_hits_total</code></td><td>Counter</td><td><code>source</code></td><td>Nombre de hits du cache LLM (<code>source</code> = LRU ou replay).</td></tr>
+    <tr><td><code>baldr_audit_requests_total</code></td><td>Counter</td><td><code>status</code>, <code>apiKey</code></td><td>Nombre total de requetes d'audit. <code>apiKey</code> = identifiant <strong>public</strong> de la cle (jamais le secret), ou <code>anonymous</code>.</td></tr>
+    <tr><td><code>baldr_audit_duration_seconds</code></td><td>Histogram</td><td>-</td><td>Duree des requetes d'audit completes (buckets : 5, 10, 30, 60, 120, 300, 600 s).</td></tr>
+    <tr><td><code>baldr_active_audits</code></td><td>Gauge</td><td>-</td><td>Nombre d'audits actuellement en cours.</td></tr>
+  </tbody>
+</table>
 
 > Le label `apiKey` n'expose que l'**identifiant public** de la clé (la partie
 > `id` de `API_KEYS`), jamais le secret — cardinalité bornée.

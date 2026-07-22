@@ -38,29 +38,62 @@ par un navigateur headless. Chaque action `scan` déclenche un audit Axe-Core
 
 ### Champs racine
 
-| Champ | Type | Requis | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | non | Titre de l'audit, utilisé dans le rapport et dans le nom du fichier généré. |
-| `options` | `object` | non | Options d'audit appliquées à toutes les pages. |
-| `auth` | `{ username, password, loginUrl? }` | non | Identifiants par défaut appliqués à chaque page (voir [Authentification](#authentification-des-pages)). Omettre = pages publiques. |
-| `pages` | `Page[]` | **oui** | Liste ordonnée des pages à parcourir (**min 1, max 30**). |
+<table>
+  <caption>Champs racine de la requete Journey</caption>
+  <thead>
+    <tr>
+      <th scope="col">Champ</th>
+      <th scope="col">Type</th>
+      <th scope="col">Requis</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>non</td><td>Titre de l'audit, utilise dans le rapport et dans le nom du fichier genere.</td></tr>
+    <tr><td><code>options</code></td><td><code>object</code></td><td>non</td><td>Options d'audit appliquees a toutes les pages.</td></tr>
+    <tr><td><code>auth</code></td><td><code>{`{ username, password, loginUrl? }`}</code></td><td>non</td><td>Identifiants par defaut appliques a chaque page (voir <a href="#authentification-des-pages">Authentification</a>). Omettre = pages publiques.</td></tr>
+    <tr><td><code>pages</code></td><td><code>Page[]</code></td><td><strong>oui</strong></td><td>Liste ordonnee des pages a parcourir (<strong>min 1, max 30</strong>).</td></tr>
+  </tbody>
+</table>
 
 ### `options`
 
-| Champ | Type | Défaut | Description |
-| --- | --- | --- | --- |
-| `analysisType` | `"static" \| "intel" \| "full"` | `"full"` | Profondeur d'analyse appliquée à chaque scan (voir [Types d'analyse](#types-danalyse)). |
-| `reportFormat` | `"html" \| "json" \| "csv"` | `"html"` | Format du rapport renvoyé. |
-| `rules` | `string[]` | _(toutes)_ | Restreint l'audit à des identifiants de règles RGAA précis (ex. `"1.1"`). |
-| `viewport` | `{ width, height }` | _(défaut navigateur)_ | Dimensions de la fenêtre. `width ≥ 320`, `height ≥ 240`. |
+<table>
+  <caption>Options globales de l'audit</caption>
+  <thead>
+    <tr>
+      <th scope="col">Champ</th>
+      <th scope="col">Type</th>
+      <th scope="col">Defaut</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>analysisType</code></td><td><code>"static" | "intel" | "full"</code></td><td><code>"full"</code></td><td>Profondeur d'analyse appliquee a chaque scan (voir <a href="#types-danalyse">Types d'analyse</a>).</td></tr>
+    <tr><td><code>reportFormat</code></td><td><code>"html" | "json" | "csv"</code></td><td><code>"html"</code></td><td>Format du rapport renvoye.</td></tr>
+    <tr><td><code>rules</code></td><td><code>string[]</code></td><td>(toutes)</td><td>Restreint l'audit a des identifiants de regles RGAA precis (ex. <code>"1.1"</code>).</td></tr>
+    <tr><td><code>viewport</code></td><td><code>{`{ width, height }`}</code></td><td>(defaut navigateur)</td><td>Dimensions de la fenetre. <code>width >= 320</code>, <code>height >= 240</code>.</td></tr>
+  </tbody>
+</table>
 
 ### `pages[]`
 
-| Champ | Type | Requis | Description |
-| --- | --- | --- | --- |
-| `url` | `string` | **oui** | URL à charger (`http(s)://…`), validée contre le SSRF. |
-| `auth` | `{ username, password, loginUrl? }` | non | Identifiants propres à cette page ; **surcharge** l'`auth` racine. |
-| `actions` | `Action[]` | non | Actions à exécuter (**max 50**). **Si absent ou vide → un scan par défaut** (chargement de la page puis audit). |
+<table>
+  <caption>Champs d'une page dans pages[]</caption>
+  <thead>
+    <tr>
+      <th scope="col">Champ</th>
+      <th scope="col">Type</th>
+      <th scope="col">Requis</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>url</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>URL a charger (<code>http(s)://...</code>), validee contre le SSRF.</td></tr>
+    <tr><td><code>auth</code></td><td><code>{`{ username, password, loginUrl? }`}</code></td><td>non</td><td>Identifiants propres a cette page ; <strong>surcharge</strong> l'<code>auth</code> racine.</td></tr>
+    <tr><td><code>actions</code></td><td><code>Action[]</code></td><td>non</td><td>Actions a executer (<strong>max 50</strong>). <strong>Si absent ou vide : un scan par defaut</strong> (chargement de la page puis audit).</td></tr>
+  </tbody>
+</table>
 
 ---
 
@@ -70,16 +103,26 @@ Une action est un **objet typé** discriminé par `type`. Les built-ins
 déterministes et les interactions courantes sont validés ; `ai` est la trappe
 d'évasion en langage naturel pour les cas non couverts.
 
-| `type` | Champs | Description |
-| --- | --- | --- |
-| `scan` | — | Lance l'audit d'accessibilité (Axe + IA selon `analysisType`) + capture d'écran. |
-| `acceptCookies` | — | Tente d'accepter automatiquement la bannière cookies (Tarteaucitron, Didomi, OneTrust…). |
-| `wait` | `ms` (`1`–`60000`) | Pause fixe en millisecondes. |
-| `click` | `target` | Clique sur l'élément décrit par `target`. |
-| `hover` | `target` | Survole l'élément décrit par `target`. |
-| `fill` | `target`, `value` | Saisit `value` dans le champ décrit par `target`. |
-| `select` | `target`, `value` | Sélectionne `value` dans la liste décrite par `target`. |
-| `ai` | `instruction` | Instruction libre en langage naturel, résolue par l'IA (ex. « ouvrir le sous-menu Fondation »). |
+<table>
+  <caption>Actions supportees</caption>
+  <thead>
+    <tr>
+      <th scope="col"><code>type</code></th>
+      <th scope="col">Champs</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>scan</code></td><td>-</td><td>Lance l'audit d'accessibilite (Axe + IA selon <code>analysisType</code>) + capture d'ecran.</td></tr>
+    <tr><td><code>acceptCookies</code></td><td>-</td><td>Tente d'accepter automatiquement la banniere cookies (Tarteaucitron, Didomi, OneTrust...).</td></tr>
+    <tr><td><code>wait</code></td><td><code>ms</code> (<code>1</code>-<code>60000</code>)</td><td>Pause fixe en millisecondes.</td></tr>
+    <tr><td><code>click</code></td><td><code>target</code></td><td>Clique sur l'element decrit par <code>target</code>.</td></tr>
+    <tr><td><code>hover</code></td><td><code>target</code></td><td>Survole l'element decrit par <code>target</code>.</td></tr>
+    <tr><td><code>fill</code></td><td><code>target</code>, <code>value</code></td><td>Saisit <code>value</code> dans le champ decrit par <code>target</code>.</td></tr>
+    <tr><td><code>select</code></td><td><code>target</code>, <code>value</code></td><td>Selectionne <code>value</code> dans la liste decrite par <code>target</code>.</td></tr>
+    <tr><td><code>ai</code></td><td><code>instruction</code></td><td>Instruction libre en langage naturel, resolue par l'IA (ex. "ouvrir le sous-menu Fondation").</td></tr>
+  </tbody>
+</table>
 
 > `target`, `value` et `instruction` sont des chaînes (**max 500 caractères**).
 > `target` est une **description en langage naturel** (« le bouton Envoyer »,
@@ -116,11 +159,22 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 "auth": { "username": "jdoe", "password": "secret" }
 ```
 
-| Champ | Type | Requis | Description |
-| --- | --- | --- | --- |
-| `username` | `string` | **oui** | Identifiant (login ou email selon le site). |
-| `password` | `string` | **oui** | Mot de passe. |
-| `loginUrl` | `string` | non | Page de login à visiter d'abord, si elle diffère de l'URL auditée (auto‑détectée sinon). Validée anti‑SSRF. |
+<table>
+  <caption>Champs d'authentification du site audite</caption>
+  <thead>
+    <tr>
+      <th scope="col">Champ</th>
+      <th scope="col">Type</th>
+      <th scope="col">Requis</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>username</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Identifiant (login ou email selon le site).</td></tr>
+    <tr><td><code>password</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Mot de passe.</td></tr>
+    <tr><td><code>loginUrl</code></td><td><code>string</code></td><td>non</td><td>Page de login a visiter d'abord, si elle differe de l'URL auditee (auto-detectee sinon). Validee anti-SSRF.</td></tr>
+  </tbody>
+</table>
 
 `auth` peut être déclaré :
 - au **niveau racine** (`auth`) → défaut appliqué à toutes les pages ;
@@ -137,11 +191,20 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 
 ## Types d'analyse
 
-| `analysisType` | Description |
-| --- | --- |
-| `static` | Audit Axe-Core uniquement (sans IA) — le plus rapide. |
-| `intel` | Audit Axe + analyse IA ciblée. |
-| `full` | Audit complet enrichi par IA (défaut) — le plus approfondi. |
+<table>
+  <caption>Types d'analyse disponibles</caption>
+  <thead>
+    <tr>
+      <th scope="col"><code>analysisType</code></th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>static</code></td><td>Audit Axe-Core uniquement (sans IA), le plus rapide.</td></tr>
+    <tr><td><code>intel</code></td><td>Audit Axe + analyse IA ciblee.</td></tr>
+    <tr><td><code>full</code></td><td>Audit complet enrichi par IA (defaut), le plus approfondi.</td></tr>
+  </tbody>
+</table>
 
 ---
 
@@ -150,10 +213,19 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 En cas de succès (`200`), le corps de la réponse est **directement le rapport**
 dans le format demandé (ce n'est pas une enveloppe JSON `{ success: … }`).
 
-| En-tête | Valeur |
-| --- | --- |
-| `Content-Type` | `text/html`, `application/json` ou `text/csv` selon `reportFormat`. |
-| `Content-Disposition` | `attachment; filename="<nom>.<ext>"` — `<nom>` dérive du champ `name` (assaini), sinon `rapport-journey`. |
+<table>
+  <caption>En-tetes de reponse</caption>
+  <thead>
+    <tr>
+      <th scope="col">En-tete</th>
+      <th scope="col">Valeur</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Content-Type</code></td><td><code>text/html</code>, <code>application/json</code> ou <code>text/csv</code> selon <code>reportFormat</code>.</td></tr>
+    <tr><td><code>Content-Disposition</code></td><td><code>attachment; filename="&lt;nom&gt;.&lt;ext&gt;"</code> ; <code>&lt;nom&gt;</code> derive du champ <code>name</code> (assaini), sinon <code>rapport-journey</code>.</td></tr>
+  </tbody>
+</table>
 
 > Comme la réponse HTML porte un `Content-Disposition`, un navigateur la
 > **télécharge** au lieu de l'afficher.
@@ -162,23 +234,42 @@ dans le format demandé (ce n'est pas une enveloppe JSON `{ success: … }`).
 
 Voir le [contrat d'erreur global](./README.md#format-des-erreurs).
 
-| Code | `error.code` | Cas |
-| --- | --- | --- |
-| `400` | `VALIDATION_ERROR` | Corps invalide : `pages` manquant/vide, URL invalide ou bloquée (SSRF), action mal typée, > 30 pages, > 50 actions, etc. |
-| `401` | `UNAUTHORIZED` | `X-API-Key` manquant ou invalide. |
-| `429` | — | Rate limiting dépassé. |
-| `500` | `INTERNAL_SERVER_ERROR` | Erreur interne (un `requestId` est inclus). |
+<table>
+  <caption>Codes d'erreur</caption>
+  <thead>
+    <tr>
+      <th scope="col">Code</th>
+      <th scope="col"><code>error.code</code></th>
+      <th scope="col">Cas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>400</code></td><td><code>VALIDATION_ERROR</code></td><td>Corps invalide : <code>pages</code> manquant/vide, URL invalide ou bloquee (SSRF), action mal typee, &gt; 30 pages, &gt; 50 actions, etc.</td></tr>
+    <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td><code>X-API-Key</code> manquant ou invalide.</td></tr>
+    <tr><td><code>429</code></td><td>-</td><td>Rate limiting depasse.</td></tr>
+    <tr><td><code>500</code></td><td><code>INTERNAL_SERVER_ERROR</code></td><td>Erreur interne (un <code>requestId</code> est inclus).</td></tr>
+  </tbody>
+</table>
 
 ---
 
 ## Limites
 
-| Limite | Valeur |
-| --- | --- |
-| Nombre de pages (`pages`) | 1 à 30 |
-| Actions par page | 0 à 50 |
-| Longueur de `target` / `value` / `instruction` | 500 caractères |
-| `wait.ms` | 1 à 60 000 |
+<table>
+  <caption>Limites techniques</caption>
+  <thead>
+    <tr>
+      <th scope="col">Limite</th>
+      <th scope="col">Valeur</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Nombre de pages (<code>pages</code>)</td><td>1 a 30</td></tr>
+    <tr><td>Actions par page</td><td>0 a 50</td></tr>
+    <tr><td>Longueur de <code>target</code> / <code>value</code> / <code>instruction</code></td><td>500 caracteres</td></tr>
+    <tr><td><code>wait.ms</code></td><td>1 a 60 000</td></tr>
+  </tbody>
+</table>
 
 ---
 
