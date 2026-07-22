@@ -87,18 +87,30 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
 
 ## Comparaison
 
-| Fonctionnalité | BALDR | axe-core | Lighthouse | Pa11y |
-|---------------|--------|-----------|-------------|-------|
-| Audit d'accessibilité | ✅ | ✅ | ✅ | ✅ |
-| Support RGAA | ✅ | ❌ | ❌ | ❌ |
-| Support WCAG | ✅ | ✅ | ✅ | ✅ |
-| Parcours multi-pages | ✅ | ❌ | ❌ | ✅ |
-| Authentification | ✅ | ❌ | ❌ | ❌ |
-| Analyse IA | ✅ | ❌ | ❌ | ❌ |
-| Mode CLI | ✅ | ✅ | ✅ | ✅ |
-| Mode API | ✅ | ❌ | ❌ | ❌ |
-| Rapports HTML | ✅ | ❌ | ✅ | ✅ |
-| Intégration CI/CD | ✅ | ✅ | ✅ | ✅ |
+<table>
+  <caption>Comparaison des fonctionnalites BALDR, axe-core, Lighthouse et Pa11y</caption>
+  <thead>
+    <tr>
+      <th scope="col">Fonctionnalite</th>
+      <th scope="col">BALDR</th>
+      <th scope="col">axe-core</th>
+      <th scope="col">Lighthouse</th>
+      <th scope="col">Pa11y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">Audit d'accessibilite</th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
+    <tr><th scope="row">Support RGAA</th><td>Oui</td><td>Non</td><td>Non</td><td>Non</td></tr>
+    <tr><th scope="row">Support WCAG</th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
+    <tr><th scope="row">Parcours multi-pages</th><td>Oui</td><td>Non</td><td>Non</td><td>Oui</td></tr>
+    <tr><th scope="row">Authentification</th><td>Oui</td><td>Non</td><td>Non</td><td>Non</td></tr>
+    <tr><th scope="row">Analyse IA</th><td>Oui</td><td>Non</td><td>Non</td><td>Non</td></tr>
+    <tr><th scope="row">Mode CLI</th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
+    <tr><th scope="row">Mode API</th><td>Oui</td><td>Non</td><td>Non</td><td>Non</td></tr>
+    <tr><th scope="row">Rapports HTML</th><td>Oui</td><td>Non</td><td>Oui</td><td>Oui</td></tr>
+    <tr><th scope="row">Integration CI/CD</th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
+  </tbody>
+</table>
 
 Cette comparaison est donnée à titre indicatif et reflète les fonctionnalités disponibles dans BALDR au moment de la rédaction.
 
@@ -150,17 +162,35 @@ Accessibilité web, audit d'accessibilité, RGAA, WCAG, scanner d'accessibilité
 - [Sécurité](#sécurité)
 - [Développement](#développement)
 - [Docker](#docker)
-- [Documentation détaillée & licence](#documentation-détaillée--licence)
+- [Documentation détaillée & licence](#développement)
 
 ## Architecture
 
 
 Il s'utilise de deux façons, à partir du même paquet :
 
-| Binaire  | Mode               | Usage                                                        |
-| -------- | ------------------ | ------------------------------------------------------------ |
-| `baldr`  | **CLI**            | Auditer une requête localement, exporter HTML/JSON/CSV.      |
-| `baldrd` | **API** (serveur HTTP) | Exposer `POST /api/v1/journey`, protégé par clé d'API.   |
+<table>
+  <caption>Modes d'utilisation de BALDR</caption>
+  <thead>
+    <tr>
+      <th scope="col">Binaire</th>
+      <th scope="col">Mode</th>
+      <th scope="col">Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row"><code>baldr</code></th>
+      <td><strong>CLI</strong></td>
+      <td>Auditer une requete localement et exporter HTML/JSON/CSV.</td>
+    </tr>
+    <tr>
+      <th scope="row"><code>baldrd</code></th>
+      <td><strong>API</strong> (serveur HTTP)</td>
+      <td>Exposer <code>POST /api/v1/journey</code>, protege par cle d'API.</td>
+    </tr>
+  </tbody>
+</table>
 
 
 BALDR reçoit une **requête d'audit** (CLI ou API), pilote un navigateur headless

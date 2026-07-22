@@ -80,7 +80,7 @@ const config = {
       navbar: {
         title: 'BALDR',
         logo: {
-          alt: 'BALDR Logo',
+          alt: '',
           src: 'img/logo.svg',
         },
         items: [
@@ -90,10 +90,10 @@ const config = {
             position: 'left',
             label: 'Documentation',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/blog', label: 'Actualites', position: 'left'},
           {
             href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan',
-            label: 'GitHub',
+            label: 'GitHub (nouvelle fenetre)',
             position: 'right',
           },
         ],
@@ -122,8 +122,12 @@ const config = {
                 to: '/docs/metrics',
               },
               {
-                label: 'Blog',
+                label: 'Actualites',
                 to: '/blog',
+              },
+              {
+                label: 'Plan du site',
+                href: 'https://malakoffhumanis.github.io/baldr-accessibility-scan/sitemap.xml',
               },
             ],
           },
@@ -131,11 +135,11 @@ const config = {
             title: 'Projet',
             items: [
               {
-                label: 'README GitHub',
+                label: 'README GitHub (nouvelle fenetre)',
                 href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan#readme',
               },
               {
-                label: 'GitHub',
+                label: 'GitHub (nouvelle fenetre)',
                 href: 'https://github.com/malakoffhumanis/baldr-accessibility-scan',
               },
             ],
