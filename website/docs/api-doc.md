@@ -136,26 +136,26 @@ Toutes les erreurs suivent un contrat unique :
   <tbody>
     <tr><td><code>400</code></td><td><code>VALIDATION_ERROR</code></td><td>Corps de requête invalide (échec de validation du schéma).</td></tr>
     <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>En-tête <code>X-API-Key</code> manquant ou invalide.</td></tr>
-    <tr><td><code>429</code></td><td>(message texte)</td><td>Trop de requêtes (rate limiting).</td></tr>
+    <tr><td><code>429</code></td><td>(message texte)</td><td>Trop de requêtes (<span lang="en">rate limiting</span>).</td></tr>
     <tr><td><code>500</code></td><td><code>INTERNAL_SERVER_ERROR</code></td><td>Erreur interne (un <code>requestId</code> est inclus dans le message pour le suivi).</td></tr>
   </tbody>
 </table>
 
-## Limitation de débit (rate limiting)
+## Limitation de débit (<span lang="en">rate limiting</span>)
 
-Un quota par IP est appliqué globalement, configuré par les variables
+Un quota par <span lang="en">IP</span> est appliqué globalement, configuré par les variables
 `RATE_LIMIT_WINDOW_MS` (fenêtre en ms) et `RATE_LIMIT_MAX` (nombre de requêtes).
 Au dépassement : réponse `429` avec le message
 `Too many requests from this IP, please try again later.`
 
-## Sécurité réseau (SSRF)
+## Sécurité réseau (<span lang="en">SSRF</span>)
 
-Toutes les URLs soumises (`pages[].url`, `auth.loginUrl`) sont validées pour
-bloquer les requêtes vers des cibles internes (IP privées, `localhost`,
-métadonnées cloud `169.254.169.254`, IPv6 loopback/link-local, schémas non
-HTTP). Une URL bloquée renvoie une erreur `400`.
+Toutes les <span lang="en">URLs</span> soumises (`pages[].url`, `auth.loginUrl`) sont validées pour
+bloquer les requêtes vers des cibles internes (<span lang="en">IP</span> privées, `localhost`,
+métadonnées cloud `169.254.169.254`, <span lang="en">IPv6</span> loopback/link-local, schémas non
+<span lang="en">HTTP</span>). Une <span lang="en">URL</span> bloquée renvoie une erreur `400`.
 
-## Endpoint de santé
+## <span lang="en">Endpoint</span> de santé
 
 ### `GET /api/v1/health`
 
@@ -169,7 +169,7 @@ HTTP). Une URL bloquée renvoie une erreur `400`.
 
 ### `GET /api/v1/health/diagnostic`
 
-Vérifie la configuration et la connectivité réelle au fournisseur LLM.
+Vérifie la configuration et la connectivité réelle au fournisseur <span lang="en">LLM</span>.
 Renvoie `200` si `status: "healthy"`, `503` si `status: "degraded"`.
 
 ```json
