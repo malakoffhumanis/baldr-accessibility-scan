@@ -1,9 +1,9 @@
 # Documentation de l'API BALDR
 
 BALDR est une <span lang="en">API</span> d'audit d'accessibilité (RGAA / WCAG) automatisé. Elle pilote
-un navigateur headless (<span lang="en">Puppeteer</span>) pour parcourir un site, exécuter des actions,
+un navigateur <span lang="en">headless</span> (<span lang="en">Puppeteer</span>) pour parcourir un site, exécuter des actions,
 puis lancer un audit <span lang="en">Axe-Core</span> enrichi par IA, et produit un rapport
-(HTML / <span lang="en">JSON</span> / <span lang="en">CSV</span>).
+(<span lang="en">HTML</span> / <span lang="en">JSON</span> / <span lang="en">CSV</span>).
 
 ## Sommaire
 

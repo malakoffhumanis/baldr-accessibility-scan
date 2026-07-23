@@ -32,9 +32,9 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
 
 ✅ Analyse enrichie par IA
 
-✅ Intégration CI/CD
+✅ Intégration <span lang="en">CI/CD</span>
 
-✅ Rapports HTML, JSON et CSV
+✅ Rapports <span lang="en">HTML</span>, <span lang="en">JSON</span> et <span lang="en">CSV</span>
 
 ✅ Recommandations de remédiation
 
@@ -93,7 +93,7 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
 
 - Audit d'accessibilité pendant le développement
 - Validation avant mise en production
-- Intégration dans les pipelines CI/CD
+- Intégration dans les pipelines <span lang="en">CI/CD</span>
 - Contrôle qualité continu
 - Suivi de conformité RGAA
 - Suivi de conformité WCAG
@@ -136,8 +136,8 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
     <tr><th scope="row">Analyse IA</th><td>Oui</td><td>Non</td><td>Non</td><td>Non</td></tr>
     <tr><th scope="row">Mode CLI</th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
     <tr><th scope="row">Mode API</th><td>Oui</td><td>Non</td><td>Non</td><td>Non</td></tr>
-    <tr><th scope="row">Rapports HTML</th><td>Oui</td><td>Non</td><td>Oui</td><td>Oui</td></tr>
-    <tr><th scope="row">Integration CI/CD</th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
+    <tr><th scope="row">Rapports <span lang="en">HTML</span></th><td>Oui</td><td>Non</td><td>Oui</td><td>Oui</td></tr>
+    <tr><th scope="row">Integration <span lang="en">CI/CD</span></th><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td></tr>
   </tbody>
 </table>
 
@@ -167,7 +167,7 @@ Cette comparaison est donnée à titre indicatif et reflète les fonctionnalité
 - Interface CLI
 - API HTTP
 - Docker
-- CI/CD
+- <span lang="en">CI/CD</span>
 - Monitoring
 
 ---
@@ -211,7 +211,7 @@ Il s'utilise de deux façons, à partir du même paquet :
     <tr>
       <th scope="row"><code>baldr</code></th>
       <td><strong>CLI</strong></td>
-      <td>Auditer une requete localement et exporter HTML/JSON/CSV.</td>
+      <td>Auditer une requete localement et exporter <span lang="en">HTML</span>/<span lang="en">JSON</span>/<span lang="en">CSV</span>.</td>
     </tr>
     <tr>
       <th scope="row"><code>baldrd</code></th>
@@ -238,12 +238,12 @@ flowchart TB
         Browser["Navigateur headless - <span lang=\"en\">Puppeteer</span> / <span lang=\"en\">Chromium</span>"]
         Axe["Moteur <span lang=\"en\">axe-core</span> - RGAA / WCAG"]
         LLMClient["Client <span lang=\"en\">LLM</span> - <span lang=\"en\">OpenAI</span>-compatible"]
-        Report["Générateur de rapport - HTML / JSON / CSV"]
+        Report["Générateur de rapport - <span lang="en">HTML</span> / <span lang="en">JSON</span> / <span lang="en">CSV</span>"]
     end
 
     Sites["Sites audités"]
     LLM["Provider <span lang=\"en\">LLM</span> (<span lang=\"en\">OpenAI</span>-compatible)"]
-    Out(["Rapport HTML / JSON / CSV"])
+    Out(["Rapport <span lang="en">HTML</span> / <span lang="en">JSON</span> / <span lang="en">CSV</span>"])
 
     Client -->|"requête : pages + actions"| Orch
     Orch --> Browser
@@ -288,7 +288,7 @@ sequenceDiagram
         end
     end
 
-    BALDR-->>Client: Rapport HTML / JSON / CSV
+    BALDR-->>Client: Rapport <span lang="en">HTML</span> / <span lang="en">JSON</span> / <span lang="en">CSV</span>
 ```
 
 ## Installation
@@ -315,7 +315,7 @@ baldr run --help     # format de requête, authentification, exemples
 
 ### En CLI
 
-Auditer une page publique et écrire le rapport HTML dans un fichier — aucune clé
+Auditer une page publique et écrire le rapport <span lang="en">HTML</span> dans un fichier — aucune clé
 Pas de <span lang="en">LLM</span> nécessaire (analyse `static`) :
 
 ```bash
@@ -343,14 +343,14 @@ curl -X POST http://localhost:3000/api/v1/journey \
 
 ## La requête d'audit
 
-Le même contrat JSON alimente la CLI et l'API. **Seul `pages` est obligatoire.**
+Le même contrat <span lang="en">JSON</span> alimente la <span lang="en">CLI</span> et l'<span lang="en">API</span>. **Seul `pages` est obligatoire.**
 
 ```jsonc
 {
   "name": "Audit Espace Client",          // optionnel — titre + nom du fichier de rapport
   "options": {                            // optionnel — config globale d'audit
     "analysisType": "full",               // "static" | "intel" | "full"  (défaut: "full")
-    "reportFormat": "html",               // "html" | "json" | "csv"       (défaut: "html")
+    "reportFormat": "<span lang="en">html</span>",               // "<span lang="en">html</span>" | "<span lang="en">json</span>" | "<span lang="en">csv</span>"       (défaut: "<span lang="en">html</span>")
     "rules": ["1.1", "3.1"],              // optionnel — restreint aux règles RGAA listées
     "viewport": { "width": 1920, "height": 1080 } // optionnel — width ≥ 320, height ≥ 240
   },
@@ -459,14 +459,14 @@ baldr run [fichier] [options]
 | Option                   | Description                                              |
 | ------------------------ | -------------------------------------------------------- |
 | `-o, --output <path>`    | Écrit le rapport dans un fichier au lieu de stdout.      |
-| `--format <html\|json\|csv>` | Force `reportFormat` pour ce run (prime sur le fichier). |
+| `--format &lt;<span lang="en">html</span>\|<span lang="en">json</span>\|<span lang="en">csv</span>&gt;` | Force `reportFormat` pour ce run (prime sur le fichier). |
 | `--llm-model <model>`    | Voir [Surcharge des paramètres](#surcharge-des-paramètres). |
 | `--llm-endpoint <url>`   | idem                                                     |
 | `--llm-api-key <key>`    | idem                                                     |
 | `--llm-context-limit <n>`| idem                                                     |
 
 ```bash
-# Depuis un fichier, rapport HTML dans un fichier
+# Depuis un fichier, rapport <span lang="en">HTML</span> dans un fichier
 baldr run request.json -o rapport.html
 
 # Depuis stdin (pipe ou redirection)

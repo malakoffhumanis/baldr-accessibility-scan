@@ -11,8 +11,8 @@ Cette page liste les principales rubriques du site pour faciliter la navigation.
 ## Documentation
 
 - [Demarrage](/docs/)
-- [Documentation de l'API](/docs/api-doc)
-- [Journey API](/docs/journey-api)
+- [Documentation de l'<span lang="en">API</span>](/docs/api-doc)
+- [<span lang="en">Journey API</span>](/docs/journey-api)
 - [Metriques](/docs/metrics)
 - [README complet](/docs/)
 
