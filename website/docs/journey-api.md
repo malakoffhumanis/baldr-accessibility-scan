@@ -7,7 +7,7 @@ par un navigateur <span lang="en">headless</span>. Chaque action `<span lang="en
 
 - **Authentification** : en-tête `X-<span lang="en">API</span>-Key` **obligatoire** (voir [README](./README.md#authentification)).
 - **Content-Type** de la requête : `application/<span lang="en">json</span>`.
-- **Réponse** : le rapport généré dans le format demandé (`html`, `<span lang="en">json</span>` ou `csv`).
+- **Réponse** : le rapport généré dans le format demandé (`html`, `<span lang="en">json</span>` ou `<span lang="en">csv</span>`).
 
 ---
 
@@ -70,7 +70,7 @@ par un navigateur <span lang="en">headless</span>. Chaque action `<span lang="en
   </thead>
   <tbody>
     <tr><td><code>analysisType</code></td><td><code>"static" | "intel" | "full"</code></td><td><code>"full"</code></td><td>Profondeur d'analyse appliquee a chaque <span lang="en">scan</span> (voir <a href="#types-danalyse">Types d'analyse</a>).</td></tr>
-    <tr><td><code>reportFormat</code></td><td><code>"html" | "json" | "csv"</code></td><td><code>"html"</code></td><td>Format du rapport renvoye.</td></tr>
+    <tr><td><code><span lang="en">reportFormat</span></code></td><td><code>"<span lang="en">html</span>" | "<span lang="en">json</span>" | "<span lang="en">csv</span>"</code></td><td><code>"<span lang="en">html</span>"</code></td><td>Format du rapport renvoye.</td></tr>
     <tr><td><code>rules</code></td><td><code>string[]</code></td><td>(toutes)</td><td>Restreint l'audit a des identifiants de regles RGAA precis (ex. <code>"1.1"</code>).</td></tr>
     <tr><td><code>viewport</code></td><td><code>{`{ width, height }`}</code></td><td>(defaut navigateur)</td><td>Dimensions de la fenetre. <code>width >= 320</code>, <code>height >= 240</code>.</td></tr>
   </tbody>
@@ -99,8 +99,8 @@ par un navigateur <span lang="en">headless</span>. Chaque action `<span lang="en
 
 ## Actions
 
-Une action est un **objet typé** discriminé par `type`. Les built-ins
-déterministes et les interactions courantes sont validés ; `ai` est la trappe
+Une action est un **objet typé** discriminé par `type`. Les <span lang="en">built-ins</span>
+déterministes et les interactions courantes sont validés ; `<span lang="en">ai</span>` est la trappe
 d'évasion en langage naturel pour les cas non couverts.
 
 <table>
@@ -115,23 +115,23 @@ d'évasion en langage naturel pour les cas non couverts.
   <tbody>
     <tr><td><code>scan</code></td><td>-</td><td>Lance l'audit d'accessibilite (<span lang="en">Axe</span> + IA selon <code>analysisType</code>) + capture d'ecran.</td></tr>
     <tr><td><code>acceptCookies</code></td><td>-</td><td>Tente d'accepter automatiquement la banniere cookies (Tarteaucitron, Didomi, OneTrust...).</td></tr>
-    <tr><td><code>wait</code></td><td><code>ms</code> (<code>1</code>-<code>60000</code>)</td><td>Pause fixe en millisecondes.</td></tr>
-    <tr><td><code>click</code></td><td><code>target</code></td><td>Clique sur l'element decrit par <code>target</code>.</td></tr>
-    <tr><td><code>hover</code></td><td><code>target</code></td><td>Survole l'element decrit par <code>target</code>.</td></tr>
-    <tr><td><code>fill</code></td><td><code>target</code>, <code>value</code></td><td>Saisit <code>value</code> dans le champ decrit par <code>target</code>.</td></tr>
-    <tr><td><code>select</code></td><td><code>target</code>, <code>value</code></td><td>Selectionne <code>value</code> dans la liste decrite par <code>target</code>.</td></tr>
-    <tr><td><code>ai</code></td><td><code>instruction</code></td><td>Instruction libre en langage naturel, resolue par l'IA (ex. "ouvrir le sous-menu Fondation").</td></tr>
+    <tr><td><code><span lang="en">wait</span></code></td><td><code><span lang="en">ms</span></code> (<code>1</code>-<code>60000</code>)</td><td>Pause fixe en millisecondes.</td></tr>
+    <tr><td><code><span lang="en">click</span></code></td><td><code><span lang="en">target</span></code></td><td>Clique sur l'element decrit par <code><span lang="en">target</span></code>.</td></tr>
+    <tr><td><code><span lang="en">hover</span></code></td><td><code><span lang="en">target</span></code></td><td>Survole l'element decrit par <code><span lang="en">target</span></code>.</td></tr>
+    <tr><td><code><span lang="en">fill</span></code></td><td><code><span lang="en">target</span></code>, <code><span lang="en">value</span></code></td><td>Saisit <code><span lang="en">value</span></code> dans le champ decrit par <code><span lang="en">target</span></code>.</td></tr>
+    <tr><td><code><span lang="en">select</span></code></td><td><code><span lang="en">target</span></code>, <code><span lang="en">value</span></code></td><td>Selectionne <code><span lang="en">value</span></code> dans la liste decrite par <code><span lang="en">target</span></code>.</td></tr>
+    <tr><td><code><span lang="en">ai</span></code></td><td><code><span lang="en">instruction</span></code></td><td><span lang="en">Instruction</span> libre en langage naturel, resolue par l'IA (ex. "ouvrir le sous-menu Fondation").</td></tr>
   </tbody>
 </table>
 
-> `target`, `value` et `instruction` sont des chaînes (**max 500 caractères**).
-> `target` est une **description en langage naturel** (« le bouton Envoyer »,
-> « le champ email ») : l'IA en déduit le sélecteur CSS. Ce n'est pas
+> `<span lang="en">target</span>`, `<span lang="en">value</span>` et `<span lang="en">instruction</span>` sont des chaînes (**max 500 caractères**).
+> `<span lang="en">target</span>` est une **description en langage naturel** (" le bouton Envoyer ",
+> « le champ <span lang="en">email</span> ») : l'IA en déduit le sélecteur <span lang="en">CSS</span>. Ce n'est pas
 > nécessairement un sélecteur.
 
 > ℹ️ Les interactions (`<span lang="en">click</span>`, `<span lang="en">hover</span>`, `<span lang="en">fill</span>`, `<span lang="en">select</span>`, `<span lang="en">ai</span>`) nécessitent que
-> l'IA soit configurée (fournisseur <span lang="en">LLM</span>). Les <span lang="en">built-ins</span> `<span lang="en">scan</span>`, `acceptCookies`
-> et `wait` fonctionnent sans IA.
+> l'IA soit configurée (fournisseur <span lang="en">LLM</span>). Les <span lang="en">built-ins</span> `<span lang="en">scan</span>`, `<span lang="en">acceptCookies</span>`
+> et `<span lang="en">wait</span>` fonctionnent sans IA.
 
 ### Exemple d'actions
 
@@ -152,8 +152,8 @@ d'évasion en langage naturel pour les cas non couverts.
 
 L'authentification contre le site audité (à ne pas confondre avec la clé d'API)
 se déclare **en ligne** avec un seul modèle : **identifiant + mot de passe**. Le
-moteur s'adapte tout seul à ce que le site présente (popup native HTTP, ou
-formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
+moteur s'adapte tout seul à ce que le site présente (<span lang="en">popup native HTTP</span>, ou
+formulaire <span lang="en">HTML</span> mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 
 ```json
 "auth": { "username": "jdoe", "password": "secret" }
@@ -170,9 +170,9 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>username</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Identifiant (login ou email selon le site).</td></tr>
-    <tr><td><code>password</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>Mot de passe.</td></tr>
-    <tr><td><code>loginUrl</code></td><td><code>string</code></td><td>non</td><td>Page de login a visiter d'abord, si elle differe de l'URL auditee (auto-detectee sinon). Validee anti-SSRF.</td></tr>
+    <tr><td><code><span lang="en">username</span></code></td><td><code><span lang="en">string</span></code></td><td><strong>oui</strong></td><td>Identifiant (<span lang="en">login</span> ou <span lang="en">email</span> selon le site).</td></tr>
+    <tr><td><code><span lang="en">password</span></code></td><td><code><span lang="en">string</span></code></td><td><strong>oui</strong></td><td>Mot de passe.</td></tr>
+    <tr><td><code><span lang="en">loginUrl</span></code></td><td><code><span lang="en">string</span></code></td><td>non</td><td>Page de <span lang="en">login</span> à visiter d'abord, si elle diffère de l'<span lang="en">URL</span> auditée (auto-detéctée sinon). Validée anti-<span lang="en">SSRF</span>.</td></tr>
   </tbody>
 </table>
 
@@ -183,7 +183,7 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 **Pas d'authentification** = on **omet** simplement le champ `auth` (page publique).
 
 > **Limite** : un <span lang="en">SSO</span> d'entreprise **transparent** (<span lang="en">Kerberos</span>/<span lang="en">Negotiate</span>, sans
-> aucune saisie) ne peut pas être reproduit avec un id+mot de passe depuis une
+> aucune saisie) ne peut pas être reproduit avec un <span lang="en">id</span>+<span lang="en">mot de passe</span> depuis une
 > machine non jointe au domaine. Dans ce cas, l'audit doit tourner depuis un
 > poste joint au domaine ou un environnement réseau adéquat.
 
@@ -222,7 +222,7 @@ dans le format demandé (ce n'est pas une enveloppe <span lang="en">JSON</span> 
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>Content-Type</code></td><td><code>text/html</code>, <code>application/json</code> ou <code>text/csv</code> selon <code>reportFormat</code>.</td></tr>
+    <tr><td><code><span lang="en">Content-Type</span></code></td><td><code><span lang="en">text/html</span></code>, <code><span lang="en">application/json</span></code> ou <code><span lang="en">text/csv</span></code> selon <code><span lang="en">reportFormat</span></code>.</td></tr>
     <tr><td><code>Content-Disposition</code></td><td><code>attachment; filename="&lt;nom&gt;.&lt;ext&gt;"</code> ; <code>&lt;nom&gt;</code> derive du champ <code>name</code> (assaini), sinon <code>rapport-journey</code>.</td></tr>
   </tbody>
 </table>
