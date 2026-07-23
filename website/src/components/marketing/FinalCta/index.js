@@ -10,8 +10,8 @@ export default function FinalCta() {
         Passez de l'audit ponctuel au pilotage continu de votre conformite accessibilite
       </Heading>
       <p>
-        Demarrez avec la CLI, integrez BALDR dans votre pipeline CI/CD, puis
-        exposez vos audits via l'API pour vos applications et portails metier.
+        Demarrez avec la <span lang="en">CLI</span>, integrez BALDR dans votre pipeline <span lang="en">CI/CD</span>, puis
+        exposez vos audits via l'<span lang="en">API</span> pour vos applications et portails metier.
       </p>
       <div className={styles.actions}>
         <Link className={clsx('button button--lg', styles.primary)} to="/docs/">

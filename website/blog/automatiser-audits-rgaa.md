@@ -103,7 +103,7 @@ npm install -g baldr-accessibility-scan
 Prérequis :
 
 - Node.js 22 ou supérieur
-- Chromium (installé automatiquement via Puppeteer)
+- <span lang="en">Chromium</span> (installé automatiquement via <span lang="en">Puppeteer</span>)
 
 Vérification :
 

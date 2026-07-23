@@ -157,7 +157,7 @@ métadonnées cloud `169.254.169.254`, <span lang="en">IPv6</span> loopback/link
 
 ## <span lang="en">Endpoint</span> de santé
 
-### `GET /api/v1/health`
+### GET /api/v1/health
 
 ```json
 {
@@ -167,7 +167,7 @@ métadonnées cloud `169.254.169.254`, <span lang="en">IPv6</span> loopback/link
 }
 ```
 
-### `GET /api/v1/health/diagnostic`
+### GET /api/v1/health/diagnostic
 
 Vérifie la configuration et la connectivité réelle au fournisseur <span lang="en">LLM</span>.
 Renvoie `200` si `status: "healthy"`, `503` si `status: "degraded"`.

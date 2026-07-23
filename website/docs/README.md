@@ -105,12 +105,12 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
 
 - Experts accessibilité
 - Développeurs front-end
-- Équipes QA
-- Product Owners
+- Équipes <span lang="en">QA</span>
+- <span lang="en">Product Owners</span>
 - Administrations publiques
 - Grandes entreprises
-- Équipes DevSecOps
-- Auditeurs RGAA
+- Équipes <span lang="en">DevSecOps</span>
+- Auditeurs <span lang="en">RGAA</span>
 
 ---
 
@@ -222,11 +222,11 @@ Il s'utilise de deux façons, à partir du même paquet :
 </table>
 
 
-BALDR reçoit une **requête d'audit** (CLI ou API), pilote un navigateur headless
-pour parcourir les pages, lance un audit **axe-core** — enrichi au besoin par un
-**LLM** — et renvoie un rapport. Les deux seuls systèmes externes sont les
-**sites audités** (via le navigateur) et le **fournisseur LLM** (compatible
-OpenAI).
+BALDR reçoit une **requête d'audit** (<span lang="en">CLI</span> ou <span lang="en">API</span>), pilote un navigateur <span lang="en">headless</span>
+pour parcourir les pages, lance un audit **<span lang="en">axe-core</span>** — enrichi au besoin par un
+**<span lang="en">LLM</span>** — et renvoie un rapport. Les deux seuls systèmes externes sont les
+**sites audités** (via le navigateur) et le **fournisseur <span lang="en">LLM</span>** (compatible
+<span lang="en">OpenAI</span>).
 
 ```mermaid
 flowchart TB

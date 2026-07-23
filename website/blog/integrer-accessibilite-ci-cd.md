@@ -21,14 +21,14 @@ date: 2026-07-10
 
 L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les **tests d'accessibilité automatisés** doivent être intégrés directement dans les pipelines **<span lang="en">CI/CD</span>** afin de détecter rapidement les régressions et garantir la conformité des applications web.
 
-## Pourquoi intégrer l'accessibilité dans le CI/CD ?
+## Pourquoi intégrer l'accessibilité dans le <span lang="en">CI/CD</span> ?
 
 Les défauts d'accessibilité détectés tardivement sont généralement plus coûteux à corriger. En automatisant les audits d'accessibilité à chaque livraison, les équipes peuvent identifier les problèmes dès leur apparition.
 
 L'intégration continue de l'accessibilité permet notamment de :
 
 - détecter les régressions d'accessibilité dès les premières phases de développement ;
-- améliorer la conformité RGAA et WCAG ;
+- améliorer la conformité RGAA et <span lang="en">WCAG</span> ;
 - réduire le coût des corrections ;
 - améliorer l'expérience utilisateur ;
 - industrialiser les contrôles qualité ;
@@ -49,7 +49,7 @@ L'objectif est de faire de l'accessibilité une exigence continue plutôt qu'une
 
 ## Automatiser les audits d'accessibilité avec BALDR
 
-BALDR Accessibility Scan permet d'intégrer facilement des audits d'accessibilité automatisés dans les principaux outils CI/CD.
+BALDR Accessibility Scan permet d'intégrer facilement des audits d'accessibilité automatisés dans les principaux outils <span lang="en">CI/CD</span>.
 
 Les analyses peuvent être exécutées depuis :
 
@@ -89,21 +89,21 @@ Empêcher la mise en production d'une version contenant des régressions d'acces
 
 Suivre l'évolution de la conformité RGAA au fil des développements.
 
-### Conformité WCAG
+### Conformité <span lang="en">WCAG</span>
 
-Mesurer régulièrement le respect des critères WCAG et identifier les nouvelles violations.
+Mesurer régulièrement le respect des critères <span lang="en">WCAG</span> et identifier les nouvelles violations.
 
 ### Reporting qualité
 
-Produire automatiquement des rapports d'accessibilité destinés aux équipes de développement, QA et conformité.
+Produire automatiquement des rapports d'accessibilité destinés aux équipes de développement, <span lang="en">QA</span> et conformité.
 
 ## Bénéfices pour les équipes
 
-L'intégration de BALDR dans un pipeline CI/CD apporte plusieurs avantages :
+L'intégration de BALDR dans un pipeline <span lang="en">CI/CD</span> apporte plusieurs avantages :
 
 - détection précoce des défauts d'accessibilité ;
 - réduction du coût des corrections ;
-- automatisation des audits RGAA et WCAG ;
+- automatisation des audits RGAA et <span lang="en">WCAG</span> ;
 - amélioration continue de la qualité ;
 - réduction des risques de non-conformité ;
 - visibilité accrue sur l'état d'accessibilité des applications.

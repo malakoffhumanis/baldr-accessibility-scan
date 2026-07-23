@@ -25,7 +25,7 @@ const Pipelines = [
     steps: [
       {text: 'Audit applicatif', lang: null},
       {text: 'Client API', lang: null},
-      {text: 'curl', lang: null},
+      {text: 'curl', lang: 'en'},
     ],
   },
 ];

@@ -8,7 +8,7 @@ const Audience = [
   {text: 'Product Owners', lang: 'en'},
   {text: 'Administrations publiques', lang: null},
   {text: 'Grandes entreprises', lang: null},
-  {text: 'Equipes DevSecOps', lang: null},
+  {text: 'Equipes DevSecOps', lang: 'en'},
   {text: 'Auditeurs RGAA', lang: null},
 ];
 

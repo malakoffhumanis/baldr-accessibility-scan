@@ -3,11 +3,11 @@ import styles from './styles.module.css';
 
 const Features = [
   'Controles RGAA et WCAG',
-  'Analyse axe-core + enrichissement IA',
+  <>Analyse <span lang="en">axe-core</span> + enrichissement <span lang="en">IA</span></>,
   'Recommandations de remediation actionnables',
   'Scoring de conformite et priorisation',
   'Gestion des cookies et parcours complexes',
-  'Mode CLI, API HTTP et Docker',
+  <>Mode <span lang="en">CLI</span>, <span lang="en">API HTTP</span> et <span lang="en">Docker</span></>,
 ];
 
 export default function CapabilityGrid() {

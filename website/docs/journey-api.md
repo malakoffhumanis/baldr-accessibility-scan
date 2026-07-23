@@ -1,13 +1,13 @@
 # API Journey — `POST /api/v1/journey`
 
 Lance un **parcours d'audit d'accessibilité** : une séquence de pages, chacune
-avec des actions typées (<span lang="en">scan</span>, clic, saisie, attente…), exécutées dans l'ordre
+avec des actions typées (<span lang="en">scan</span>, <span lang="en">click</span>, saisie, attente…), exécutées dans l'ordre
 par un navigateur <span lang="en">headless</span>. Chaque action `<span lang="en">scan</span>` déclenche un audit <span lang="en">Axe-Core</span>
-(enrichi par IA selon `analysisType`) et une capture d'écran.
+(enrichi par <span lang="en">IA</span> selon `analysisType`) et une capture d'écran.
 
 - **Authentification** : en-tête `X-<span lang="en">API</span>-Key` **obligatoire** (voir [README](./README.md#authentification)).
 - **Content-Type** de la requête : `application/<span lang="en">json</span>`.
-- **Réponse** : le rapport généré dans le format demandé (`html`, `<span lang="en">json</span>` ou `<span lang="en">csv</span>`).
+- **Réponse** : le rapport généré dans le format demandé (`<span lang="en">html</span>`, `<span lang="en">json</span>` ou `<span lang="en">csv</span>`).
 
 ---
 
