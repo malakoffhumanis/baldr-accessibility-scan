@@ -1,13 +1,13 @@
 # Métriques — `GET /metrics`
 
-Expose les métriques applicatives et système au **format Prometheus** (texte).
-Destiné au scraping par un serveur <span lang="en">Prometheus</span> pour l'observabilité (volumétrie,
-latences, consommation LLM, audits en cours).
+Expose les métriques applicatives et système au **format <span lang="en">Prometheus</span>** (texte).
+Destiné au <span lang="en">scraping</span> par un serveur <span lang="en">Prometheus</span> pour l'observabilité (volumétrie,
+latences, consommation <span lang="en">LLM</span>, audits en cours).
 
 - **Chemin** : `/metrics` (à la **racine**, hors préfixe `/api/v1`, par convention <span lang="en">Prometheus</span>).
-- **Authentification** : en-tête `X-API-Key` **obligatoire** (même système que le reste de l'API). Sans clé valide → `401`.
-- **Content-Type** : `text/plain; version=0.0.4` (format d'exposition <span lang="en">Prometheus</span>).
-- **Rate limiting** : soumis au quota global par IP (comme les autres endpoints).
+- **Authentification** : en-tête `<span lang="en">X-API-Key</span>` **obligatoire** (même système que le reste de l'<span lang="en">API</span>). Sans clé valide → `401`.
+- **<span lang="en">Content-Type</span>** : `<span lang="en">text/plain</span>; <span lang="en">version</span>=0.0.4` (format d'exposition <span lang="en">Prometheus</span>).
+- **<span lang="en">Rate limiting</span>** : soumis au quota global par <span lang="en">IP</span> (comme les autres <span lang="en">endpoints</span>).
 
 ---
 
@@ -15,8 +15,8 @@ latences, consommation LLM, audits en cours).
 
 ### Métriques système (Node.js)
 
-Collectées automatiquement avec le **préfixe `baldr_`** : latence de l'event
-loop, usage du tas (heap), garbage collection, descripteurs de fichiers, etc.
+Collectées automatiquement avec le **préfixe `baldr_`** : latence de l'<span lang="en">event
+loop</span>, usage du <span lang="en">heap</span> (tas), <span lang="en">garbage collection</span>, descripteurs de fichiers, etc.
 (métriques standard `<span lang="en">prom-client</span>`, ex. `baldr_process_cpu_seconds_total`,
 `baldr_nodejs_eventloop_lag_seconds`, …).
 
@@ -36,7 +36,7 @@ loop, usage du tas (heap), garbage collection, descripteurs de fichiers, etc.
     <tr><td><code>baldr_llm_calls_total</code></td><td><span lang="en">Counter</span></td><td><code>model</code>, <code>status</code></td><td>Nombre total d'appels a l'API LLM.</td></tr>
     <tr><td><code>baldr_llm_call_duration_seconds</code></td><td><span lang="en">Histogram</span></td><td><code>model</code></td><td>Duree des appels LLM (<span lang="en">buckets</span> : 0.5, 1, 2, 5, 10, 30, 60, 120, 180 s).</td></tr>
     <tr><td><code>baldr_llm_tokens_total</code></td><td><span lang="en">Counter</span></td><td><code>model</code>, <code>type</code></td><td>Nombre total de tokens consommes (<code>type</code> = <span lang="en">prompt</span>/<span lang="en">completion</span>).</td></tr>
-    <tr><td><code>baldr_llm_cache_hits_total</code></td><td><span lang="en">Counter</span></td><td><code>source</code></td><td>Nombre de hits du cache LLM (<code>source</code> = <span lang="en">LRU</span> ou replay).</td></tr>
+    <tr><td><code>baldr_llm_cache_hits_total</code></td><td><span lang="en">Counter</span></td><td><code>source</code></td><td>Nombre de <span lang="en">hits</span> du cache <span lang="en">LLM</span> (<code>source</code> = <span lang="en">LRU</span> ou <span lang="en">replay</span>).</td></tr>
     <tr><td><code>baldr_audit_requests_total</code></td><td><span lang="en">Counter</span></td><td><code>status</code>, <code>apiKey</code></td><td>Nombre total de requetes d'audit. <code>apiKey</code> = identifiant <strong>public</strong> de la cle (jamais le secret), ou <code>anonymous</code>.</td></tr>
     <tr><td><code>baldr_audit_duration_seconds</code></td><td><span lang="en">Histogram</span></td><td>-</td><td>Duree des requetes d'audit completes (<span lang="en">buckets</span> : 5, 10, 30, 60, 120, 300, 600 s).</td></tr>
     <tr><td><code>baldr_active_audits</code></td><td><span lang="en">Gauge</span></td><td>-</td><td>Nombre d'audits actuellement en cours.</td></tr>
@@ -71,7 +71,7 @@ baldr_llm_call_duration_seconds_bucket{le="0.5",model="..."} 0
 
 ---
 
-## Configuration du scraping <span lang="en">Prometheus</span>
+## Configuration du <span lang="en">scraping</span> <span lang="en">Prometheus</span>
 
 Comme `/metrics` exige l'en-tête <code><span lang="en">X-API-Key</span></code>, il faut l'injecter dans la
 configuration du job de scraping :
@@ -89,11 +89,11 @@ scrape_configs:
 ```
 
 > Selon la version de <span lang="en">Prometheus</span>, l'injection d'en-têtes custom peut nécessiter
-> un reverse proxy intermédiaire si `<span lang="en">http_headers</span>` n'est pas disponible.
+> un <span lang="en">reverse proxy</span> intermédiaire si `<span lang="en">http_headers</span>` n'est pas disponible.
 
 ### Alternative : réseau interne
 
-Si le scraping passe par un réseau déjà cloisonné, vous pouvez préférer
-restreindre l'accès à `/metrics` au niveau réseau (ACL ingress) plutôt que par
-clé d'API. Dans la configuration actuelle, la protection par `X-API-Key` est
+Si le <span lang="en">scraping</span> passe par un réseau déjà cloisonné, vous pouvez préférer
+restreindre l'accès à `/metrics` au niveau réseau (<span lang="en">ACL ingress</span>) plutôt que par
+clé d'<span lang="en">API</span>. Dans la configuration actuelle, la protection par `X-API-Key` est
 néanmoins **toujours active**.
