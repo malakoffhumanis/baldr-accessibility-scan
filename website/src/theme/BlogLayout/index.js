@@ -12,13 +12,13 @@ export default function BlogLayout(props) {
       <div className="container margin-vert--lg">
         <div className="row">
           <BlogSidebar sidebar={sidebar} />
-          <main
+          <div
             className={clsx('col', {
               'col--7': hasSidebar,
               'col--9 col--offset-1': !hasSidebar,
             })}>
             {children}
-          </main>
+          </div>
           {toc && (
             <aside className="col col--2" aria-label="Sommaire de l'article">
               {toc}

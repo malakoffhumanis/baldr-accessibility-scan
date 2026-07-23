@@ -44,7 +44,7 @@ export default function MDXPage(props) {
           keywords={keywords}
           image={image}
         />
-        <main className="container container--fluid margin-vert--lg">
+        <div className="container container--fluid margin-vert--lg">
           <div className="row">
             <div className={clsx('col', !hideTableOfContents && 'col--8')}>
               <ContentVisibility metadata={metadata} />
@@ -75,7 +75,7 @@ export default function MDXPage(props) {
               </aside>
             )}
           </div>
-        </main>
+        </div>
       </Layout>
     </HtmlClassNameProvider>
   );
