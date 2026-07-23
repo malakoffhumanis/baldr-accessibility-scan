@@ -1,6 +1,6 @@
 # Métriques — `GET /metrics`
 
-Expose les métriques applicatives et système au **format <span lang="en">Prometheus</span>** (texte).
+Expose les métriques applicatives et système au **format Prometheus** (texte).
 Destiné au scraping par un serveur <span lang="en">Prometheus</span> pour l'observabilité (volumétrie,
 latences, consommation LLM, audits en cours).
 

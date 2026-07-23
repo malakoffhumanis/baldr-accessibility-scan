@@ -1,4 +1,4 @@
-# <span lang="en">API Journey</span> — `POST /api/v1/journey`
+# API Journey — `POST /api/v1/journey`
 
 Lance un **parcours d'audit d'accessibilité** : une séquence de pages, chacune
 avec des actions typées (<span lang="en">scan</span>, clic, saisie, attente…), exécutées dans l'ordre
