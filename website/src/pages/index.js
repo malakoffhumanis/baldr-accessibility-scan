@@ -14,16 +14,14 @@ export default function Home() {
     <Layout
       title={`${siteConfig.title} | Audit accessibilite RGAA/WCAG`}
       description="Outil open source d'audit d'accessibilite RGAA et WCAG enrichi par IA, avec integration CLI, API et CI/CD.">
-      <main>
-        <div className={styles.homeShell}>
-          <HeroSection />
-          <ProofStrip />
-          <CapabilityGrid />
-          <IntegrationFlows />
-          <AudienceSection />
-          <FinalCta />
-        </div>
-      </main>
+      <div className={styles.homeShell}>
+        <HeroSection />
+        <ProofStrip />
+        <CapabilityGrid />
+        <IntegrationFlows />
+        <AudienceSection />
+        <FinalCta />
+      </div>
     </Layout>
   );
 }

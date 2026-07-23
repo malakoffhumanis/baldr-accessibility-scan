@@ -5,7 +5,7 @@ const ProofItems = [
   {
     title: 'Parcours utilisateurs complets',
     description:
-      'BALDR audite des journeys multi-pages, y compris des interactions dynamiques.',
+      <>BALDR audite des <span lang="en">journeys</span> <span lang="en">multi-pages</span>, y compris des interactions dynamiques.</>,
   },
   {
     title: 'Applications authentifiees',
@@ -15,7 +15,7 @@ const ProofItems = [
   {
     title: 'Rapports exploitables',
     description:
-      'Production native de rapports HTML, JSON et CSV pour les equipes techniques et metier.',
+      <>Production native de rapports <span lang="en">HTML</span>, <span lang="en">JSON</span> et <span lang="en">CSV</span> pour les equipes techniques et metier.</>,
   },
 ];
 

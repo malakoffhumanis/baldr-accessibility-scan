@@ -14,7 +14,7 @@ export default function HeroSection() {
   return (
     <section className={styles.hero}>
       <div className={clsx('container', styles.inner)}>
-        <p className={styles.kicker}>BALDR Accessibility Scan</p>
+        <p className={styles.kicker}>BALDR <span lang="en">Accessibility Scan</span></p>
         <Heading as="h1" className={styles.title}>
           Audit accessibilite RGAA et WCAG nouvelle generation
         </Heading>

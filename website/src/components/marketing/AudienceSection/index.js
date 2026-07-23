@@ -4,7 +4,7 @@ import styles from './styles.module.css';
 const Audience = [
   {text: 'Experts accessibilite', lang: null},
   {text: 'Developpeurs front-end', lang: null},
-  {text: 'Equipes QA', lang: null},
+  {text: <>Equipes <span lang="en">QA</span></>, lang: null},
   {text: 'Product Owners', lang: 'en'},
   {text: 'Administrations publiques', lang: null},
   {text: 'Grandes entreprises', lang: null},
