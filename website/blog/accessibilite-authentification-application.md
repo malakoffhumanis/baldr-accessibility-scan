@@ -6,7 +6,7 @@ keywords:
   - RGAA
   - WCAG
   - audit accessibilité
-- accessibility testing
+  - accessibility testing
   - a11y
   - Intelligence artificielle
 tags:
