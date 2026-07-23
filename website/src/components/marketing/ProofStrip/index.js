@@ -4,18 +4,25 @@ import styles from './styles.module.css';
 const ProofItems = [
   {
     title: 'Parcours utilisateurs complets',
-    description:
-      <>BALDR audite des <span lang="en">journeys</span> <span lang="en">multi-pages</span>, y compris des interactions dynamiques.</>,
+    description: (
+      <>
+        BALDR audite des <span lang="en">journeys</span> <span lang="en">multi-pages</span>, y compris des
+        interactions dynamiques.
+      </>
+    ),
   },
   {
     title: 'Applications authentifiees',
-    description:
-      'Le moteur gere les etapes de connexion et permet des audits sur zones protegees.',
+    description: 'Le moteur gere les etapes de connexion et permet des audits sur zones protegees.',
   },
   {
     title: 'Rapports exploitables',
-    description:
-      <>Production native de rapports <span lang="en">HTML</span>, <span lang="en">JSON</span> et <span lang="en">CSV</span> pour les equipes techniques et metier.</>,
+    description: (
+      <>
+        Production native de rapports <span lang="en">HTML</span>, <span lang="en">JSON</span> et{' '}
+        <span lang="en">CSV</span> pour les equipes techniques et metier.
+      </>
+    ),
   },
 ];
 

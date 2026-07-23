@@ -58,8 +58,8 @@
 <li class="">améliorer l'expérience utilisateur sur l'ensemble du parcours numérique.</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/accessibilite-authentification-application#conclusion" class="hash-link" aria-label="Lien direct vers Conclusion" title="Lien direct vers Conclusion" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
-<p>Les applications authentifiées représentent aujourd'hui une part essentielle des systèmes d'information. Pourtant, elles sont encore rarement couvertes correctement par les solutions classiques de <strong>web accessibility testing</strong>.</p>
-<p>En combinant <strong>Puppeteer</strong>, <strong>axe-core</strong>, l'automatisation des parcours utilisateurs et l'authentification automatique, BALDR permet de réaliser des <strong>audits d'accessibilité RGAA et WCAG</strong> sur les espaces réellement utilisés par les collaborateurs, les clients et les utilisateurs finaux.</p>]]></content>
+<p>Les applications authentifiées représentent aujourd'hui une part essentielle des systèmes d'information. Pourtant, elles sont encore rarement couvertes correctement par les solutions classiques de <strong><span lang="en">web accessibility testing</span></strong>.</p>
+<p>En combinant <strong><span lang="en">Puppeteer</span></strong>, <strong><span lang="en">axe-core</span></strong>, l'automatisation des parcours utilisateurs et l'authentification automatique, BALDR permet de réaliser des <strong>audits d'accessibilité RGAA et WCAG</strong> sur les espaces réellement utilisés par les collaborateurs, les clients et les utilisateurs finaux.</p>]]></content>
         <category label="RGAA" term="RGAA"/>
         <category label="WCAG" term="WCAG"/>
         <category label="Accessibilité" term="Accessibilité"/>
@@ -85,7 +85,7 @@
 </ul>
 <p>L'automatisation permet de mettre en place une démarche d'amélioration continue et de contrôler l'accessibilité à chaque étape du cycle de développement.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="les-limites-des-scanners-daccessibilité-traditionnels">Les limites des scanners d'accessibilité traditionnels<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/automatiser-audits-rgaa#les-limites-des-scanners-daccessibilit%C3%A9-traditionnels" class="hash-link" aria-label="Lien direct vers Les limites des scanners d'accessibilité traditionnels" title="Lien direct vers Les limites des scanners d'accessibilité traditionnels" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
-<p>La majorité des outils de <strong>web accessibility testing</strong> se concentrent sur l'analyse d'une page unique.</p>
+<p>La majorité des outils de <strong><span lang="en">web accessibility testing</span></strong> se concentrent sur l'analyse d'une page unique.</p>
 <p>Cette approche montre rapidement ses limites lorsque l'application contient :</p>
 <ul>
 <li class="">Des parcours utilisateurs multi-pages</li>
@@ -99,7 +99,7 @@
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="comment-baldr-automatise-les-audits-daccessibilité">Comment BALDR automatise les audits d'accessibilité<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/automatiser-audits-rgaa#comment-baldr-automatise-les-audits-daccessibilit%C3%A9" class="hash-link" aria-label="Lien direct vers Comment BALDR automatise les audits d'accessibilité" title="Lien direct vers Comment BALDR automatise les audits d'accessibilité" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
 <p>BALDR combine plusieurs technologies afin de réaliser des audits d'accessibilité automatisés plus avancés :</p>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="analyse-des-règles-daccessibilité">Analyse des règles d'accessibilité<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/automatiser-audits-rgaa#analyse-des-r%C3%A8gles-daccessibilit%C3%A9" class="hash-link" aria-label="Lien direct vers Analyse des règles d'accessibilité" title="Lien direct vers Analyse des règles d'accessibilité" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
-<p>BALDR s'appuie sur <strong>axe-core</strong>, l'un des moteurs d'analyse d'accessibilité les plus utilisés dans l'écosystème web.</p>
+<p>BALDR s'appuie sur <strong><span lang="en">axe-core</span></strong>, l'un des moteurs d'analyse d'accessibilité les plus utilisés dans l'écosystème web.</p>
 <p>Cette analyse permet notamment de détecter :</p>
 <ul>
 <li class="">Les images sans texte alternatif</li>
@@ -109,7 +109,7 @@
 <li class="">Les violations WCAG les plus courantes</li>
 </ul>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="navigation-automatisée">Navigation automatisée<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/automatiser-audits-rgaa#navigation-automatis%C3%A9e" class="hash-link" aria-label="Lien direct vers Navigation automatisée" title="Lien direct vers Navigation automatisée" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
-<p>Grâce à <strong>Puppeteer</strong> et <strong>Chromium</strong>, BALDR peut :</p>
+<p>Grâce à <strong><span lang="en">Puppeteer</span></strong> et <strong><span lang="en">Chromium</span></strong>, BALDR peut :</p>
 <ul>
 <li class="">Naviguer sur plusieurs pages</li>
 <li class="">Cliquer sur des éléments interactifs</li>
@@ -118,7 +118,7 @@
 <li class="">Parcourir des applications dynamiques</li>
 </ul>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="analyse-enrichie-par-intelligence-artificielle">Analyse enrichie par Intelligence Artificielle<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/automatiser-audits-rgaa#analyse-enrichie-par-intelligence-artificielle" class="hash-link" aria-label="Lien direct vers Analyse enrichie par Intelligence Artificielle" title="Lien direct vers Analyse enrichie par Intelligence Artificielle" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
-<p>BALDR peut également utiliser un fournisseur LLM compatible OpenAI afin :</p>
+<p>BALDR peut également utiliser un fournisseur <span lang="en">LLM</span> compatible <span lang="en">OpenAI</span> afin :</p>
 <ul>
 <li class="">d'interpréter des instructions en langage naturel ;</li>
 <li class="">de localiser automatiquement des éléments à l'écran ;</li>
@@ -136,7 +136,7 @@
 <p>Prérequis :</p>
 <ul>
 <li class="">Node.js 22 ou supérieur</li>
-<li class="">Chromium (installé automatiquement via Puppeteer)</li>
+<li class=""><span lang="en">Chromium</span> (installé automatiquement via <span lang="en">Puppeteer</span>)</li>
 </ul>
 <p>Vérification :</p>
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><div class="token-line" style="color:#393A34"><span class="token plain">baldr --version</span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">baldr run --help</span><br></div></code></pre></div></div>
@@ -161,7 +161,7 @@
 <ul>
 <li class="">L'audit RGAA automatisé</li>
 <li class="">Les audits WCAG continus</li>
-<li class="">Les tests d'accessibilité dans les pipelines CI/CD</li>
+<li class="">Les tests d'accessibilité dans les pipelines <span lang="en">CI/CD</span></li>
 <li class="">Les applications nécessitant une authentification</li>
 <li class="">Les espaces clients et intranets</li>
 <li class="">Les plateformes SaaS</li>
@@ -170,7 +170,7 @@
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/automatiser-audits-rgaa#conclusion" class="hash-link" aria-label="Lien direct vers Conclusion" title="Lien direct vers Conclusion" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
 <p>L'automatisation des audits d'accessibilité constitue aujourd'hui un levier essentiel pour maintenir la conformité RGAA et WCAG dans le temps.</p>
-<p>Grâce à son approche combinant <strong>axe-core</strong>, <strong>Puppeteer</strong>, <strong>API REST</strong>, <strong>parcours utilisateurs multi-pages</strong> et <strong>analyse enrichie par Intelligence Artificielle</strong>, BALDR permet aux équipes techniques d'intégrer l'accessibilité directement dans leurs processus de développement, de validation et de déploiement.</p>
+<p>Grâce à son approche combinant <strong><span lang="en">axe-core</span></strong>, <strong><span lang="en">Puppeteer</span></strong>, <strong><span lang="en">API REST</span></strong>, <strong>parcours utilisateurs multi-pages</strong> et <strong>analyse enrichie par Intelligence Artificielle</strong>, BALDR permet aux équipes techniques d'intégrer l'accessibilité directement dans leurs processus de développement, de validation et de déploiement.</p>
 <p>Pour les organisations souhaitant industrialiser leurs contrôles d'accessibilité, BALDR offre une solution open source capable d'analyser les applications modernes, y compris les espaces authentifiés et les parcours utilisateurs complexes.</p>]]></content>
         <category label="RGAA" term="RGAA"/>
         <category label="WCAG" term="WCAG"/>
@@ -183,20 +183,20 @@
         <link href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd"/>
         <updated>2026-07-10T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Découvrez comment Intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR Accessibility Scan.]]></summary>
-        <content type="html"><![CDATA[<p>L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les <strong>tests d'accessibilité automatisés</strong> doivent être intégrés directement dans les pipelines <strong>CI/CD</strong> afin de détecter rapidement les régressions et garantir la conformité des applications web.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="pourquoi-intégrer-laccessibilité-dans-le-cicd-">Pourquoi intégrer l'accessibilité dans le CI/CD ?<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#pourquoi-int%C3%A9grer-laccessibilit%C3%A9-dans-le-cicd-" class="hash-link" aria-label="Lien direct vers Pourquoi intégrer l'accessibilité dans le CI/CD ?" title="Lien direct vers Pourquoi intégrer l'accessibilité dans le CI/CD ?" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
+        <content type="html"><![CDATA[<p>L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les <strong>tests d'accessibilité automatisés</strong> doivent être intégrés directement dans les pipelines <strong><span lang="en">CI/CD</span></strong> afin de détecter rapidement les régressions et garantir la conformité des applications web.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="pourquoi-intégrer-laccessibilité-dans-le-cicd-">Pourquoi intégrer l'accessibilité dans le <span lang="en">CI/CD</span> ?<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#pourquoi-int%C3%A9grer-laccessibilit%C3%A9-dans-le-cicd-" class="hash-link" aria-label="Lien direct vers pourquoi-intégrer-laccessibilité-dans-le-cicd-" title="Lien direct vers pourquoi-intégrer-laccessibilité-dans-le-cicd-" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
 <p>Les défauts d'accessibilité détectés tardivement sont généralement plus coûteux à corriger. En automatisant les audits d'accessibilité à chaque livraison, les équipes peuvent identifier les problèmes dès leur apparition.</p>
 <p>L'intégration continue de l'accessibilité permet notamment de :</p>
 <ul>
 <li class="">détecter les régressions d'accessibilité dès les premières phases de développement ;</li>
-<li class="">améliorer la conformité RGAA et WCAG ;</li>
+<li class="">améliorer la conformité RGAA et <span lang="en">WCAG</span> ;</li>
 <li class="">réduire le coût des corrections ;</li>
 <li class="">améliorer l'expérience utilisateur ;</li>
 <li class="">industrialiser les contrôles qualité ;</li>
 <li class="">suivre l'évolution de l'accessibilité dans le temps.</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="laccessibilité-au-même-niveau-que-la-qualité-et-la-sécurité">L'accessibilité au même niveau que la qualité et la sécurité<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#laccessibilit%C3%A9-au-m%C3%AAme-niveau-que-la-qualit%C3%A9-et-la-s%C3%A9curit%C3%A9" class="hash-link" aria-label="Lien direct vers L'accessibilité au même niveau que la qualité et la sécurité" title="Lien direct vers L'accessibilité au même niveau que la qualité et la sécurité" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
-<p>Dans une démarche DevOps moderne, l'accessibilité doit être contrôlée au même titre que :</p>
+<p>Dans une démarche <span lang="en">DevOps</span> moderne, l'accessibilité doit être contrôlée au même titre que :</p>
 <ul>
 <li class="">les tests unitaires ;</li>
 <li class="">les tests d'intégration ;</li>
@@ -207,16 +207,16 @@
 </ul>
 <p>L'objectif est de faire de l'accessibilité une exigence continue plutôt qu'une intervention ponctuelle.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="automatiser-les-audits-daccessibilité-avec-baldr">Automatiser les audits d'accessibilité avec BALDR<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#automatiser-les-audits-daccessibilit%C3%A9-avec-baldr" class="hash-link" aria-label="Lien direct vers Automatiser les audits d'accessibilité avec BALDR" title="Lien direct vers Automatiser les audits d'accessibilité avec BALDR" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
-<p>BALDR Accessibility Scan permet d'intégrer facilement des audits d'accessibilité automatisés dans les principaux outils CI/CD.</p>
+<p>BALDR Accessibility Scan permet d'intégrer facilement des audits d'accessibilité automatisés dans les principaux outils <span lang="en">CI/CD</span>.</p>
 <p>Les analyses peuvent être exécutées depuis :</p>
 <ul>
-<li class="">GitHub Actions ;</li>
-<li class="">GitLab CI/CD ;</li>
-<li class="">Azure DevOps ;</li>
-<li class="">Jenkins ;</li>
-<li class="">Bamboo ;</li>
-<li class="">TeamCity ;</li>
-<li class="">tout autre orchestrateur capable d'exécuter une commande CLI.</li>
+<li class=""><span lang="en">GitHub Actions</span> ;</li>
+<li class=""><span lang="en">GitLab CI/CD</span> ;</li>
+<li class=""><span lang="en">Azure DevOps</span> ;</li>
+<li class=""><span lang="en">Jenkins</span> ;</li>
+<li class=""><span lang="en">Bamboo</span> ;</li>
+<li class=""><span lang="en">TeamCity</span> ;</li>
+<li class="">tout autre orchestrateur capable d'exécuter une commande <span lang="en">CLI</span>.</li>
 </ul>
 <p>BALDR peut générer des rapports détaillés aux formats HTML, JSON et CSV afin d'alimenter les workflows qualité existants.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="exemple-dexécution-automatisée">Exemple d'exécution automatisée<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#exemple-dex%C3%A9cution-automatis%C3%A9e" class="hash-link" aria-label="Lien direct vers Exemple d'exécution automatisée" title="Lien direct vers Exemple d'exécution automatisée" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
@@ -224,9 +224,9 @@
 <div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><div class="token-line" style="color:#393A34"><span class="token plain">baldr run audit.json --format json -o rapport.json</span><br></div></code></pre></div></div>
 <p>Cette commande peut être exécutée automatiquement à chaque :</p>
 <ul>
-<li class="">Pull Request ;</li>
-<li class="">Merge Request ;</li>
-<li class="">Build ;</li>
+<li class=""><span lang="en">Pull Request</span> ;</li>
+<li class=""><span lang="en">Merge Request</span> ;</li>
+<li class=""><span lang="en">Build</span> ;</li>
 <li class="">Déploiement ;</li>
 <li class="">Livraison de version.</li>
 </ul>
@@ -235,23 +235,23 @@
 <p>Empêcher la mise en production d'une version contenant des régressions d'accessibilité critiques.</p>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="contrôle-continu-de-conformité-rgaa">Contrôle continu de conformité RGAA<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#contr%C3%B4le-continu-de-conformit%C3%A9-rgaa" class="hash-link" aria-label="Lien direct vers Contrôle continu de conformité RGAA" title="Lien direct vers Contrôle continu de conformité RGAA" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
 <p>Suivre l'évolution de la conformité RGAA au fil des développements.</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="conformité-wcag">Conformité WCAG<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#conformit%C3%A9-wcag" class="hash-link" aria-label="Lien direct vers Conformité WCAG" title="Lien direct vers Conformité WCAG" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
-<p>Mesurer régulièrement le respect des critères WCAG et identifier les nouvelles violations.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="conformité-wcag">Conformité <span lang="en">WCAG</span><a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#conformit%C3%A9-wcag" class="hash-link" aria-label="Lien direct vers conformité-wcag" title="Lien direct vers conformité-wcag" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
+<p>Mesurer régulièrement le respect des critères <span lang="en">WCAG</span> et identifier les nouvelles violations.</p>
 <h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="reporting-qualité">Reporting qualité<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#reporting-qualit%C3%A9" class="hash-link" aria-label="Lien direct vers Reporting qualité" title="Lien direct vers Reporting qualité" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h3>
-<p>Produire automatiquement des rapports d'accessibilité destinés aux équipes de développement, QA et conformité.</p>
+<p>Produire automatiquement des rapports d'accessibilité destinés aux équipes de développement, <span lang="en">QA</span> et conformité.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="bénéfices-pour-les-équipes">Bénéfices pour les équipes<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#b%C3%A9n%C3%A9fices-pour-les-%C3%A9quipes" class="hash-link" aria-label="Lien direct vers Bénéfices pour les équipes" title="Lien direct vers Bénéfices pour les équipes" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
-<p>L'intégration de BALDR dans un pipeline CI/CD apporte plusieurs avantages :</p>
+<p>L'intégration de BALDR dans un pipeline <span lang="en">CI/CD</span> apporte plusieurs avantages :</p>
 <ul>
 <li class="">détection précoce des défauts d'accessibilité ;</li>
 <li class="">réduction du coût des corrections ;</li>
-<li class="">automatisation des audits RGAA et WCAG ;</li>
+<li class="">automatisation des audits RGAA et <span lang="en">WCAG</span> ;</li>
 <li class="">amélioration continue de la qualité ;</li>
 <li class="">réduction des risques de non-conformité ;</li>
 <li class="">visibilité accrue sur l'état d'accessibilité des applications.</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#conclusion" class="hash-link" aria-label="Lien direct vers Conclusion" title="Lien direct vers Conclusion" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
 <p>L'intégration des tests d'accessibilité dans les pipelines CI/CD constitue aujourd'hui une bonne pratique essentielle pour les organisations souhaitant industrialiser leurs contrôles RGAA et WCAG.</p>
-<p>Grâce à son mode CLI, son API et ses rapports exploitables, BALDR permet d'automatiser les audits d'accessibilité et de faire de l'accessibilité un composant naturel des processus DevOps modernes.</p>]]></content>
+<p>Grâce à son mode <span lang="en">CLI</span>, son <span lang="en">API</span> et ses rapports exploitables, BALDR permet d'automatiser les audits d'accessibilité et de faire de l'accessibilité un composant naturel des processus <span lang="en">DevOps</span> modernes.</p>]]></content>
         <category label="RGAA" term="RGAA"/>
         <category label="WCAG" term="WCAG"/>
         <category label="Accessibilité" term="Accessibilité"/>
