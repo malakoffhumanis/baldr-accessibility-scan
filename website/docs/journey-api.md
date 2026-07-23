@@ -1,13 +1,13 @@
-# API Journey — `POST /api/v1/journey`
+# <span lang="en">API Journey</span> — `POST /api/v1/journey`
 
 Lance un **parcours d'audit d'accessibilité** : une séquence de pages, chacune
-avec des actions typées (scan, clic, saisie, attente…), exécutées dans l'ordre
-par un navigateur headless. Chaque action `scan` déclenche un audit Axe-Core
+avec des actions typées (<span lang="en">scan</span>, clic, saisie, attente…), exécutées dans l'ordre
+par un navigateur <span lang="en">headless</span>. Chaque action `<span lang="en">scan</span>` déclenche un audit <span lang="en">Axe-Core</span>
 (enrichi par IA selon `analysisType`) et une capture d'écran.
 
-- **Authentification** : en-tête `X-API-Key` **obligatoire** (voir [README](./README.md#authentification)).
-- **Content-Type** de la requête : `application/json`.
-- **Réponse** : le rapport généré dans le format demandé (`html`, `json` ou `csv`).
+- **Authentification** : en-tête `X-<span lang="en">API</span>-Key` **obligatoire** (voir [README](./README.md#authentification)).
+- **Content-Type** de la requête : `application/<span lang="en">json</span>`.
+- **Réponse** : le rapport généré dans le format demandé (`html`, `<span lang="en">json</span>` ou `csv`).
 
 ---
 
@@ -69,7 +69,7 @@ par un navigateur headless. Chaque action `scan` déclenche un audit Axe-Core
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>analysisType</code></td><td><code>"static" | "intel" | "full"</code></td><td><code>"full"</code></td><td>Profondeur d'analyse appliquee a chaque scan (voir <a href="#types-danalyse">Types d'analyse</a>).</td></tr>
+    <tr><td><code>analysisType</code></td><td><code>"static" | "intel" | "full"</code></td><td><code>"full"</code></td><td>Profondeur d'analyse appliquee a chaque <span lang="en">scan</span> (voir <a href="#types-danalyse">Types d'analyse</a>).</td></tr>
     <tr><td><code>reportFormat</code></td><td><code>"html" | "json" | "csv"</code></td><td><code>"html"</code></td><td>Format du rapport renvoye.</td></tr>
     <tr><td><code>rules</code></td><td><code>string[]</code></td><td>(toutes)</td><td>Restreint l'audit a des identifiants de regles RGAA precis (ex. <code>"1.1"</code>).</td></tr>
     <tr><td><code>viewport</code></td><td><code>{`{ width, height }`}</code></td><td>(defaut navigateur)</td><td>Dimensions de la fenetre. <code>width >= 320</code>, <code>height >= 240</code>.</td></tr>
@@ -91,7 +91,7 @@ par un navigateur headless. Chaque action `scan` déclenche un audit Axe-Core
   <tbody>
     <tr><td><code>url</code></td><td><code>string</code></td><td><strong>oui</strong></td><td>URL a charger (<code>http(s)://...</code>), validee contre le SSRF.</td></tr>
     <tr><td><code>auth</code></td><td><code>{`{ username, password, loginUrl? }`}</code></td><td>non</td><td>Identifiants propres a cette page ; <strong>surcharge</strong> l'<code>auth</code> racine.</td></tr>
-    <tr><td><code>actions</code></td><td><code>Action[]</code></td><td>non</td><td>Actions a executer (<strong>max 50</strong>). <strong>Si absent ou vide : un scan par defaut</strong> (chargement de la page puis audit).</td></tr>
+    <tr><td><code>actions</code></td><td><code><span lang="en">Action</span>[]</code></td><td>non</td><td>Actions a executer (<strong>max 50</strong>). <strong>Si absent ou vide : un <span lang="en">scan</span> par defaut</strong> (chargement de la page puis audit).</td></tr>
   </tbody>
 </table>
 
@@ -113,7 +113,7 @@ d'évasion en langage naturel pour les cas non couverts.
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>scan</code></td><td>-</td><td>Lance l'audit d'accessibilite (Axe + IA selon <code>analysisType</code>) + capture d'ecran.</td></tr>
+    <tr><td><code>scan</code></td><td>-</td><td>Lance l'audit d'accessibilite (<span lang="en">Axe</span> + IA selon <code>analysisType</code>) + capture d'ecran.</td></tr>
     <tr><td><code>acceptCookies</code></td><td>-</td><td>Tente d'accepter automatiquement la banniere cookies (Tarteaucitron, Didomi, OneTrust...).</td></tr>
     <tr><td><code>wait</code></td><td><code>ms</code> (<code>1</code>-<code>60000</code>)</td><td>Pause fixe en millisecondes.</td></tr>
     <tr><td><code>click</code></td><td><code>target</code></td><td>Clique sur l'element decrit par <code>target</code>.</td></tr>
@@ -129,8 +129,8 @@ d'évasion en langage naturel pour les cas non couverts.
 > « le champ email ») : l'IA en déduit le sélecteur CSS. Ce n'est pas
 > nécessairement un sélecteur.
 
-> ℹ️ Les interactions (`click`, `hover`, `fill`, `select`, `ai`) nécessitent que
-> l'IA soit configurée (fournisseur LLM). Les built-ins `scan`, `acceptCookies`
+> ℹ️ Les interactions (`<span lang="en">click</span>`, `<span lang="en">hover</span>`, `<span lang="en">fill</span>`, `<span lang="en">select</span>`, `<span lang="en">ai</span>`) nécessitent que
+> l'IA soit configurée (fournisseur <span lang="en">LLM</span>). Les <span lang="en">built-ins</span> `<span lang="en">scan</span>`, `acceptCookies`
 > et `wait` fonctionnent sans IA.
 
 ### Exemple d'actions
@@ -182,7 +182,7 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 
 **Pas d'authentification** = on **omet** simplement le champ `auth` (page publique).
 
-> **Limite** : un SSO d'entreprise **transparent** (Kerberos/Negotiate, sans
+> **Limite** : un <span lang="en">SSO</span> d'entreprise **transparent** (<span lang="en">Kerberos</span>/<span lang="en">Negotiate</span>, sans
 > aucune saisie) ne peut pas être reproduit avec un id+mot de passe depuis une
 > machine non jointe au domaine. Dans ce cas, l'audit doit tourner depuis un
 > poste joint au domaine ou un environnement réseau adéquat.
@@ -200,9 +200,9 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>static</code></td><td>Audit Axe-Core uniquement (sans IA), le plus rapide.</td></tr>
-    <tr><td><code>intel</code></td><td>Audit Axe + analyse IA ciblee.</td></tr>
-    <tr><td><code>full</code></td><td>Audit complet enrichi par IA (defaut), le plus approfondi.</td></tr>
+    <tr><td><code>static</code></td><td>Audit <span lang="en">Axe-Core</span> uniquement (sans IA), le plus rapide.</td></tr>
+    <tr><td><code>intel</code></td><td>Audit <span lang="en">Axe</span> + analyse IA ciblée.</td></tr>
+    <tr><td><code>full</code></td><td>Audit complet enrichi par IA (défaut), le plus approfondi.</td></tr>
   </tbody>
 </table>
 
@@ -211,7 +211,7 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 ## Réponse
 
 En cas de succès (`200`), le corps de la réponse est **directement le rapport**
-dans le format demandé (ce n'est pas une enveloppe JSON `{ success: … }`).
+dans le format demandé (ce n'est pas une enveloppe <span lang="en">JSON</span> `{ success: … }`).
 
 <table>
   <caption>En-tetes de reponse</caption>
@@ -277,7 +277,7 @@ Voir le [contrat d'erreur global](./README.md#format-des-erreurs).
 
 ### 1. Audit simple d'une page publique
 
-Une page sans `actions` est auditée par défaut (chargement + scan).
+Une page sans `actions` est auditée par défaut (chargement + <span lang="en">scan</span>).
 
 ```bash
 curl -X POST http://localhost:3000/api/v1/journey \

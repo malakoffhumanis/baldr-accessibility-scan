@@ -38,26 +38,28 @@ export default function DocItemLayout({children}) {
   const docTOC = useDocTOC();
   const {metadata} = useDoc();
   return (
-    <div className="row">
-      <div className={clsx('col', !docTOC.hidden && styles.docItemCol)}>
-        <ContentVisibility metadata={metadata} />
-        <DocVersionBanner />
-        <div className={styles.docItemContainer}>
-          <article>
-            <DocBreadcrumbs />
-            <DocVersionBadge />
-            {docTOC.mobile}
-            <DocItemContent>{children}</DocItemContent>
-            <DocItemFooter />
-          </article>
-          <DocItemPaginator />
+    <main>
+      <div className="row">
+        <div className={clsx('col', !docTOC.hidden && styles.docItemCol)}>
+          <ContentVisibility metadata={metadata} />
+          <DocVersionBanner />
+          <div className={styles.docItemContainer}>
+            <article>
+              <DocBreadcrumbs />
+              <DocVersionBadge />
+              {docTOC.mobile}
+              <DocItemContent>{children}</DocItemContent>
+              <DocItemFooter />
+            </article>
+            <DocItemPaginator />
+          </div>
         </div>
+        {docTOC.desktop && (
+          <aside className="col col--3" aria-label="Sommaire de la documentation">
+            {docTOC.desktop}
+          </aside>
+        )}
       </div>
-      {docTOC.desktop && (
-        <aside className="col col--3" aria-label="Sommaire de la documentation">
-          {docTOC.desktop}
-        </aside>
-      )}
-    </div>
+    </main>
   );
 }

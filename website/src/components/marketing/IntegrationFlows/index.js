@@ -4,15 +4,29 @@ import styles from './styles.module.css';
 const Pipelines = [
   {
     title: 'Integration CI/CD',
-    steps: ['Build', 'Deploy', 'Baldr Audit RGAA', 'Gate', 'Release'],
+    steps: [
+      {text: 'Build', lang: 'en'},
+      {text: 'Deploy', lang: 'en'},
+      {text: 'Baldr Audit RGAA', lang: null},
+      {text: 'Gate', lang: 'en'},
+      {text: 'Release', lang: 'en'},
+    ],
   },
   {
     title: 'Integration CLI',
-    steps: ['Developpement', 'Local', 'Serveur'],
+    steps: [
+      {text: 'Developpement', lang: null},
+      {text: 'Local', lang: null},
+      {text: 'Serveur', lang: null},
+    ],
   },
   {
     title: 'Integration API',
-    steps: ['Audit applicatif', 'Client API', 'curl'],
+    steps: [
+      {text: 'Audit applicatif', lang: null},
+      {text: 'Client API', lang: null},
+      {text: 'curl', lang: null},
+    ],
   },
 ];
 
@@ -28,8 +42,8 @@ export default function IntegrationFlows() {
             <h3>{flow.title}</h3>
             <div className={styles.steps}>
               {flow.steps.map((step, index) => (
-                <div key={step} className={styles.stepWrap}>
-                  <span className={styles.step}>{step}</span>
+                <div key={step.text} className={styles.stepWrap}>
+                  <span className={styles.step} lang={step.lang || undefined}>{step.text}</span>
                   {index < flow.steps.length - 1 && (
                     <span className={styles.arrow} aria-hidden="true">
                       ▸

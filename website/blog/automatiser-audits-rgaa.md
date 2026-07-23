@@ -39,7 +39,7 @@ L'automatisation permet de mettre en place une démarche d'amélioration continu
 
 ## Les limites des scanners d'accessibilité traditionnels
 
-La majorité des outils de **web accessibility testing** se concentrent sur l'analyse d'une page unique.
+La majorité des outils de **<span lang="en">web accessibility testing</span>** se concentrent sur l'analyse d'une page unique.
 
 Cette approche montre rapidement ses limites lorsque l'application contient :
 
@@ -58,7 +58,7 @@ BALDR combine plusieurs technologies afin de réaliser des audits d'accessibilit
 
 ### Analyse des règles d'accessibilité
 
-BALDR s'appuie sur **axe-core**, l'un des moteurs d'analyse d'accessibilité les plus utilisés dans l'écosystème web.
+BALDR s'appuie sur **<span lang="en">axe-core</span>**, l'un des moteurs d'analyse d'accessibilité les plus utilisés dans l'écosystème web.
 
 Cette analyse permet notamment de détecter :
 
@@ -70,7 +70,7 @@ Cette analyse permet notamment de détecter :
 
 ### Navigation automatisée
 
-Grâce à **Puppeteer** et **Chromium**, BALDR peut :
+Grâce à **<span lang="en">Puppeteer</span>** et **<span lang="en">Chromium</span>**, BALDR peut :
 
 - Naviguer sur plusieurs pages
 - Cliquer sur des éléments interactifs
@@ -80,7 +80,7 @@ Grâce à **Puppeteer** et **Chromium**, BALDR peut :
 
 ### Analyse enrichie par Intelligence Artificielle
 
-BALDR peut également utiliser un fournisseur LLM compatible OpenAI afin :
+BALDR peut également utiliser un fournisseur <span lang="en">LLM</span> compatible <span lang="en">OpenAI</span> afin :
 
 - d'interpréter des instructions en langage naturel ;
 - de localiser automatiquement des éléments à l'écran ;
@@ -149,7 +149,7 @@ BALDR est particulièrement adapté pour :
 
 - L'audit RGAA automatisé
 - Les audits WCAG continus
-- Les tests d'accessibilité dans les pipelines CI/CD
+- Les tests d'accessibilité dans les pipelines <span lang="en">CI/CD</span>
 - Les applications nécessitant une authentification
 - Les espaces clients et intranets
 - Les plateformes SaaS
@@ -160,6 +160,6 @@ BALDR est particulièrement adapté pour :
 
 L'automatisation des audits d'accessibilité constitue aujourd'hui un levier essentiel pour maintenir la conformité RGAA et WCAG dans le temps.
 
-Grâce à son approche combinant **axe-core**, **Puppeteer**, **API REST**, **parcours utilisateurs multi-pages** et **analyse enrichie par Intelligence Artificielle**, BALDR permet aux équipes techniques d'intégrer l'accessibilité directement dans leurs processus de développement, de validation et de déploiement.
+Grâce à son approche combinant **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</span>**, **<span lang="en">API REST</span>**, **parcours utilisateurs multi-pages** et **analyse enrichie par Intelligence Artificielle**, BALDR permet aux équipes techniques d'intégrer l'accessibilité directement dans leurs processus de développement, de validation et de déploiement.
 
 Pour les organisations souhaitant industrialiser leurs contrôles d'accessibilité, BALDR offre une solution open source capable d'analyser les applications modernes, y compris les espaces authentifiés et les parcours utilisateurs complexes.

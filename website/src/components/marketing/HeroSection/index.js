@@ -38,7 +38,7 @@ export default function HeroSection() {
             Demarrer en 30 secondes
           </Link>
           <Link className={clsx('button button--lg', styles.secondary)} to="/docs/journey-api">
-            Explorer l'API Journey
+            Explorer l'<span lang="en">API Journey</span>
           </Link>
         </div>
       </div>

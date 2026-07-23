@@ -1,14 +1,14 @@
-# Documentation de l'API BALDR
+# Documentation de l'<span lang="en">API</span> BALDR
 
-BALDR est une API d'audit d'accessibilité (RGAA / WCAG) automatisé. Elle pilote
-un navigateur headless (Puppeteer) pour parcourir un site, exécuter des actions,
-puis lancer un audit Axe-Core enrichi par IA, et produit un rapport
-(HTML / JSON / CSV).
+BALDR est une <span lang="en">API</span> d'audit d'accessibilité (RGAA / WCAG) automatisé. Elle pilote
+un navigateur headless (<span lang="en">Puppeteer</span>) pour parcourir un site, exécuter des actions,
+puis lancer un audit <span lang="en">Axe-Core</span> enrichi par IA, et produit un rapport
+(HTML / <span lang="en">JSON</span> / <span lang="en">CSV</span>).
 
 ## Sommaire
 
 <table>
-  <caption>Sommaire de la documentation API</caption>
+  <caption>Sommaire de la documentation <span lang="en">API</span></caption>
   <thead>
     <tr>
       <th scope="col">Document</th>
@@ -18,19 +18,19 @@ puis lancer un audit Axe-Core enrichi par IA, et produit un rapport
   <tbody>
     <tr>
       <td><a href="./journey-api.md">journey-api.md</a></td>
-      <td>Endpoint principal <code>POST /api/v1/journey</code> : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples.</td>
+      <td><span lang="en">Endpoint</span> principal <code>POST /api/v1/journey</code> : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples.</td>
     </tr>
     <tr>
       <td><a href="./metrics.md">metrics.md</a></td>
-      <td>Endpoint <code>GET /metrics</code> : métriques Prometheus exposées et configuration de scraping.</td>
+      <td><span lang="en">Endpoint</span> <code>GET /metrics</code> : métriques <span lang="en">Prometheus</span> exposées et configuration de scraping.</td>
     </tr>
   </tbody>
 </table>
 
 ## URL de base
 
-Tous les endpoints applicatifs sont préfixés par `/api/v1`, **sauf** `/metrics`
-qui est exposé à la racine (convention Prometheus).
+Tous les <span lang="en">endpoints</span> applicatifs sont préfixés par `/api/v1`, **sauf** `/metrics`
+qui est exposé à la racine (convention <span lang="en">Prometheus</span>).
 
 ```
 http://<host>:<PORT>/api/v1
@@ -40,8 +40,8 @@ http://<host>:<PORT>/api/v1
 
 ## Authentification
 
-L'API est protégée par **clé d'API obligatoire**. Chaque requête vers un
-endpoint protégé doit porter l'en-tête :
+L'<span lang="en">API</span> est protégée par **clé d'<span lang="en">API</span> obligatoire**. Chaque requête vers un
+<span lang="en">endpoint</span> protégé doit porter l'en-tête :
 
 ```
 X-API-Key: <secret>
@@ -49,16 +49,16 @@ X-API-Key: <secret>
 
 - Les clés sont configurées via la variable d'environnement `API_KEYS`
   (format : `id:secret`, séparés par des virgules). Au moins une clé est
-  **obligatoire** : l'API refuse de démarrer sans (pas de mode « ouvert »).
+  **obligatoire** : l'<span lang="en">API</span> refuse de démarrer sans (pas de mode « ouvert »).
 - La comparaison du secret est faite en **temps constant**.
 - En cas de clé absente ou invalide : réponse **401**.
 
 <table>
-  <caption>Authentification des endpoints</caption>
+  <caption>Authentification des <span lang="en">endpoints</span></caption>
   <thead>
     <tr>
-      <th scope="col">Endpoint</th>
-      <th scope="col">Protege par <code>X-API-Key</code></th>
+      <th scope="col"><span lang="en">Endpoint</span></th>
+      <th scope="col">Protégé par <code>X-API-Key</code></th>
     </tr>
   </thead>
   <tbody>
@@ -73,10 +73,10 @@ X-API-Key: <secret>
 ## Endpoints
 
 <table>
-  <caption>Endpoints disponibles</caption>
+  <caption><span lang="en">Endpoints</span> disponibles</caption>
   <thead>
     <tr>
-      <th scope="col">Methode</th>
+      <th scope="col">Méthode</th>
       <th scope="col">Chemin</th>
       <th scope="col">Description</th>
     </tr>
@@ -95,17 +95,17 @@ X-API-Key: <secret>
     <tr>
       <td><code>GET</code></td>
       <td><code>/api/v1/health/diagnostic</code></td>
-      <td>Diagnostic complet (config + connectivité LLM). <code>200</code> si sain, <code>503</code> si dégradé.</td>
+      <td><span lang="en">Diagnostic</span> complet (config + connectivité <span lang="en">LLM</span>). <code>200</code> si sain, <code>503</code> si dégradé.</td>
     </tr>
     <tr>
       <td><code>GET</code></td>
       <td><code>/metrics</code></td>
-      <td>Métriques Prometheus. Voir <a href="./metrics.md">metrics.md</a>.</td>
+      <td>Métriques <span lang="en">Prometheus</span>. Voir <a href="./metrics.md">metrics.md</a>.</td>
     </tr>
     <tr>
       <td><code>GET</code></td>
       <td><code>/api/v1/docs</code></td>
-      <td>Interface OpenAPI (si activée).</td>
+      <td>Interface <span lang="en">OpenAPI</span> (si activée).</td>
     </tr>
   </tbody>
 </table>

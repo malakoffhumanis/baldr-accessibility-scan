@@ -8,11 +8,11 @@
 
 ## Outil open source d'audit d'accessibilité RGAA et WCAG enrichi par l'Intelligence Artificielle (IA)
 
-Automatisez vos audits d'accessibilité RGAA et WCAG avec axe-core, Puppeteer et l'intelligence artificielle
+Automatisez vos audits d'accessibilité RGAA et WCAG avec <span lang="en">axe-core</span>, <span lang="en">Puppeteer</span> et l'intelligence artificielle
 
 BALDR Accessibility Scan est un outil open source permettant d'automatiser les audits d'accessibilité web et d'évaluer la conformité des sites et applications web aux référentiels **RGAA** et **WCAG**.
 
-Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intelligence Artificielle (IA)**, BALDR aide les équipes de développement, QA, accessibilité et conformité à détecter les défauts d'accessibilité, calculer un score de conformité et produire des recommandations de correction exploitables.
+Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</span>** et des analyses enrichies par **Intelligence Artificielle (IA)**, BALDR aide les équipes de développement, QA, accessibilité et conformité à détecter les défauts d'accessibilité, calculer un score de conformité et produire des recommandations de correction exploitables.
 
 **Contrairement aux scanners d'accessibilité traditionnels, BALDR analyse des parcours utilisateurs complets, y compris les zones authentifiées, les interactions dynamiques et des analyses enrichies par Intelligence Artificielle (IA).**
 
@@ -24,7 +24,7 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
 
 ✅ Conformité RGAA et WCAG
 
-✅ Navigation navigateur automatisée avec Puppeteer
+✅ Navigation navigateur automatisée avec <span lang="en">Puppeteer</span>
 
 ✅ Parcours utilisateurs multi-pages
 
@@ -50,7 +50,6 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
   <img
     src="../img/report-summary.png"
     alt="Capture d'ecran du resume de rapport d'accessibilite BALDR"
-    aria-describedby="report-summary-details"
   />
   <figcaption id="report-summary-details">
     Resume du rapport: score RGAA global affiche, repartition des criteres conformes/non conformes/non applicables,
@@ -64,7 +63,6 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
   <img
     src="../img/dashboard.png"
     alt="Capture d'ecran du tableau de bord d'accessibilite BALDR"
-    aria-describedby="dashboard-details"
   />
   <figcaption id="dashboard-details">
     Tableau recapitulatif des resultats d'audit: vue par page/URL avec score RGAA et repartition des criteres,
@@ -79,7 +77,6 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
   <img
     src="../img/findings.png"
     alt="Capture d'ecran des resultats detailles d'analyse d'accessibilite"
-    aria-describedby="findings-details"
   />
   <figcaption id="findings-details">
     Vue detaillee des resultats d'analyse: liste des regles controlees, non-conformites detectees,
@@ -120,14 +117,14 @@ Construit sur **axe-core**, **Puppeteer** et des analyses enrichies par **Intell
 ## Comparaison
 
 <table>
-  <caption>Comparaison des fonctionnalites BALDR, axe-core, Lighthouse et Pa11y</caption>
+  <caption>Comparaison des fonctionnalites BALDR, <span lang="en">axe-core</span>, <span lang="en">Lighthouse</span> et <span lang="en">Pa11y</span></caption>
   <thead>
     <tr>
       <th scope="col">Fonctionnalite</th>
       <th scope="col">BALDR</th>
-      <th scope="col">axe-core</th>
-      <th scope="col">Lighthouse</th>
-      <th scope="col">Pa11y</th>
+      <th scope="col"><span lang="en">axe-core</span></th>
+      <th scope="col"><span lang="en">Lighthouse</span></th>
+      <th scope="col"><span lang="en">Pa11y</span></th>
     </tr>
   </thead>
   <tbody>
@@ -154,13 +151,13 @@ Cette comparaison est donnée à titre indicatif et reflète les fonctionnalité
 
 - Contrôles RGAA
 - Contrôles WCAG
-- Analyse axe-core
+- Analyse <span lang="en">axe-core</span>
 - Scoring de conformité
 - Recommandations de correction
 
 ### Automatisation
 
-- Navigation Puppeteer
+- Navigation <span lang="en">Puppeteer</span>
 - Gestion des cookies
 - Parcours complexes
 - Authentification automatique
@@ -238,14 +235,14 @@ flowchart TB
     subgraph BALDR
         direction TB
         Orch["Orchestrateur de parcours"]
-        Browser["Navigateur headless - Puppeteer / Chromium"]
-        Axe["Moteur axe-core - RGAA / WCAG"]
-        LLMClient["Client LLM - OpenAI-compatible"]
+        Browser["Navigateur headless - <span lang=\"en\">Puppeteer</span> / <span lang=\"en\">Chromium</span>"]
+        Axe["Moteur <span lang=\"en\">axe-core</span> - RGAA / WCAG"]
+        LLMClient["Client <span lang=\"en\">LLM</span> - <span lang=\"en\">OpenAI</span>-compatible"]
         Report["Générateur de rapport - HTML / JSON / CSV"]
     end
 
     Sites["Sites audités"]
-    LLM["Provider LLM (OpenAI-compatible)"]
+    LLM["Provider <span lang=\"en\">LLM</span> (<span lang=\"en\">OpenAI</span>-compatible)"]
     Out(["Rapport HTML / JSON / CSV"])
 
     Client -->|"requête : pages + actions"| Orch
@@ -273,13 +270,13 @@ sequenceDiagram
     Client->>BALDR: Requête d'audit
 
     loop Pour chaque page
-        BALDR->>Chromium: Ouvre la page
-        Chromium->>Site: Navigation
+        BALDR->><span lang=\"en\">Chromium</span>: Ouvre la page
+        <span lang=\"en\">Chromium</span>->>Site: Navigation
 
         opt Action assistée par IA
             BALDR->>LLM: Description de la cible
             LLM-->>BALDR: Sélecteur CSS
-            BALDR->>Chromium: Exécution de l'action
+            BALDR->><span lang=\"en\">Chromium</span>: Exécution de l'action
         end
 
         BALDR->>Axe: Analyse RGAA / WCAG
@@ -304,7 +301,7 @@ npm install -g baldr-accessibility-scan
 ```
 
 > **Prérequis** : Node.js **≥ 22** (24 recommandé).
-> L'installation télécharge **Chromium** via Puppeteer (requis par axe-core) —
+> L'installation télécharge **<span lang="en">Chromium</span>** via <span lang="en">Puppeteer</span> (requis par <span lang="en">axe-core</span>) —
 > compter un téléchargement de ~150 Mo.
 
 Vérifier :
@@ -319,7 +316,7 @@ baldr run --help     # format de requête, authentification, exemples
 ### En CLI
 
 Auditer une page publique et écrire le rapport HTML dans un fichier — aucune clé
-LLM nécessaire (analyse `static`) :
+Pas de <span lang="en">LLM</span> nécessaire (analyse `static`) :
 
 ```bash
 echo '{ "pages": [ { "url": "https://www.wikipedia.org" } ] }' \
@@ -378,30 +375,50 @@ Le même contrat JSON alimente la CLI et l'API. **Seul `pages` est obligatoire.*
 
 Chaque action est un objet typé par son champ `type`, exécutées dans l'ordre.
 
-| `type`          | Champs            | IA requise | Description                                              |
-| --------------- | ----------------- | :--------: | -------------------------------------------------------- |
-| `scan`          | —                 |     non    | Lance l'audit (axe + IA selon `analysisType`) + capture. |
-| `acceptCookies` | —                 |     non    | Accepte la bannière cookies (Didomi, OneTrust, Tarteaucitron…). |
-| `wait`          | `ms` (1–60000)    |     non    | Pause fixe en millisecondes.                             |
-| `click`         | `target`          |   **oui**  | Clique sur l'élément décrit.                             |
-| `hover`         | `target`          |   **oui**  | Survole l'élément décrit.                                |
-| `fill`          | `target`, `value` |   **oui**  | Saisit `value` dans le champ décrit.                     |
-| `select`        | `target`, `value` |   **oui**  | Sélectionne `value` dans la liste décrite.               |
-| `ai`            | `instruction`     |   **oui**  | Étape libre en langage naturel (trappe d'évasion).       |
+<table>
+  <caption>Types d'actions disponibles dans BALDR</caption>
+  <thead>
+    <tr>
+      <th scope="col"><code>type</code></th>
+      <th scope="col">Champs</th>
+      <th scope="col">IA requise</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>scan</code></td><td>—</td><td>non</td><td>Lance l'audit (axe + IA selon <code>analysisType</code>) + capture.</td></tr>
+    <tr><td><code>acceptCookies</code></td><td>—</td><td>non</td><td>Accepte la bannière cookies (Didomi, OneTrust, Tarteaucitron…).</td></tr>
+    <tr><td><code>wait</code></td><td><code>ms</code> (1–60000)</td><td>non</td><td>Pause fixe en millisecondes.</td></tr>
+    <tr><td><code>click</code></td><td><code>target</code></td><td><strong>oui</strong></td><td>Clique sur l'élément décrit.</td></tr>
+    <tr><td><code>hover</code></td><td><code>target</code></td><td><strong>oui</strong></td><td>Survole l'élément décrit.</td></tr>
+    <tr><td><code>fill</code></td><td><code>target</code>, <code>value</code></td><td><strong>oui</strong></td><td>Saisit <code>value</code> dans le champ décrit.</td></tr>
+    <tr><td><code>select</code></td><td><code>target</code>, <code>value</code></td><td><strong>oui</strong></td><td>Sélectionne <code>value</code> dans la liste décrite.</td></tr>
+    <tr><td><code>ai</code></td><td><code>instruction</code></td><td><strong>oui</strong></td><td>Étape libre en langage naturel (trappe d'évasion).</td></tr>
+  </tbody>
+</table>
 
 > `target` / `instruction` sont des **descriptions en langage naturel** (« le
 > bouton Envoyer », « le champ email »), max 500 caractères : l'IA en déduit le
-> sélecteur. Les actions « IA requise » exigent un fournisseur LLM configuré
+> sélecteur. Les actions « IA requise » exigent un fournisseur <span lang="en">LLM</span> configuré
 > (voir [Surcharge des paramètres](#surcharge-des-paramètres)). `scan`,
 > `acceptCookies` et `wait` fonctionnent sans IA.
 
 ### Types d'analyse
 
-| `analysisType` | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| `static`       | axe-core seul, sans IA — le plus rapide.             |
-| `intel`        | axe + analyse IA ciblée.                             |
-| `full`         | audit complet enrichi par IA (défaut) — le plus approfondi. |
+<table>
+  <caption>Types d'analyse disponibles</caption>
+  <thead>
+    <tr>
+      <th scope="col"><code>analysisType</code></th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>static</code></td><td><span lang="en">axe-core</span> seul, sans IA — le plus rapide.</td></tr>
+    <tr><td><code>intel</code></td><td>axe + analyse IA ciblée.</td></tr>
+    <tr><td><code>full</code></td><td>audit complet enrichi par IA (défaut) — le plus approfondi.</td></tr>
+  </tbody>
+</table>
 
 ### Authentification du site audité
 
@@ -409,11 +426,21 @@ Chaque action est un objet typé par son champ `type`, exécutées dans l'ordre.
 **identifiant + mot de passe**. Le moteur s'adapte à ce que le site présente
 (popup HTTP native, ou formulaire HTML mono- ou bi-étapes).
 
-| Champ      | Requis | Description                                                       |
-| ---------- | :----: | ----------------------------------------------------------------- |
-| `username` |  oui   | Identifiant (login ou email selon le site).                       |
-| `password` |  oui   | Mot de passe.                                                     |
-| `loginUrl` |  non   | Page de login si différente de l'URL auditée (auto-détectée sinon). |
+<table>
+  <caption>Paramètres d'authentification</caption>
+  <thead>
+    <tr>
+      <th scope="col">Champ</th>
+      <th scope="col">Requis</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>username</code></td><td>oui</td><td>Identifiant (login ou email selon le site).</td></tr>
+    <tr><td><code>password</code></td><td>oui</td><td>Mot de passe.</td></tr>
+    <tr><td><code>loginUrl</code></td><td>non</td><td>Page de login si différente de l'URL auditée (auto-détectée sinon).</td></tr>
+  </tbody>
+</table>
 
 `auth` se déclare au niveau **racine** (défaut pour toutes les pages) et/ou
 **par page** (`pages[].auth`, qui surcharge la racine). L'omettre = page
@@ -638,7 +665,7 @@ PR) et le [code de conduite](https://github.com/malakoffhumanis/baldr-accessibil
 ## Docker
 
 L'image **ne build rien** : le `Dockerfile` copie un `dist/` et un
-`node_modules/` **déjà produits**, et installe Chromium via apt. Le pré-build
+`node_modules/` **déjà produits**, et installe <span lang="en">Chromium</span> via apt. Le pré-build
 doit tourner sur **linux** (runner CI ubuntu ou conteneur linux) avec
 `--omit=dev`, pour un `node_modules` compatible avec l'image `node:24-slim`.
 Tout passe par le [`Makefile`](https://github.com/malakoffhumanis/baldr-accessibility-scan/blob/main/Makefile) :
@@ -647,7 +674,7 @@ Tout passe par le [`Makefile`](https://github.com/malakoffhumanis/baldr-accessib
 # 1. Pré-build (sur linux) : produit dist/ + node_modules de production
 make build
 
-# 2. Construire l'image (copie les artefacts, installe Chromium)
+# 2. Construire l'image (copie les artefacts, installe <span lang="en">Chromium</span>)
 make docker IMAGE=moncompte/baldr TAG=1.0.0
 
 # 3. Lancer le conteneur (le CMD démarre le serveur baldrd)

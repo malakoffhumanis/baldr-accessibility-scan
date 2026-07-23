@@ -2,14 +2,14 @@ import Heading from '@theme/Heading';
 import styles from './styles.module.css';
 
 const Audience = [
-  'Experts accessibilite',
-  'Developpeurs front-end',
-  'Equipes QA',
-  'Product Owners',
-  'Administrations publiques',
-  'Grandes entreprises',
-  'Equipes DevSecOps',
-  'Auditeurs RGAA',
+  {text: 'Experts accessibilite', lang: null},
+  {text: 'Developpeurs front-end', lang: null},
+  {text: 'Equipes QA', lang: null},
+  {text: 'Product Owners', lang: 'en'},
+  {text: 'Administrations publiques', lang: null},
+  {text: 'Grandes entreprises', lang: null},
+  {text: 'Equipes DevSecOps', lang: null},
+  {text: 'Auditeurs RGAA', lang: null},
 ];
 
 export default function AudienceSection() {
@@ -18,8 +18,8 @@ export default function AudienceSection() {
       <Heading as="h2">Concu pour les equipes produit, qualite et conformite</Heading>
       <div className={styles.tags}>
         {Audience.map((item) => (
-          <span key={item} className={styles.tag}>
-            {item}
+          <span key={item.text} className={styles.tag} lang={item.lang || undefined}>
+            {item.text}
           </span>
         ))}
       </div>

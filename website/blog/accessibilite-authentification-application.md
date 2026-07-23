@@ -6,7 +6,7 @@ keywords:
   - RGAA
   - WCAG
   - audit accessibilité
-  - accessibility testing
+- accessibility testing
   - a11y
   - Intelligence artificielle
 tags:
@@ -93,6 +93,6 @@ Grâce à cette approche, les équipes peuvent :
 
 ## Conclusion
 
-Les applications authentifiées représentent aujourd'hui une part essentielle des systèmes d'information. Pourtant, elles sont encore rarement couvertes correctement par les solutions classiques de **web accessibility testing**.
+Les applications authentifiées représentent aujourd'hui une part essentielle des systèmes d'information. Pourtant, elles sont encore rarement couvertes correctement par les solutions classiques de **<span lang="en">web accessibility testing</span>**.
 
-En combinant **Puppeteer**, **axe-core**, l'automatisation des parcours utilisateurs et l'authentification automatique, BALDR permet de réaliser des **audits d'accessibilité RGAA et WCAG** sur les espaces réellement utilisés par les collaborateurs, les clients et les utilisateurs finaux.
+En combinant **<span lang="en">Puppeteer</span>**, **<span lang="en">axe-core</span>**, l'automatisation des parcours utilisateurs et l'authentification automatique, BALDR permet de réaliser des **audits d'accessibilité RGAA et WCAG** sur les espaces réellement utilisés par les collaborateurs, les clients et les utilisateurs finaux.

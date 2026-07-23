@@ -19,7 +19,7 @@ date: 2026-07-10
 
 # Intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR
 
-L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les **tests d'accessibilité automatisés** doivent être intégrés directement dans les pipelines **CI/CD** afin de détecter rapidement les régressions et garantir la conformité des applications web.
+L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les **tests d'accessibilité automatisés** doivent être intégrés directement dans les pipelines **<span lang="en">CI/CD</span>** afin de détecter rapidement les régressions et garantir la conformité des applications web.
 
 ## Pourquoi intégrer l'accessibilité dans le CI/CD ?
 
@@ -36,7 +36,7 @@ L'intégration continue de l'accessibilité permet notamment de :
 
 ## L'accessibilité au même niveau que la qualité et la sécurité
 
-Dans une démarche DevOps moderne, l'accessibilité doit être contrôlée au même titre que :
+Dans une démarche <span lang="en">DevOps</span> moderne, l'accessibilité doit être contrôlée au même titre que :
 
 - les tests unitaires ;
 - les tests d'intégration ;
@@ -53,13 +53,13 @@ BALDR Accessibility Scan permet d'intégrer facilement des audits d'accessibilit
 
 Les analyses peuvent être exécutées depuis :
 
-- GitHub Actions ;
-- GitLab CI/CD ;
-- Azure DevOps ;
-- Jenkins ;
-- Bamboo ;
-- TeamCity ;
-- tout autre orchestrateur capable d'exécuter une commande CLI.
+- <span lang="en">GitHub Actions</span> ;
+- <span lang="en">GitLab CI/CD</span> ;
+- <span lang="en">Azure DevOps</span> ;
+- <span lang="en">Jenkins</span> ;
+- <span lang="en">Bamboo</span> ;
+- <span lang="en">TeamCity</span> ;
+- tout autre orchestrateur capable d'exécuter une commande <span lang="en">CLI</span>.
 
 BALDR peut générer des rapports détaillés aux formats HTML, JSON et CSV afin d'alimenter les workflows qualité existants.
 
@@ -73,9 +73,9 @@ baldr run audit.json --format json -o rapport.json
 
 Cette commande peut être exécutée automatiquement à chaque :
 
-- Pull Request ;
-- Merge Request ;
-- Build ;
+- <span lang="en">Pull Request</span> ;
+- <span lang="en">Merge Request</span> ;
+- <span lang="en">Build</span> ;
 - Déploiement ;
 - Livraison de version.
 
@@ -112,4 +112,4 @@ L'intégration de BALDR dans un pipeline CI/CD apporte plusieurs avantages :
 
 L'intégration des tests d'accessibilité dans les pipelines CI/CD constitue aujourd'hui une bonne pratique essentielle pour les organisations souhaitant industrialiser leurs contrôles RGAA et WCAG.
 
-Grâce à son mode CLI, son API et ses rapports exploitables, BALDR permet d'automatiser les audits d'accessibilité et de faire de l'accessibilité un composant naturel des processus DevOps modernes.
+Grâce à son mode <span lang="en">CLI</span>, son <span lang="en">API</span> et ses rapports exploitables, BALDR permet d'automatiser les audits d'accessibilité et de faire de l'accessibilité un composant naturel des processus <span lang="en">DevOps</span> modernes.
