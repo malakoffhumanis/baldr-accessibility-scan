@@ -75,7 +75,8 @@ const config = {
     ({
       image: 'img/dashboard.png',
       colorMode: {
-        respectPrefersColorScheme: true,
+        defaultMode: 'dark',
+        respectPrefersColorScheme: false,
         disableSwitch: true,
       },
       navbar: {
