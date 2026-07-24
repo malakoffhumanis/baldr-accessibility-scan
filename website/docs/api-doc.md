@@ -11,18 +11,18 @@ puis lancer un audit <span lang="en">Axe-Core</span> enrichi par IA, et produit 
   <caption>Sommaire de la documentation <span lang="en">API</span></caption>
   <thead>
     <tr>
-      <th scope="col">Document</th>
-      <th scope="col">Contenu</th>
+      <th id="api-doc-col-document" scope="col">Document</th>
+      <th id="api-doc-col-content" scope="col">Contenu</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th scope="row"><a href="./journey-api.md">journey-api.md</a></th>
-      <td><span lang="en">Endpoint</span> principal <code>POST /api/v1/journey</code> : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples.</td>
+      <th id="api-doc-row-journey" scope="row"><a href="./journey-api.md">journey-api.md</a></th>
+      <td headers="api-doc-col-content api-doc-row-journey"><span lang="en">Endpoint</span> principal <code>POST /api/v1/journey</code> : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples.</td>
     </tr>
     <tr>
-      <th scope="row"><a href="./metrics.md">metrics.md</a></th>
-      <td><span lang="en">Endpoint</span> <code>GET /metrics</code> : métriques <span lang="en">Prometheus</span> exposées et configuration de scraping.</td>
+      <th id="api-doc-row-metrics" scope="row"><a href="./metrics.md">metrics.md</a></th>
+      <td headers="api-doc-col-content api-doc-row-metrics"><span lang="en">Endpoint</span> <code>GET /metrics</code> : métriques <span lang="en">Prometheus</span> exposées et configuration de scraping.</td>
     </tr>
   </tbody>
 </table>
