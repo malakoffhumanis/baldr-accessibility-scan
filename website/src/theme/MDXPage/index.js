@@ -66,13 +66,13 @@ export default function MDXPage(props) {
               )}
             </div>
             {!hideTableOfContents && MDXPageContent.toc.length > 0 && (
-              <aside className="col col--2" aria-label="Sommaire de la page">
+              <div className="col col--2" aria-label="Sommaire de la page">
                 <TOC
                   toc={MDXPageContent.toc}
                   minHeadingLevel={frontMatter.toc_min_heading_level}
                   maxHeadingLevel={frontMatter.toc_max_heading_level}
                 />
-              </aside>
+              </div>
             )}
           </div>
         </div>

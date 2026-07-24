@@ -54,9 +54,9 @@ export default function DocItemLayout({children}) {
         </div>
       </div>
       {docTOC.desktop && (
-        <aside className="col col--3" aria-label="Sommaire de la documentation">
+        <div className="col col--3" aria-label="Sommaire de la documentation">
           {docTOC.desktop}
-        </aside>
+        </div>
       )}
     </div>
   );
