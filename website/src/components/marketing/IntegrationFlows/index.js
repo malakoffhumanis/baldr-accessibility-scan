@@ -3,7 +3,11 @@ import styles from './styles.module.css';
 
 const Pipelines = [
   {
-    title: 'Integration CI/CD',
+    title: (
+      <>
+        Integration <span lang="en">CI/CD</span>
+      </>
+    ),
     steps: [
       {text: 'Build', lang: 'en'},
       {text: 'Deploy', lang: 'en'},
@@ -38,7 +42,7 @@ export default function IntegrationFlows() {
       </Heading>
       <div className={styles.stack}>
         {Pipelines.map((flow) => (
-          <article key={flow.title} className={styles.flow}>
+          <article key={typeof flow.title === 'string' ? flow.title : flow.steps.map((s) => s.text).join('-')} className={styles.flow}>
             <h3>{flow.title}</h3>
             <div className={styles.steps}>
               {flow.steps.map((step, index) => (

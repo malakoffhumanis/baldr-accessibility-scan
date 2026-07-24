@@ -9,10 +9,18 @@ const Audience = [
       Equipes <span lang="en">QA</span>
     </>
   ),
-  'Product Owners',
+  (
+    <>
+      <span lang="en">Product Owners</span>
+    </>
+  ),
   'Administrations publiques',
   'Grandes entreprises',
-  'Equipes DevSecOps',
+  (
+    <>
+      Equipes <span lang="en">DevSecOps</span>
+    </>
+  ),
   'Auditeurs RGAA',
 ];
 

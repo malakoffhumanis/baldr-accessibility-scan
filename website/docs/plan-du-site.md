@@ -21,7 +21,7 @@ Cette page liste les principales rubriques du site pour faciliter la navigation.
 - [Actualites](/blog)
 - [Accessibilite et authentification applicative](/blog/accessibilite-authentification-application)
 - [Automatiser les audits RGAA](/blog/automatiser-audits-rgaa)
-- [Integrer l'accessibilite dans un pipeline CI/CD](/blog/integrer-accessibilite-ci-cd)
+- [Integrer l'accessibilite dans un pipeline <span lang="en">CI/CD</span>](/blog/integrer-accessibilite-ci-cd)
 
 ## Ressources projet
 

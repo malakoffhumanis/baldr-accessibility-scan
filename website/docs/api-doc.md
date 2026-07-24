@@ -17,11 +17,11 @@ puis lancer un audit <span lang="en">Axe-Core</span> enrichi par IA, et produit 
   </thead>
   <tbody>
     <tr>
-      <td><a href="./journey-api.md">journey-api.md</a></td>
+      <th scope="row"><a href="./journey-api.md">journey-api.md</a></th>
       <td><span lang="en">Endpoint</span> principal <code>POST /api/v1/journey</code> : contrat de requête (v3), actions typées, authentification, formats de rapport, exemples.</td>
     </tr>
     <tr>
-      <td><a href="./metrics.md">metrics.md</a></td>
+      <th scope="row"><a href="./metrics.md">metrics.md</a></th>
       <td><span lang="en">Endpoint</span> <code>GET /metrics</code> : métriques <span lang="en">Prometheus</span> exposées et configuration de scraping.</td>
     </tr>
   </tbody>
@@ -62,11 +62,11 @@ X-API-Key: <secret>
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>POST /api/v1/journey</code></td><td>Oui</td></tr>
-    <tr><td><code>GET /metrics</code></td><td>Oui</td></tr>
-    <tr><td><code>GET /api/v1/health</code></td><td>Non (sonde de vivacité)</td></tr>
-    <tr><td><code>GET /api/v1/health/diagnostic</code></td><td>Non</td></tr>
-    <tr><td><code>GET /api/v1/docs</code></td><td>Non (exposé seulement si <code>EXPOSE_API_DOCS=true</code>)</td></tr>
+    <tr><th scope="row"><code>POST /api/v1/journey</code></th><td>Oui</td></tr>
+    <tr><th scope="row"><code>GET /metrics</code></th><td>Oui</td></tr>
+    <tr><th scope="row"><code>GET /api/v1/health</code></th><td>Non (sonde de vivacité)</td></tr>
+    <tr><th scope="row"><code>GET /api/v1/health/diagnostic</code></th><td>Non</td></tr>
+    <tr><th scope="row"><code>GET /api/v1/docs</code></th><td>Non (exposé seulement si <code>EXPOSE_API_DOCS=true</code>)</td></tr>
   </tbody>
 </table>
 
@@ -83,27 +83,27 @@ X-API-Key: <secret>
   </thead>
   <tbody>
     <tr>
-      <td><code>POST</code></td>
+      <th scope="row"><code>POST</code></th>
       <td><code>/api/v1/journey</code></td>
       <td>Lance un parcours d'audit d'accessibilité multi-pages. Voir <a href="./journey-api.md">journey-api.md</a>.</td>
     </tr>
     <tr>
-      <td><code>GET</code></td>
+      <th scope="row"><code>GET</code></th>
       <td><code>/api/v1/health</code></td>
       <td>Sonde de vivacité (toujours <code>200</code>).</td>
     </tr>
     <tr>
-      <td><code>GET</code></td>
+      <th scope="row"><code>GET</code></th>
       <td><code>/api/v1/health/diagnostic</code></td>
       <td><span lang="en">Diagnostic</span> complet (config + connectivité <span lang="en">LLM</span>). <code>200</code> si sain, <code>503</code> si dégradé.</td>
     </tr>
     <tr>
-      <td><code>GET</code></td>
+      <th scope="row"><code>GET</code></th>
       <td><code>/metrics</code></td>
       <td>Métriques <span lang="en">Prometheus</span>. Voir <a href="./metrics.md">metrics.md</a>.</td>
     </tr>
     <tr>
-      <td><code>GET</code></td>
+      <th scope="row"><code>GET</code></th>
       <td><code>/api/v1/docs</code></td>
       <td>Interface <span lang="en">OpenAPI</span> (si activée).</td>
     </tr>
@@ -134,10 +134,10 @@ Toutes les erreurs suivent un contrat unique :
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>400</code></td><td><code>VALIDATION_ERROR</code></td><td>Corps de requête invalide (échec de validation du schéma).</td></tr>
-    <tr><td><code>401</code></td><td><code>UNAUTHORIZED</code></td><td>En-tête <code>X-API-Key</code> manquant ou invalide.</td></tr>
-    <tr><td><code>429</code></td><td>(message texte)</td><td>Trop de requêtes (<span lang="en">rate limiting</span>).</td></tr>
-    <tr><td><code>500</code></td><td><code>INTERNAL_SERVER_ERROR</code></td><td>Erreur interne (un <code>requestId</code> est inclus dans le message pour le suivi).</td></tr>
+    <tr><th scope="row"><code>400</code></th><td><code>VALIDATION_ERROR</code></td><td>Corps de requête invalide (échec de validation du schéma).</td></tr>
+    <tr><th scope="row"><code>401</code></th><td><code>UNAUTHORIZED</code></td><td>En-tête <code>X-API-Key</code> manquant ou invalide.</td></tr>
+    <tr><th scope="row"><code>429</code></th><td>(message texte)</td><td>Trop de requêtes (<span lang="en">rate limiting</span>).</td></tr>
+    <tr><th scope="row"><code>500</code></th><td><code>INTERNAL_SERVER_ERROR</code></td><td>Erreur interne (un <code>requestId</code> est inclus dans le message pour le suivi).</td></tr>
   </tbody>
 </table>
 

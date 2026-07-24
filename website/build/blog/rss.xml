@@ -69,7 +69,7 @@
 <li class="">auditer les applications réellement utilisées au quotidien ;</li>
 <li class="">détecter les défauts d'accessibilité dans les espaces authentifiés ;</li>
 <li class="">automatiser les contrôles RGAA et WCAG ;</li>
-<li class="">intégrer l'accessibilité dans les pipelines CI/CD ;</li>
+<li class="">intégrer l'accessibilité dans les pipelines <span lang="en">CI/CD</span> ;</li>
 <li class="">réduire les risques de non-conformité ;</li>
 <li class="">améliorer l'expérience utilisateur sur l'ensemble du parcours numérique.</li>
 </ul>
@@ -194,11 +194,11 @@
             <category>Scan IA RGGA</category>
         </item>
         <item>
-            <title><![CDATA[Comment intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR]]></title>
+            <title><![CDATA[Comment intégrer les tests d'accessibilité dans un pipeline d'integration continue avec BALDR]]></title>
             <link>https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd</link>
             <guid>https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd</guid>
             <pubDate>Fri, 10 Jul 2026 00:00:00 GMT</pubDate>
-            <description><![CDATA[Découvrez comment Intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR Accessibility Scan.]]></description>
+            <description><![CDATA[Découvrez comment intégrer les tests d'accessibilité dans un pipeline d'integration continue avec BALDR Accessibility Scan.]]></description>
             <content:encoded><![CDATA[<p>L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les <strong>tests d'accessibilité automatisés</strong> doivent être intégrés directement dans les pipelines <strong><span lang="en">CI/CD</span></strong> afin de détecter rapidement les régressions et garantir la conformité des applications web.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="pourquoi-intégrer-laccessibilité-dans-le-cicd-">Pourquoi intégrer l'accessibilité dans le <span lang="en">CI/CD</span> ?<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#pourquoi-int%C3%A9grer-laccessibilit%C3%A9-dans-le-cicd-" class="hash-link" aria-label="Lien direct vers pourquoi-intégrer-laccessibilité-dans-le-cicd-" title="Lien direct vers pourquoi-intégrer-laccessibilité-dans-le-cicd-" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
 <p>Les défauts d'accessibilité détectés tardivement sont généralement plus coûteux à corriger. En automatisant les audits d'accessibilité à chaque livraison, les équipes peuvent identifier les problèmes dès leur apparition.</p>
@@ -266,7 +266,7 @@
 <li class="">visibilité accrue sur l'état d'accessibilité des applications.</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conclusion">Conclusion<a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/integrer-accessibilite-ci-cd#conclusion" class="hash-link" aria-label="Lien direct vers Conclusion" title="Lien direct vers Conclusion" translate="no"><span class="sr-only">Lien direct vers cette section</span><span aria-hidden="true">#</span></a></h2>
-<p>L'intégration des tests d'accessibilité dans les pipelines CI/CD constitue aujourd'hui une bonne pratique essentielle pour les organisations souhaitant industrialiser leurs contrôles RGAA et WCAG.</p>
+<p>L'intégration des tests d'accessibilité dans les pipelines <span lang="en">CI/CD</span> constitue aujourd'hui une bonne pratique essentielle pour les organisations souhaitant industrialiser leurs contrôles RGAA et WCAG.</p>
 <p>Grâce à son mode <span lang="en">CLI</span>, son <span lang="en">API</span> et ses rapports exploitables, BALDR permet d'automatiser les audits d'accessibilité et de faire de l'accessibilité un composant naturel des processus <span lang="en">DevOps</span> modernes.</p>]]></content:encoded>
             <category>RGAA</category>
             <category>WCAG</category>

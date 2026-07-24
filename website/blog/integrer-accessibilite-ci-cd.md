@@ -1,7 +1,7 @@
 ---
 slug: integrer-accessibilite-ci-cd
-title: Comment intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR
-description: Découvrez comment Intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR Accessibility Scan.
+title: Comment intégrer les tests d'accessibilité dans un pipeline d'integration continue avec BALDR
+description: Découvrez comment intégrer les tests d'accessibilité dans un pipeline d'integration continue avec BALDR Accessibility Scan.
 keywords:
   - RGAA
   - WCAG
@@ -17,7 +17,7 @@ tags:
 date: 2026-07-10
 ---
 
-# Intégrer les tests d'accessibilité dans un pipeline CI/CD avec BALDR
+# Intégrer les tests d'accessibilité dans un pipeline <span lang="en">CI/CD</span> avec BALDR
 
 L'accessibilité numérique ne doit plus être considérée comme une vérification réalisée uniquement avant la mise en production. Comme les tests unitaires, les tests d'intégration ou les contrôles de sécurité, les **tests d'accessibilité automatisés** doivent être intégrés directement dans les pipelines **<span lang="en">CI/CD</span>** afin de détecter rapidement les régressions et garantir la conformité des applications web.
 
@@ -110,6 +110,6 @@ L'intégration de BALDR dans un pipeline <span lang="en">CI/CD</span> apporte pl
 
 ## Conclusion
 
-L'intégration des tests d'accessibilité dans les pipelines CI/CD constitue aujourd'hui une bonne pratique essentielle pour les organisations souhaitant industrialiser leurs contrôles RGAA et WCAG.
+L'intégration des tests d'accessibilité dans les pipelines <span lang="en">CI/CD</span> constitue aujourd'hui une bonne pratique essentielle pour les organisations souhaitant industrialiser leurs contrôles RGAA et WCAG.
 
 Grâce à son mode <span lang="en">CLI</span>, son <span lang="en">API</span> et ses rapports exploitables, BALDR permet d'automatiser les audits d'accessibilité et de faire de l'accessibilité un composant naturel des processus <span lang="en">DevOps</span> modernes.

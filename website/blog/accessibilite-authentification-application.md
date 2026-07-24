@@ -87,7 +87,7 @@ Grâce à cette approche, les équipes peuvent :
 - auditer les applications réellement utilisées au quotidien ;
 - détecter les défauts d'accessibilité dans les espaces authentifiés ;
 - automatiser les contrôles RGAA et WCAG ;
-- intégrer l'accessibilité dans les pipelines CI/CD ;
+- intégrer l'accessibilité dans les pipelines <span lang="en">CI/CD</span> ;
 - réduire les risques de non-conformité ;
 - améliorer l'expérience utilisateur sur l'ensemble du parcours numérique.
 

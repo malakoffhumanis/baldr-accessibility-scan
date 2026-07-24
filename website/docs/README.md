@@ -50,10 +50,12 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
   <img
     src="../img/report-summary.png"
     alt="Capture d'ecran du resume de rapport d'accessibilite BALDR"
+    aria-describedby="report-summary-details"
   />
   <figcaption id="report-summary-details">
-    Resume du rapport: score RGAA global affiche, repartition des criteres conformes/non conformes/non applicables,
-    et synthese numerique des pages auditees. Cette capture illustre la vue de score consolide du rapport.
+    Resume du rapport: score RGAA global, repartition des criteres conformes/non conformes/non applicables,
+    et synthese numerique des pages auditees. Cette description restitue les informations de synthese visibles
+    dans la capture afin de fournir un equivalent textuel complet de la vue consolidee du rapport.
   </figcaption>
 </figure>
 
@@ -63,11 +65,13 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
   <img
     src="../img/dashboard.png"
     alt="Capture d'ecran du tableau de bord d'accessibilite BALDR"
+    aria-describedby="dashboard-details"
   />
   <figcaption id="dashboard-details">
-    Tableau recapitulatif des resultats d'audit: vue par page/URL avec score RGAA et repartition des criteres,
-    notamment conformes, non conformes et non applicables. Exemple de donnees affichees: 33 conformes,
-    20 non conformes et 53 non applicables.
+    Tableau recapitulatif des resultats d'audit: vue par page/URL avec score RGAA et repartition detaillee des
+    criteres conformes, non conformes et non applicables. Le texte de cette section restitue les informations
+    numeriques essentielles visibles dans la capture (exemple: 33 conformes, 20 non conformes et 53 non
+    applicables), afin de fournir un equivalent textuel complet du contenu du tableau.
   </figcaption>
 </figure>
 
@@ -77,11 +81,13 @@ Construit sur **<span lang="en">axe-core</span>**, **<span lang="en">Puppeteer</
   <img
     src="../img/findings.png"
     alt="Capture d'ecran des resultats detailles d'analyse d'accessibilite"
+    aria-describedby="findings-details"
   />
   <figcaption id="findings-details">
-    Vue detaillee des resultats d'analyse: liste des regles controlees, non-conformites detectees,
-    severites associees et elements impactes. Cette capture presente le detail des constats
-    utilises pour prioriser les corrections d'accessibilite.
+    Vue detaillee des resultats d'analyse: interface structuree presentant une liste de constats avec,
+    pour chaque entree, la regle controlee, le niveau de severite, le statut de conformite, les elements
+    impactes et les recommandations de correction. Cette description restitue les informations essentielles
+    visibles dans la capture pour permettre la priorisation des corrections d'accessibilite.
   </figcaption>
 </figure>
 

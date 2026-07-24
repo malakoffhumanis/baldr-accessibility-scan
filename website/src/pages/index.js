@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title} | Audit accessibilite RGAA/WCAG`}
-      description="Outil open source d'audit d'accessibilite RGAA et WCAG enrichi par IA, avec integration CLI, API et CI/CD.">
+      description="Outil open source d'audit d'accessibilite RGAA et WCAG enrichi par IA, avec integration CLI, API et integration continue.">
       <div className={styles.homeShell}>
         <HeroSection />
         <ProofStrip />
