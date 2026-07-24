@@ -76,6 +76,7 @@ const config = {
       image: 'img/dashboard.png',
       colorMode: {
         respectPrefersColorScheme: true,
+        disableSwitch: true,
       },
       navbar: {
         title: 'BALDR',
@@ -126,7 +127,7 @@ const config = {
                 to: '/blog',
               },
               {
-                label: 'Partiellement accessible',
+                label: 'Accessibilité: Partiellement conforme',
                 to: '/blog/partiellement-accessible',
               },
               {

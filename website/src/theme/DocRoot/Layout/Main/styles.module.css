@@ -1,0 +1,17 @@
+.docMainContainer {
+  flex-grow: 1;
+}
+
+@media (min-width: 997px) {
+  .docMainContainer {
+    max-width: calc(100% - var(--doc-sidebar-width));
+  }
+
+  .docMainContainerEnhanced {
+    max-width: 100%;
+  }
+}
+
+.docItemWrapperEnhanced {
+  max-width: var(--ifm-container-width-xl) !important;
+}

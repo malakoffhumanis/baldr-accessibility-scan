@@ -4,10 +4,25 @@
         <title>BALDR Accessibility Scan Blog</title>
         <link>https://malakoffhumanis.github.io/baldr-accessibility-scan/blog</link>
         <description>BALDR Accessibility Scan Blog</description>
-        <lastBuildDate>Fri, 10 Jul 2026 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 24 Jul 2026 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>fr</language>
+        <item>
+            <title><![CDATA[Accessibilité : Partiellement conforme]]></title>
+            <link>https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/partiellement-accessible</link>
+            <guid>https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/partiellement-accessible</guid>
+            <pubDate>Fri, 24 Jul 2026 00:00:00 GMT</pubDate>
+            <description><![CDATA[Site Baldr Accessibility Scan partiellement conforme en accessibilité]]></description>
+            <content:encoded><![CDATA[<p>Le site BALDR Accessibility Scan est actuellement <strong>partiellement conforme</strong>.</p>
+<p>Cet audit d'accessibilite a ete genere automatiquement par l'outil BALDR, qui inclut de l'intelligence artificielle pour ses analyses.</p>
+<p>Consulter le rapport detaille : <a href="https://malakoffhumanis.github.io/baldr-accessibility-scan/report-baldr.html" target="_blank" rel="noopener noreferrer" class="">report-baldr.html (nouvelle fenêtre)</a>.</p>
+<p>Nous travaillons en continu a l'amelioration de l'accessibilite numerique, notamment sur la conformite RGAA et l'ergonomie des parcours clefs.</p>
+<p>Si vous rencontrez une difficulte d'acces a un contenu ou a une fonctionnalite, vous pouvez ouvrir une issue sur le depot GitHub du projet :</p>
+<ul>
+<li class=""><a href="https://github.com/malakoffhumanis/baldr-accessibility-scan/issues" target="_blank" rel="noopener noreferrer" class="">https://github.com/malakoffhumanis/baldr-accessibility-scan/issues</a></li>
+</ul>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[Comment auditer l'accessibilité d'une application authentifiée]]></title>
             <link>https://malakoffhumanis.github.io/baldr-accessibility-scan/blog/accessibilite-authentification-application</link>
