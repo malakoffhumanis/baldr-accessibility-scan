@@ -126,6 +126,10 @@ const config = {
                 to: '/blog',
               },
               {
+                label: 'Partiellement accessible',
+                to: '/blog/partiellement-accessible',
+              },
+              {
                 label: 'Plan du site',
                 to: '/docs/plan-du-site',
               },
