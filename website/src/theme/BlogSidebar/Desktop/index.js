@@ -26,7 +26,7 @@ const ListComponent = ({items}) => {
   );
 };
 
-export default function BlogSidebarDesktop({sidebar}) {
+function BlogSidebarDesktop({sidebar}) {
   const items = useVisibleBlogSidebarItems(sidebar.items);
 
   return (
