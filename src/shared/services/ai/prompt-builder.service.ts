@@ -94,18 +94,18 @@ ${tasksList}${nonApplicable ? `\nNon applicable si: ${nonApplicable}` : ''}`;
       })
       .join('\n\n');
 
-    // Warning-in-doubt is desirable ONLY for Images (avoids false positives on
-    // decorative/ambiance illustrations). Every other thematic is strict:
-    // objective defects must be violations, so the score is not inflated by
-    // warnings that mask real non-conformities.
-    const isImagesCategory = categoryName.toLowerCase().includes('image');
-    const doubtPolicy = isImagesCategory
-      ? `- VIOLATION (type="violation") réservée aux défauts OBJECTIFS vérifiables dans le DOM.
-- DOUTE → WARNING : si la conformité dépend d'une APPRÉCIATION ou ne peut pas être tranchée avec certitude, émettre type="warning" (VÉRIFICATION MANUELLE) au lieu d'une violation ferme.
-- Ne jamais inventer de violation : en l'absence de défaut objectif, conclure conforme ou émettre un warning.`
-      : `- EXIGENCE : tout défaut d'accessibilité OBJECTIF, constaté ou probable d'après le DOM, doit être signalé en type="violation".
-- N'utiliser type="warning" QUE pour un point réellement impossible à trancher automatiquement (jugement éditorial humain indispensable) ; ne JAMAIS employer warning pour minorer ou masquer un défaut avéré.
-- Ne pas inventer de violation sans indice dans la page ; mais en cas de doute sérieux sur un défaut, privilégier la VIOLATION à l'avertissement.`;
+    // Unified finding policy (all thematics). Warnings and recommendations are
+    // ADVISORY (manual verification) and are EXCLUDED from the score by the
+    // thematics mapper — they neither mask nor inflate a result. Violations are
+    // therefore reserved for OBJECTIVE defects (or those a rule's tasks
+    // explicitly require), while anything depending on human appreciation,
+    // remote content, or a cross-page check becomes a warning. Each rule's own
+    // tasks decide the exact finding type and take precedence over this generic
+    // guidance.
+    const doubtPolicy = `- VIOLATION (type="violation") réservée aux défauts OBJECTIFS constatés dans le DOM (attribut, rôle ou relation manquant/incorrect) OU explicitement exigés par les tâches de la règle.
+- DOUTE / VÉRIFICATION MANUELLE → type="warning" : si la conformité dépend d'une appréciation éditoriale, d'un contenu distant non observable, ou d'une vérification inter-pages, émettre type="warning" plutôt qu'une violation ferme.
+- Ne jamais inventer de violation : en l'absence de défaut objectif, conclure conforme (compliant=true, findings=[]).
+- IMPÉRATIF : respecter le type de finding imposé par les tâches de chaque règle — certaines exigent une "violation", d'autres un "warning".`;
 
     return `Tu es un expert en accessibilité numérique RGAA 4.1.2.
 Analyse la conformité d'une page web pour les ${rulesCount.toString()} règles RGAA de la thématique "${categoryName}".
