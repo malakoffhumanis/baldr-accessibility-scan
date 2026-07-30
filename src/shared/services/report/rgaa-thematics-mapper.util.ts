@@ -206,16 +206,65 @@ export function isNonApplicableAnalysis(analysis: IAIRuleAnalysis): boolean {
   );
 }
 
+/** How an AI rule analysis is counted toward the RGAA score. */
+export type AiAnalysisScoreClass =
+  'compliant' | 'nonCompliant' | 'notApplicable';
+
+/**
+ * Classifies an AI rule analysis for SCORING purposes (single source of truth
+ * shared by the thematics mapper and the report summary cards):
+ *
+ *   - `error` set                        → notApplicable (analysis failed)
+ *   - non-applicable summary heuristic   → notApplicable
+ *   - ≥ 1 confirmed "violation" finding  → nonCompliant (with `violationCount`)
+ *   - advisory-only (warnings/recommendations, no violation)
+ *                                        → notApplicable — manual-verification
+ *                                          items are EXCLUDED from the score
+ *                                          (neither conforme ni non-conforme)
+ *   - `compliant` and no findings        → compliant
+ *   - otherwise (non-compliant with no violation finding) → notApplicable
+ */
+export function classifyAiAnalysis(analysis: IAIRuleAnalysis): {
+  kind: AiAnalysisScoreClass;
+  violationCount: number;
+} {
+  const violationCount = analysis.findings.filter(
+    (f) => f.type === 'violation',
+  ).length;
+
+  if (analysis.error != null && analysis.error !== '') {
+    return { kind: 'notApplicable', violationCount };
+  }
+  if (isNonApplicableAnalysis(analysis)) {
+    return { kind: 'notApplicable', violationCount };
+  }
+  if (violationCount > 0) {
+    return { kind: 'nonCompliant', violationCount };
+  }
+  const hasAdvisory = analysis.findings.some(
+    (f) => f.type === 'warning' || f.type === 'recommendation',
+  );
+  if (hasAdvisory) {
+    return { kind: 'notApplicable', violationCount };
+  }
+  if (analysis.compliant) {
+    return { kind: 'compliant', violationCount };
+  }
+  return { kind: 'notApplicable', violationCount };
+}
+
 /**
  * Aggregates the rules of an audit result by RGAA thematic, merging the Axe
  * sources (violations + passes) and AI sources (ruleAnalyses), with
  * deduplication (a rule already counted on the Axe side is not counted again
  * on the AI side).
  *
- * AI convention:
+ * AI convention (see `classifyAiAnalysis`):
  *   - `error` → non-applicable
  *   - `isNonApplicableAnalysis` → non-applicable
  *   - `findings.violation > 0` → as many non-compliant as violations
+ *   - advisory-only (warnings/recommendations, no violation) → non-applicable
+ *     (manual-verification items are excluded from the score)
  *   - `compliant` → 1 compliant
  */
 export function mapRulesToThematics(
@@ -258,23 +307,16 @@ export function mapRulesToThematics(
       const thematicId = getThematicFromRGAARuleId(analysis.ruleId);
 
       if (thematicId !== null && stats[thematicId]) {
-        const violationCount = analysis.findings.filter(
-          (f) => f.type === 'violation',
-        ).length;
+        const { kind, violationCount } = classifyAiAnalysis(analysis);
 
-        if (analysis.error != null && analysis.error !== '') {
-          stats[thematicId].notApplicable += 1;
-          countedRules.add(ruleKey);
-        } else if (isNonApplicableAnalysis(analysis)) {
-          stats[thematicId].notApplicable += 1;
-          countedRules.add(ruleKey);
-        } else if (violationCount > 0) {
+        if (kind === 'nonCompliant') {
           stats[thematicId].nonCompliant += violationCount;
-          countedRules.add(ruleKey);
-        } else if (analysis.compliant) {
+        } else if (kind === 'compliant') {
           stats[thematicId].compliant += 1;
-          countedRules.add(ruleKey);
+        } else {
+          stats[thematicId].notApplicable += 1;
         }
+        countedRules.add(ruleKey);
       }
     });
   }

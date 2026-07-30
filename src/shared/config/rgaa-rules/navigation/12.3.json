@@ -37,7 +37,7 @@
           "selector": "a[href*='plan'], a[href*='sitemap']",
           "expected": "Le plan du site doit être complet et représentatif",
           "severity": "minor",
-          "type": "recommendation",
+          "type": "warning",
           "automatable": false,
           "aiAnalysis": true
         }
@@ -66,7 +66,7 @@
       "tasks": [
         "Rechercher via des signaux mécaniques du DOM la présence d'un lien vers un plan du site (élément <a> dont l'href contient 'plan', 'sitemap' ou 'site-map'), puis appliquer la procédure ci-dessous DANS L'ORDRE.",
         "ÉTAPE 1 (déterministe) — Si AUCUN lien vers un plan du site n'est présent dans le DOM → conclure NON APPLICABLE (ce critère n'évalue que la pertinence d'un plan existant).",
-        "ÉTAPE 2 (doute → warning) — Si un lien vers un plan du site EST présent : sa PERTINENCE (le plan reflète-t-il l'architecture du site, liste-t-il les pages principales, ses liens sont-ils fonctionnels et à jour ?) dépend du contenu d'une page DISTANTE non observable dans le DOM courant. Émettre un finding type=\"warning\" demandant une vérification manuelle de la page plan du site. NE PAS produire de violation ferme.",
+        "ÉTAPE 2 (doute → warning) — Si un lien vers un plan du site EST présent : sa PERTINENCE (le plan reflète-t-il l'architecture du site, liste-t-il les pages principales, ses liens sont-ils fonctionnels et à jour ?) dépend du contenu d'une page DISTANTE non observable dans le DOM courant. Émettre UN SEUL finding type=\"warning\" demandant une vérification manuelle de la page plan du site. NE PAS produire de violation ferme (ce point ne doit pas abaisser le score).",
         "ÉTAPE 3 — Se limiter à la pertinence du plan : ne pas dénombrer ici les systèmes de navigation (critère 12.1)."
       ],
       "outputFormat": {
@@ -90,8 +90,8 @@
       },
       "important": [
         "Déterminisme : la présence d'un lien vers le plan du site se lit dans le DOM (href contenant plan/sitemap) ; même signal, même verdict.",
-        "type=\"violation\" interdit ici : la pertinence du plan dépend d'une page distante non observable dans le DOM courant.",
-        "En cas de doute (pertinence/complétude du plan) → type=\"warning\" pour vérification manuelle de la page plan du site.",
+        "type=\"violation\" INTERDIT ici : la pertinence du plan dépend d'une page distante non observable et ne peut être tranchée automatiquement.",
+        "En cas de doute (pertinence/complétude du plan) → UN SEUL finding type=\"warning\" pour vérification manuelle (n'abaisse pas le score).",
         "Critère NON APPLICABLE si aucun plan du site n'est proposé.",
         "Retourner UNIQUEMENT du JSON valide ; descriptions concises (max 150 caractères).",
         "Limiter à 5 findings maximum."
@@ -102,7 +102,7 @@
       "includeCodeExamples": true,
       "prioritization": "severity"
     },
-    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.3 - pertinence du plan du site). Tu détectes de façon DÉTERMINISTE la présence d'un lien vers le plan du site dans le DOM. Comme la pertinence du plan dépend d'une page distante non observable, tu n'émets jamais de violation ferme : tu conclus NON APPLICABLE en l'absence de plan, et tu produis un warning de vérification manuelle lorsqu'un plan est présent."
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 12.3 - pertinence du plan du site). Tu détectes de façon DÉTERMINISTE la présence d'un lien vers le plan du site dans le DOM. En l'ABSENCE de plan, tu conclus NON APPLICABLE. Dès qu'un plan du site est PRÉSENT, comme sa pertinence dépend d'une page distante non observable, tu n'émets jamais de violation ferme : tu produis UN SEUL warning de vérification manuelle (qui n'abaisse pas le score)."
   },
   "automatedChecks": [
     "Détection de liens vers plan du site"

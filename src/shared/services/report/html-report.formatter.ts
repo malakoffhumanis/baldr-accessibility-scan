@@ -14,7 +14,7 @@ import {
 import { escapeHtml, generatePageId, levelClass } from './html.util.js';
 import {
   RGAA_THEMATICS,
-  isNonApplicableAnalysis,
+  classifyAiAnalysis,
   mapRulesToThematics,
 } from './rgaa-thematics-mapper.util.js';
 
@@ -218,17 +218,11 @@ function generateSummaryCards(result: IAxeResult): string {
 
   if (result.aiEnrichedResult?.ruleAnalyses) {
     result.aiEnrichedResult.ruleAnalyses.forEach((ruleAnalysis) => {
-      const violationCount = ruleAnalysis.findings.filter(
-        (finding) => finding.type === 'violation',
-      ).length;
+      const { kind, violationCount } = classifyAiAnalysis(ruleAnalysis);
 
-      if (ruleAnalysis.error != null && ruleAnalysis.error !== '') {
-        aiNotApplicable++;
-      } else if (isNonApplicableAnalysis(ruleAnalysis)) {
-        aiNotApplicable++;
-      } else if (violationCount > 0) {
+      if (kind === 'nonCompliant') {
         aiViolations += violationCount;
-      } else if (ruleAnalysis.compliant) {
+      } else if (kind === 'compliant') {
         aiCompliant++;
       } else {
         aiNotApplicable++;

@@ -78,17 +78,18 @@
         "Objectif : vérifier le critère RGAA 8.7 (indication des changements de langue, hors cas particuliers). S'appuyer sur les attributs RÉELS du DOM extrait ET sur le contenu textuel, puis appliquer la procédure ci-dessous DANS L'ORDRE.",
         "ÉTAPE 1 (signal mécanique) — Relever la langue par défaut (lang sur <html>) puis, pour chaque élément, la présence/absence de l'attribut lang et sa valeur EXACTE.",
         "ÉTAPE 2 (violation objective) — Pour tout élément qui PORTE un attribut lang dont la valeur est syntaxiquement INVALIDE (ex. lang=\"anglais\", lang=\"en_US\" mal formé, code inexistant) → finding type=\"violation\", severity moderate : code de changement de langue malformé, défaut vérifiable sans interprétation.",
-        "ÉTAPE 3 (doute → warning) — Identifier les passages de texte qui SEMBLENT être dans une langue différente de la langue par défaut et qui NE PORTENT PAS d'attribut lang. La qualification d'un passage comme \"changement de langue à baliser\" relève d'une appréciation éditoriale (longueur, nature du passage) : émettre un finding type=\"warning\" demandant une vérification manuelle, jamais une violation ferme.",
-        "ÉTAPE 4 (exclusions) — NE PAS signaler les cas particuliers exclus par le critère : noms propres, raisons sociales, mots d'usage courant intégrés à la langue principale (ex. week-end, email, hamburger), termes techniques sans équivalent. En cas d'incertitude sur l'appartenance à ces cas, préférer le warning à la violation.",
-        "ÉTAPE 5 (doute → warning) — Pour un passage déjà balisé par lang, la pertinence du code par rapport à la langue réelle du passage dépend d'une lecture du contenu : si un doute subsiste, émettre un warning de vérification manuelle plutôt qu'une violation.",
+        "ÉTAPE 3 (conforme — déjà balisé) — Un mot ou passage déjà CONTENU dans un élément portant un attribut lang (ex. <span lang=\"en\">axe-core</span>, ou situé sous un ancêtre portant lang=\"en\") a son changement de langue CORRECTEMENT indiqué : il est CONFORME. Ne JAMAIS émettre de finding pour un terme déjà couvert par un attribut lang valide.",
+        "ÉTAPE 4 (exclusions → conforme) — NE PAS signaler les cas exclus par le critère 8.7, qui ne nécessitent AUCUN attribut lang : noms propres et marques (ex. GitHub, Malakoff Humanis), noms de produits/outils techniques (ex. axe-core, Puppeteer, Lighthouse, Pa11y, Docusaurus), acronymes techniques internationaux (ex. RGAA, WCAG, HTML, CSS, ARIA, API, URL, JSON), et mots d'usage courant intégrés au français (ex. week-end, email, hamburger). Ces termes sont CONFORMES sans balisage : aucun finding.",
+        "ÉTAPE 5 (doute réel → warning) — Uniquement pour un VÉRITABLE passage de plusieurs mots dans une autre langue (ex. une citation ou une phrase entière en anglais) qui n'est ni déjà balisé par lang, ni couvert par les exclusions ci-dessus : émettre un finding type=\"warning\" demandant une vérification manuelle, jamais une violation ferme.",
         "ÉTAPE 6 (non applicable) — Si la page ne contient AUCUN passage dans une langue distincte de la langue par défaut (hors cas particuliers), conclure NON APPLICABLE (compliant=true, findings=[])."
       ],
       "important": [
         "Déterminisme : les mêmes signaux DOM (valeur de lang, présence/absence sur un passage) doivent toujours produire le même verdict.",
         "type=\"violation\" est réservé aux défauts OBJECTIFS : un attribut lang présent mais syntaxiquement invalide.",
-        "En cas de doute (passage à baliser ou non, cas particulier, pertinence du code) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
-        "Conclure NON APPLICABLE si aucun changement de langue n'est présent dans la page.",
-        "Exclure noms propres, mots d'usage courant et termes techniques sans équivalent.",
+        "Un terme déjà contenu dans un élément portant lang (ex. lang=\"en\") est CONFORME : ne JAMAIS le signaler.",
+        "Noms propres/marques (GitHub…), noms d'outils/produits techniques (axe-core, Puppeteer, Lighthouse, Pa11y…), acronymes internationaux (RGAA, WCAG, HTML, CSS, ARIA, API…) et mots d'usage courant sont EXCLUS du critère : CONFORMES sans balisage, aucun finding.",
+        "En cas de doute (véritable passage étranger de plusieurs mots à baliser ou non) → type=\"warning\" pour vérification manuelle, jamais de violation ferme.",
+        "Conclure NON APPLICABLE si aucun changement de langue réel n'est présent dans la page.",
         "Retourner UNIQUEMENT du JSON valide, sans texte avant ou après. Maximum 5 findings, descriptions concises (max 150 caractères)."
       ],
       "outputFormat": {
@@ -116,7 +117,7 @@
       "includeCodeExamples": true,
       "prioritization": "severity"
     },
-    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 8.7 - Changements de langue), spécialisé dans la détection déterministe des changements de langue. Tu signales en violation ferme uniquement les défauts objectifs (attribut lang présent mais syntaxiquement invalide) et tu demandes une vérification manuelle (warning) dès que la qualification d'un passage comme changement de langue à baliser, son éventuelle exclusion (nom propre, mot d'usage courant) ou la pertinence de son code relèvent d'une appréciation."
+    "systemRole": "Expert en accessibilité numérique RGAA 4.1 (critère 8.7 - Changements de langue), spécialisé dans la détection déterministe des changements de langue. Tu considères CONFORME (aucun finding) tout terme déjà contenu dans un élément portant un attribut lang valide (ex. lang=\"en\"), ainsi que les cas exclus par le critère : noms propres/marques (GitHub…), noms d'outils/produits techniques (axe-core, Puppeteer, Lighthouse, Pa11y…), acronymes techniques internationaux (RGAA, WCAG, HTML, CSS, ARIA, API…) et mots d'usage courant. Tu signales en violation ferme uniquement le défaut objectif d'un attribut lang présent mais syntaxiquement invalide. Tu demandes une vérification manuelle (warning) uniquement pour un véritable passage étranger de plusieurs mots, non balisé et non exclu."
   },
   "automatedChecks": [
     "Détection d'attributs lang",

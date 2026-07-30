@@ -33,16 +33,22 @@
         {
           "id": "9.2.1",
           "rgaaTestRef": "Test 9.2.1",
-          "description": "La hiérarchie entre les titres est-elle cohérente ?",
+          "description": "La hiérarchie des titres est-elle cohérente ?",
           "methodology": [
-            "Repérer tous les titres de la page (h1 à h6)",
-            "Vérifier qu'il n'y a pas de saut de niveau (ex: h1 puis h3 sans h2)",
-            "Vérifier que la hiérarchie reflète la structure logique du contenu",
-            "Autoriser plusieurs h1 si document HTML5 avec sections"
+            "Repérer tous les titres de la page (balises h1 à h6 et éléments avec role='heading').",
+            "Vérifier que le premier titre est un h1 ou un élément role='heading' avec aria-level='1'.",
+            "Vérifier qu'aucun niveau de titre ne saute plus d'un niveau (ex. h2 → h4, h1 → h3).",
+            "Vérifier qu'un titre de niveau supérieur ne suit pas immédiatement un titre de niveau inférieur sans raison structurelle.",
+            "Vérifier que les éléments avec role='heading' possèdent un attribut aria-level valide compris entre 1 et 6.",
+            "Vérifier que les niveaux des éléments role='heading' sont pris en compte dans la hiérarchie globale.",
+            "Vérifier qu'aucun titre n'est vide ou composé uniquement d'espaces.",
+            "Détecter les suites de plusieurs titres de même niveau sans contenu intermédiaire et les signaler comme avertissement.",
+            "Détecter les niveaux de titres inutilisés pouvant révéler une rupture de structure.",
+            "Autoriser plusieurs h1 uniquement lorsqu'ils correspondent à des sections HTML5 indépendantes ou à une structure de document cohérente."
           ],
           "selector": "h1, h2, h3, h4, h5, h6, [role='heading']",
-          "expected": "La hiérarchie des titres doit être cohérente sans saut de niveau",
-          "severity": "moderate",
+          "expected": "Les titres forment une hiérarchie logique, continue et cohérente. Les éléments role='heading' utilisent un aria-level valide et s'intègrent correctement dans cette hiérarchie.",
+          "severity": "serious",
           "type": "violation",
           "automatable": true,
           "aiAnalysis": false

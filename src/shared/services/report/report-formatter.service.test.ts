@@ -352,6 +352,38 @@ describe('ReportFormatterService', () => {
       expect(score.compliant).toBe(0);
     });
 
+    it('should exclude advisory-only AI rules (warnings/recommendations) from the score', () => {
+      const result = createBaseResult({
+        aiEnrichedResult: createAIEnrichedResult({
+          ruleAnalyses: [
+            {
+              ruleId: 'navigation-skip-links',
+              // Advisory-only rules are displayed as compliant but must not
+              // affect the score (neither conforme ni non-conforme).
+              compliant: true,
+              severity: 'minor',
+              summary: 'Cohérence de navigation à vérifier entre les pages',
+              findings: [
+                {
+                  type: 'warning',
+                  issue: 'Vérifier la cohérence de position inter-pages',
+                  recommendation: 'Contrôler manuellement plusieurs pages',
+                },
+              ],
+            },
+          ],
+          totalRulesAnalyzed: 1,
+        }),
+      });
+
+      const score = formatter.calculateAccessibilityScore(result);
+
+      // A warning-only rule is neither compliant nor non-compliant for scoring.
+      expect(score.compliant).toBe(0);
+      expect(score.nonCompliant).toBe(0);
+      expect(score.score).toBe(100);
+    });
+
     it('should detect non-applicable via "non_applicable" keyword in summary', () => {
       const result = createBaseResult({
         aiEnrichedResult: createAIEnrichedResult({

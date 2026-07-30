@@ -645,7 +645,14 @@ describe('AIAnalyzerService', () => {
               compliant: false,
               severity: 'critical',
               summary: 'Non conforme',
-              findings: [],
+              findings: [
+                {
+                  type: 'violation',
+                  element: 'img',
+                  issue: 'Image sans alt',
+                  recommendation: 'Ajouter alt',
+                },
+              ],
             },
             {
               ruleId: 'image-decorative',
@@ -1000,9 +1007,11 @@ describe('AIAnalyzerService', () => {
       expect(result.ruleAnalyses[0]?.compliant).toBe(true);
     });
 
-    it('should keep compliant=false when conclusion is not "conforme"', async () => {
+    it('should keep compliant=false when conclusion is not "conforme" and a violation finding is present', async () => {
       const rules = [createMockRule()];
 
+      // A genuine non-conformity carries a violation finding; compliance is
+      // then derived from that finding (finalizeComplianceFromFindings).
       mockOpenAIClient.chatCompletion.mockResolvedValueOnce({
         response: JSON.stringify({
           analyses: [
@@ -1011,7 +1020,14 @@ describe('AIAnalyzerService', () => {
               conclusion: 'non-conforme',
               severity: 'critical',
               summary: 'Problèmes détectés',
-              findings: [],
+              findings: [
+                {
+                  type: 'violation',
+                  element: 'img',
+                  issue: 'Image sans alt',
+                  recommendation: 'Ajouter alt',
+                },
+              ],
             },
           ],
         }),
@@ -1701,9 +1717,10 @@ describe('AIAnalyzerService', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Strict warning promotion (non-Images themes)
+  // Advisory findings policy (all themes): warnings/recommendations stay as-is
+  // and never make a rule non-compliant; only confirmed violations do.
   // ---------------------------------------------------------------------------
-  describe('strict warning promotion (non-Images themes)', () => {
+  describe('advisory findings policy', () => {
     const runTheme = async (
       theme: string,
       ruleId: string,
@@ -1737,7 +1754,7 @@ describe('AIAnalyzerService', () => {
       return result.ruleAnalyses.find((a) => a.ruleId === ruleId);
     };
 
-    it('promotes a warning to a violation for a non-Images theme and marks it non-compliant', async () => {
+    it('keeps a warning as a warning for a non-Images theme and marks the rule compliant', async () => {
       const analysis = await runTheme('Couleurs', 'color-contrast', '3.2', [
         {
           type: 'warning',
@@ -1746,11 +1763,14 @@ describe('AIAnalyzerService', () => {
           recommendation: 'vérifier',
         },
       ]);
-      expect(analysis?.findings[0]?.type).toBe('violation');
-      expect(analysis?.compliant).toBe(false);
+      // Warnings are advisory: no longer promoted to violations, and a rule
+      // whose findings are all advisory is compliant (excluded from the score
+      // by the thematics mapper, not counted as a non-conformity).
+      expect(analysis?.findings[0]?.type).toBe('warning');
+      expect(analysis?.compliant).toBe(true);
     });
 
-    it('keeps a warning as a warning for the Images theme', async () => {
+    it('keeps a warning as a warning for the Images theme and marks the rule compliant', async () => {
       const analysis = await runTheme('Images', 'image-alt', '1.1', [
         {
           type: 'warning',
@@ -1759,8 +1779,186 @@ describe('AIAnalyzerService', () => {
           recommendation: 'vérifier',
         },
       ]);
-      // Images does not promote warnings (it only downgrades doubtful violations).
       expect(analysis?.findings[0]?.type).toBe('warning');
+      expect(analysis?.compliant).toBe(true);
+    });
+
+    it('marks a rule non-compliant only when it carries a confirmed violation', async () => {
+      const analysis = await runTheme('Couleurs', 'color-contrast', '3.3', [
+        {
+          type: 'violation',
+          element: '.y',
+          issue: 'contraste insuffisant',
+          recommendation: 'augmenter le ratio',
+        },
+        {
+          type: 'warning',
+          element: '.z',
+          issue: 'doute',
+          recommendation: 'vérifier',
+        },
+      ]);
+      // The violation stays a violation; the warning stays a warning.
+      expect(analysis?.findings[0]?.type).toBe('violation');
+      expect(analysis?.findings[1]?.type).toBe('warning');
+      expect(analysis?.compliant).toBe(false);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Decisive 7.4 safeguard: a new-window opening is NEVER a scored violation —
+  // dropped when the link provably announces it, else downgraded to a warning.
+  // ---------------------------------------------------------------------------
+  describe('new-window announcement safeguard (critère 7.4)', () => {
+    const scriptsDom =
+      '<html><body>' +
+      '<a class="warned-text" href="https://github.com/x" target="_blank">GitHub (nouvelle fenêtre)</a>' +
+      '<a class="warned-sr" href="https://github.com/y" target="_blank">GitHub <span class="sr-only">(nouvelle fenêtre)</span></a>' +
+      '<a class="warned-label" href="https://github.com/z" target="_blank" aria-label="GitHub (ouvre une nouvelle fenêtre)">GitHub</a>' +
+      '<a class="unwarned" href="https://npmjs.com/x" target="_blank">npm</a>' +
+      '</body></html>';
+
+    const runScripts = async (
+      findings: {
+        type: string;
+        element: string;
+        issue: string;
+        recommendation: string;
+      }[],
+    ): Promise<IAIRuleAnalysis | undefined> => {
+      mockScreenshotService.extractDOM.mockResolvedValueOnce(scriptsDom);
+      mockOpenAIClient.chatCompletion.mockResolvedValueOnce({
+        response: JSON.stringify({
+          analyses: [
+            {
+              ruleId: 'script-status-messages',
+              compliant: false,
+              severity: 'moderate',
+              summary: 'Analyse des liens',
+              findings,
+            },
+          ],
+        }),
+        model: 'gpt-4o',
+      });
+      const result = await service.analyzeWithAI(
+        createMockPage() as never,
+        createMockAxeResults(),
+        [createMockRuleWithTheme('Scripts', 'script-status-messages', '7.4')],
+      );
+      return result.ruleAnalyses.find(
+        (a) => a.ruleId === 'script-status-messages',
+      );
+    };
+
+    it('drops the violation when the link announces the new window via visible text', async () => {
+      const analysis = await runScripts([
+        {
+          type: 'violation',
+          element: 'a.warned-text',
+          issue: 'Nouvelle fenêtre non annoncée',
+          recommendation: 'Ajouter un avertissement',
+        },
+      ]);
+      expect(analysis?.findings).toHaveLength(0);
+      expect(analysis?.compliant).toBe(true);
+    });
+
+    it('drops the violation when the warning is in an sr-only span or aria-label', async () => {
+      const sr = await runScripts([
+        {
+          type: 'violation',
+          element: 'a.warned-sr',
+          issue: 'Nouvelle fenêtre non annoncée',
+          recommendation: 'x',
+        },
+      ]);
+      expect(sr?.findings).toHaveLength(0);
+
+      const label = await runScripts([
+        {
+          type: 'violation',
+          element: 'a.warned-label',
+          issue: 'Nouvelle fenêtre non annoncée',
+          recommendation: 'x',
+        },
+      ]);
+      expect(label?.findings).toHaveLength(0);
+    });
+
+    it('downgrades to a warning (never a violation) when the target link has no warning', async () => {
+      const analysis = await runScripts([
+        {
+          type: 'violation',
+          element: 'a.unwarned',
+          issue: 'Nouvelle fenêtre non annoncée',
+          recommendation: 'Ajouter (nouvelle fenêtre)',
+        },
+      ]);
+      expect(analysis?.findings).toHaveLength(1);
+      expect(analysis?.findings[0]?.type).toBe('warning');
+      expect(
+        analysis?.findings[0]?.issue.startsWith('[À vérifier manuellement] '),
+      ).toBe(true);
+      // Warning-only → compliant (advisory, excluded from the score, never NC).
+      expect(analysis?.compliant).toBe(true);
+    });
+
+    it('neutralizes the real docs-page finding (exotic :not selector, icon link) to a warning', async () => {
+      // Reproduces the inconsistent LLM output on the docs pages: an exotic
+      // selector and an icon link whose aria-label has no "nouvelle".
+      const dom =
+        '<html><body>' +
+        '<a href="https://github.com/org/repo" target="_blank" aria-label="GitHub">GitHub</a>' +
+        '</body></html>';
+      mockScreenshotService.extractDOM.mockResolvedValueOnce(dom);
+      mockOpenAIClient.chatCompletion.mockResolvedValueOnce({
+        response: JSON.stringify({
+          analyses: [
+            {
+              ruleId: 'script-status-messages',
+              compliant: false,
+              severity: 'moderate',
+              summary: 'Liens ouvrant une nouvelle fenêtre sans avertissement.',
+              findings: [
+                {
+                  type: 'violation',
+                  element:
+                    "a[href*='github.com']:not([aria-label*='nouvelle'])",
+                  issue:
+                    'Liens GitHub avec target="_blank" mais sans mention "nouvelle fenêtre" dans le nom accessible.',
+                  recommendation: 'Ajouter une mention explicite.',
+                },
+              ],
+            },
+          ],
+        }),
+        model: 'gpt-4o',
+      });
+      const result = await service.analyzeWithAI(
+        createMockPage() as never,
+        createMockAxeResults(),
+        [createMockRuleWithTheme('Scripts', 'script-status-messages', '7.4')],
+      );
+      const analysis = result.ruleAnalyses.find(
+        (a) => a.ruleId === 'script-status-messages',
+      );
+      expect(analysis?.findings[0]?.type).toBe('warning');
+      expect(analysis?.compliant).toBe(true);
+    });
+
+    it('preserves a genuine status-message violation (not a new-window finding)', async () => {
+      const analysis = await runScripts([
+        {
+          type: 'violation',
+          element: 'div.toast',
+          issue: 'Zone de message de succès sans role="status" ni aria-live.',
+          recommendation: 'Ajouter role="status" ou aria-live="polite".',
+        },
+      ]);
+      expect(analysis?.findings).toHaveLength(1);
+      expect(analysis?.findings[0]?.type).toBe('violation');
+      expect(analysis?.compliant).toBe(false);
     });
   });
 });

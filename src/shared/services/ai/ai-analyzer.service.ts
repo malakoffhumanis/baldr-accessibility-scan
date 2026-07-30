@@ -440,15 +440,22 @@ export class AIAnalyzerService {
 
     const analyses = this.parseBatchAnalyses(response.response, theme, rules);
 
-    // Theme-conditional finding policy: Images lenient (decorative doubt ->
-    // warning), every other thematic strict (warnings -> violations).
+    // Finding policy (all themes): a rule is non-compliant ONLY when it carries
+    // at least one confirmed "violation" finding. Warnings and recommendations
+    // are advisory (manual verification) — they never flip a rule to
+    // non-compliant and are excluded from the score by the thematics mapper.
+    // The Images theme additionally downgrades doubtful decorative violations
+    // to warnings BEFORE compliance is finalized.
     if (isImagesTheme) {
       this.downgradeDoubtfulViolations(analyses, dom, (q, sel) =>
         this.isDecorativeImageDoubt(q, sel),
       );
-    } else {
-      this.promoteWarningsToViolations(analyses);
     }
+    // Decisive guard for critère 7.4: a new-window opening is never a scored
+    // violation — dropped when the link already warns, else downgraded to a
+    // (non-scoring) warning.
+    this.neutralizeNewWindowViolations(analyses, dom);
+    this.finalizeComplianceFromFindings(analyses);
 
     logger.info({ theme, count: analyses.length }, 'Thematic batch analysis');
     return { analyses, usage: response.usage };
@@ -525,20 +532,112 @@ export class AIAnalyzerService {
   }
 
   /**
-   * Strict policy for non-Images themes: every "warning" becomes a "violation"
-   * (the user wants no soft warnings outside Images). A rule with any promoted
-   * finding is marked non-compliant.
+   * Derives each rule's compliance from its findings: a rule is non-compliant
+   * iff it carries at least one confirmed "violation" finding. Warnings and
+   * recommendations are advisory (manual verification) — they never flip a rule
+   * to non-compliant, and the thematics mapper excludes advisory-only rules
+   * from the score entirely (neither conforme nor non-conforme). Rules that
+   * failed to be analysed (error set) keep their reported state untouched.
    */
-  private promoteWarningsToViolations(analyses: IAIRuleAnalysis[]): void {
+  private finalizeComplianceFromFindings(analyses: IAIRuleAnalysis[]): void {
     for (const analysis of analyses) {
-      let changed = false;
-      for (const finding of analysis.findings) {
-        if (finding.type === 'warning') {
-          finding.type = 'violation';
-          changed = true;
-        }
+      if (analysis.error != null && analysis.error !== '') continue;
+      analysis.compliant = !analysis.findings.some(
+        (finding) => finding.type === 'violation',
+      );
+    }
+  }
+
+  /**
+   * Decisive safeguard for critère 7.4 (script-status-messages), new-window
+   * openings (a[target="_blank"]). The LLM keeps flagging these as a hard
+   * violation — inconsistently across pages — even when the warning is present
+   * (visible «GitHub (nouvelle fenêtre)» text or an sr-only span). Policy: a
+   * new-window opening is NEVER a scored violation in this tool. For each
+   * "violation" finding that concerns a new-window opening (detected from the
+   * selector or the finding text):
+   *   - DROP it (→ conforme) when every targeted `a[target="_blank"]` link
+   *     provably announces the new window in its accessible name (visible text
+   *     incl. sr-only children, aria-label, title, or aria-describedby);
+   *   - otherwise DOWNGRADE it to a "warning" (manual verification) — advisory,
+   *     excluded from the score by the thematics mapper — NEVER a violation.
+   * Genuine status-message violations (missing aria-live, etc.) are untouched.
+   */
+  private neutralizeNewWindowViolations(
+    analyses: IAIRuleAnalysis[],
+    dom: string,
+  ): void {
+    const $ = cheerio.load(dom, { xml: { xmlMode: false } });
+    const WARNING =
+      /nouvelle?\s*fen[eê]tre|nouvel\s*onglet|new\s*window|new\s*tab/i;
+    const NOTE = '[À vérifier manuellement] ';
+
+    const announcesNewWindow = (
+      selector: string | undefined,
+    ): boolean | null => {
+      if (selector == null || selector === '') return null;
+      let links;
+      try {
+        links = $(selector)
+          .toArray()
+          .filter((el) => {
+            const $el = $(el);
+            return (
+              $el.is('a') &&
+              ($el.attr('target') ?? '').toLowerCase() === '_blank'
+            );
+          });
+      } catch {
+        return null; // selector not understood by cheerio
       }
-      if (changed) analysis.compliant = false;
+      if (links.length === 0) return null;
+      return links.every((el) => {
+        const $el = $(el);
+        const parts = [
+          $el.text(),
+          $el.attr('aria-label') ?? '',
+          $el.attr('title') ?? '',
+        ];
+        const describedby = $el.attr('aria-describedby');
+        if (describedby != null && describedby !== '') {
+          for (const id of describedby.split(/\s+/)) {
+            if (id !== '') parts.push($(`[id="${id}"]`).text());
+          }
+        }
+        return WARNING.test(parts.join(' '));
+      });
+    };
+
+    for (const analysis of analyses) {
+      if (analysis.ruleId !== 'script-status-messages') continue;
+
+      const kept: typeof analysis.findings = [];
+      for (const finding of analysis.findings) {
+        if (finding.type !== 'violation') {
+          kept.push(finding);
+          continue;
+        }
+
+        // Does this violation concern a new-window opening? Look at BOTH the
+        // selector and the finding text — the LLM selector can be exotic.
+        const haystack = `${finding.element ?? ''} ${finding.issue} ${finding.recommendation}`;
+        const isNewWindow =
+          /target|_blank/i.test(haystack) || WARNING.test(haystack);
+        if (!isNewWindow) {
+          kept.push(finding); // genuine status-message violation: keep
+          continue;
+        }
+
+        // Provably announced → drop (conforme). Otherwise downgrade to warning.
+        if (announcesNewWindow(finding.element?.trim()) === true) continue;
+
+        finding.type = 'warning';
+        if (!finding.issue.startsWith(NOTE)) {
+          finding.issue = `${NOTE}${finding.issue}`;
+        }
+        kept.push(finding);
+      }
+      analysis.findings = kept;
     }
   }
 
