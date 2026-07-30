@@ -65,6 +65,10 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD node -e "import('http').then(h => h.default.get('http://localhost:' + (process.env.PORT || 3000) + '/api/v1/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1)))"
 
 # Custom CA: -v /path/to/ca.cer:/app/certs/root.cer  then  NODE_EXTRA_CA_CERTS=/app/certs/root.cer
+# NODE_EXTRA_CA_CERTS covers Node.js TLS (e.g. the LLM endpoint). The app also
+# derives that bundle's SPKI fingerprints and passes them to Chromium via
+# --ignore-certificate-errors-spki-list so the headless browser trusts the same
+# internal CAs (no extra package needed).
 # tini as PID 1 — reaps Chromium zombies and forwards signals to Node.
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "dist/api/server.js"]

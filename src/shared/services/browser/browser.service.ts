@@ -4,6 +4,7 @@ import { createLogger } from '@shared/utils/logger.js';
 import type { IAuditOptions } from '@shared/types/audit.types.js';
 import type { IAuthConfigs } from '@shared/types/auth.types.js';
 import { AuthService } from '@shared/services/auth/auth.service.js';
+import { getChromiumCaTrustArgs } from '@shared/services/browser/chromium-trust.util.js';
 import type { IBrowserConfig } from '@shared/config/config.js';
 
 const logger = createLogger('browser-service');
@@ -76,6 +77,12 @@ export class BrowserService {
       '--disable-dev-shm-usage',
       '--disable-gpu',
     ];
+
+    // Chromium ignores NODE_EXTRA_CA_CERTS, so it would reject internal HTTPS
+    // sites signed by a corporate CA. Pass the SPKI allow-list derived from that
+    // bundle so the browser trusts those CAs specifically (validation stays on
+    // for every other host). No-op when no CA bundle is configured.
+    launchArgs.push(...getChromiumCaTrustArgs());
 
     if (this.allowInsecure) {
       if (this.appEnv === 'production') {
