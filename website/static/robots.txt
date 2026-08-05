@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://malakoffhumanis.github.io/baldr-accessibility-scan/sitemap-main.xml
+Sitemap: https://malakoffhumanis.github.io/baldr-accessibility-scan/sitemap.xml

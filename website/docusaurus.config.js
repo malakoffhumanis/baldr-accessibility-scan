@@ -24,6 +24,9 @@ const config = {
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/baldr-accessibility-scan/',
+  // GitHub Pages serves directory pages with a trailing slash.
+  // Keeping canonical URLs in this format avoids avoidable 301s for crawlers.
+  trailingSlash: true,
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
