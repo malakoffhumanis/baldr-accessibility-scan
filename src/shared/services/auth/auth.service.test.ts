@@ -4,11 +4,13 @@ import type { Page, BrowserContext } from 'puppeteer';
 import { AuthService } from './auth.service.js';
 import type { IAutoAuthConfig } from '@shared/types/auth.types.js';
 
-const { mockLoggerInfo, mockLoggerWarn, mockLoggerError } = vi.hoisted(() => ({
-  mockLoggerInfo: vi.fn(),
-  mockLoggerWarn: vi.fn(),
-  mockLoggerError: vi.fn(),
-}));
+const { mockLoggerInfo, mockLoggerWarn, mockLoggerError, mockManualAuth } =
+  vi.hoisted(() => ({
+    mockLoggerInfo: vi.fn(),
+    mockLoggerWarn: vi.fn(),
+    mockLoggerError: vi.fn(),
+    mockManualAuth: vi.fn(),
+  }));
 
 vi.mock('../../utils/logger.js', () => ({
   createLogger: () => ({
@@ -16,6 +18,14 @@ vi.mock('../../utils/logger.js', () => ({
     warn: mockLoggerWarn,
     error: mockLoggerError,
   }),
+}));
+
+// Manual auth opens a real browser and blocks on the operator; stub it so the
+// dispatch can be tested without any interactive/browser dependency.
+vi.mock('./manual-auth.strategy.js', () => ({
+  ManualAuthHandler: function MockManualAuthHandler() {
+    this.authenticate = mockManualAuth;
+  },
 }));
 
 type MockFn = ReturnType<typeof vi.fn>;
@@ -69,6 +79,52 @@ describe('AuthService', () => {
         username: 'jdoe',
         password: 's3cret',
       });
+    });
+
+    it('routes a manual config to the manual strategy and caches its cookies', async () => {
+      mockManualAuth.mockResolvedValue({
+        success: true,
+        cookies: [{ name: 'm', value: '1', domain: '.example.com', path: '/' }],
+      });
+
+      const result = await service.authenticate(
+        page,
+        { type: 'manual' },
+        'https://example.com',
+        'man',
+      );
+
+      expect(result).toBe(true);
+      expect(mockManualAuth).toHaveBeenCalledWith(
+        page,
+        { type: 'manual' },
+        'https://example.com',
+        'man',
+      );
+      // The auto strategy (native popup answer) must NOT have run.
+      expect(page.authenticate as MockFn).not.toHaveBeenCalled();
+      // The obtained session is cached for reuse across pages.
+      const sessions = (
+        service as unknown as { authSessions: Map<string, unknown> }
+      ).authSessions;
+      expect(sessions.has('man')).toBe(true);
+    });
+
+    it('does not cache a failed manual authentication', async () => {
+      mockManualAuth.mockResolvedValue({ success: false });
+
+      const result = await service.authenticate(
+        page,
+        { type: 'manual' },
+        'https://example.com',
+        'manFail',
+      );
+
+      expect(result).toBe(false);
+      const sessions = (
+        service as unknown as { authSessions: Map<string, unknown> }
+      ).authSessions;
+      expect(sessions.has('manFail')).toBe(false);
     });
 
     it('reuses cookies from a valid existing session (no re-auth)', async () => {

@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Page } from 'puppeteer';
 import type {
-  IFormAuthConfig,
-  IADFSAuthConfig,
+  IAutoAuthConfig,
+  IManualAuthConfig,
 } from '@shared/types/auth.types.js';
+import { setRuntimeMode } from '@shared/config/runtime-mode.js';
 
 // Use vi.hoisted so mock fns exist before vi.mock hoisting
 const {
@@ -63,21 +64,21 @@ const mockPageFns = {
 };
 const mockPage = mockPageFns as unknown as Page;
 
-const formAuth: IFormAuthConfig = {
-  type: 'form',
-  loginUrl: 'https://example.com/login',
-  email: 'u@e.com',
+const formAuth: IAutoAuthConfig = {
+  type: 'auto',
+  username: 'u@e.com',
   password: 'p',
-  selectors: { email: '#e', password: '#p', submit: '#s' },
+  loginUrl: 'https://example.com/login',
 };
 
-const adfsAuth: IADFSAuthConfig = {
-  type: 'adfs',
-  loginUrl: 'https://adfs.example.com',
+const adfsAuth: IAutoAuthConfig = {
+  type: 'auto',
   username: 'u',
   password: 'p',
-  email: 'u@e.com',
+  loginUrl: 'https://adfs.example.com',
 };
+
+const manualAuth: IManualAuthConfig = { type: 'manual' };
 
 function setupBrowserMock(connected = true): void {
   const browser = {
@@ -492,6 +493,88 @@ describe('BrowserService', () => {
       mockPageFns.isClosed.mockReturnValue(false);
       mockPageFns.close.mockRejectedValueOnce(new Error('cannot close'));
       await expect(service.closePage(mockPage)).resolves.toBeUndefined();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Manual authentication (interactive, local only)
+  // -------------------------------------------------------------------------
+  describe('manual authentication', () => {
+    it('rejects manual auth in production before reaching the auth service', async () => {
+      const svc = new BrowserService({
+        browser: { headless: true },
+        env: 'production',
+      });
+      svc.setAuthConfigs({ man: manualAuth });
+
+      await expect(
+        svc.navigateToUrl(mockPage, 'https://example.com', {
+          url: 'https://example.com',
+          auth: 'man',
+        }),
+      ).rejects.toThrow('only available via the local CLI');
+      expect(mockAuthenticate).not.toHaveBeenCalled();
+    });
+
+    it('rejects manual auth on the HTTP server even in non-production', async () => {
+      // Default runtime mode is "server" — manual auth needs the interactive CLI.
+      const svc = new BrowserService({
+        browser: { headless: true },
+        env: 'development',
+      });
+      svc.setAuthConfigs({ man: manualAuth });
+
+      await expect(
+        svc.navigateToUrl(mockPage, 'https://example.com', {
+          url: 'https://example.com',
+          auth: 'man',
+        }),
+      ).rejects.toThrow('only available via the local CLI');
+      expect(mockAuthenticate).not.toHaveBeenCalled();
+    });
+
+    it('allows manual auth in CLI mode (non-production)', async () => {
+      setRuntimeMode('cli');
+      try {
+        const svc = new BrowserService({
+          browser: { headless: true },
+          env: 'development',
+        });
+        svc.setAuthConfigs({ man: manualAuth });
+        mockPageFns.url.mockReturnValue('https://example.com/dashboard');
+
+        await svc.navigateToUrl(mockPage, 'https://example.com', {
+          url: 'https://example.com',
+          auth: 'man',
+        });
+        expect(mockAuthenticate).toHaveBeenCalled();
+      } finally {
+        setRuntimeMode('server');
+      }
+    });
+
+    it('forces a visible (headful) browser for manual auth in non-production', async () => {
+      const svc = new BrowserService({
+        browser: { headless: true },
+        env: 'development',
+      });
+      svc.setAuthConfigs({ man: manualAuth });
+
+      await svc.launch();
+      const opts = mockLaunch.mock.calls[0][0] as Record<string, unknown>;
+      expect(opts['headless']).toBe(false);
+    });
+
+    it('keeps the configured headless mode when no manual auth is requested', async () => {
+      const svc = new BrowserService({
+        browser: { headless: true },
+        env: 'development',
+      });
+      svc.setAuthConfigs({ f: formAuth });
+
+      await svc.launch();
+      const opts = mockLaunch.mock.calls[0][0] as Record<string, unknown>;
+      expect(opts['headless']).toBe(true);
     });
   });
 });

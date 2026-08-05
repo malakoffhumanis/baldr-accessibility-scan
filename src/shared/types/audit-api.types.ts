@@ -38,12 +38,15 @@ export type AuthType = 'auto' | 'none' | 'form' | 'adfs' | 'manual';
 export type ImpactLevel = 'minor' | 'moderate' | 'serious' | 'critical';
 
 /**
- * Authentication configuration (credentials only).
+ * Auto authentication configuration (credentials).
  * Provide just an identifier and a password; the engine adapts to whatever the
  * site presents (native HTTP popup or HTML login form, single- or two-step).
- * Omit the field entirely for a public page (no auth).
+ * `type` may be omitted — it defaults to "auto". Omit the whole `auth` field
+ * for a public page (no auth).
  */
 export interface AutoAuthConfig {
+  /** Discriminator; defaults to "auto" when omitted. */
+  type?: 'auto';
   /** Login identifier (username or email) */
   username: string;
   /** Login password */
@@ -53,10 +56,36 @@ export interface AutoAuthConfig {
 }
 
 /**
- * Authentication configuration. A single adaptive mode (credentials only);
- * "no auth" is expressed by omitting the field.
+ * Manual authentication configuration (interactive, local use only).
+ * No credentials: BALDR opens a visible browser and waits while the operator
+ * authenticates by hand (2FA/MFA included). Resumes on Enter in the terminal
+ * or when the browser reaches the target URL. Not available in production.
  */
-export type AuthConfig = AutoAuthConfig;
+export interface ManualAuthConfig {
+  /** Discriminator selecting interactive manual authentication. */
+  type: 'manual';
+  /** Optional explicit page to open first (the target URL otherwise). */
+  loginUrl?: string;
+  /**
+   * Max time (ms) to wait for the operator before giving up.
+   * Default 300000 (5 min); range 10000..1800000.
+   */
+  timeoutMs?: number;
+  /**
+   * When true, resume only when the operator presses Enter in the terminal
+   * (URL auto-detection disabled). Recommended for Microsoft 365 / SharePoint
+   * and other heavy multi-redirect SSO. Requires an interactive terminal.
+   */
+  waitForManualConfirm?: boolean;
+}
+
+/**
+ * Authentication configuration, discriminated by `type`:
+ * - `auto` (default): credentials the engine applies automatically;
+ * - `manual`: interactive manual login (local only).
+ * "No auth" is expressed by omitting the field.
+ */
+export type AuthConfig = AutoAuthConfig | ManualAuthConfig;
 
 /**
  * Browser window dimensions

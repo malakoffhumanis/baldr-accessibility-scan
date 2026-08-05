@@ -52,7 +52,7 @@ const SUBMIT_SELECTORS =
  * Limitation: transparent domain SSO (Kerberos/Negotiate without a prompt)
  * cannot be reproduced with id+password off a domain-joined machine.
  */
-export class AutoAuthHandler implements IAuthStrategy {
+export class AutoAuthHandler implements IAuthStrategy<IAutoAuthConfig> {
   async authenticate(
     page: Page,
     config: IAutoAuthConfig,
