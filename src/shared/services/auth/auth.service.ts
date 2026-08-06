@@ -1,10 +1,15 @@
 import type { Page } from 'puppeteer';
 
-import type { IAuthConfig } from '@shared/types/auth.types.js';
+import type {
+  IAuthConfig,
+  IAutoAuthConfig,
+  IManualAuthConfig,
+} from '@shared/types/auth.types.js';
 import { createLogger } from '@shared/utils/logger.js';
 
 import type { IAuthStrategy, SessionCookie } from './auth-strategy.types.js';
 import { AutoAuthHandler } from './auto-auth.strategy.js';
+import { ManualAuthHandler } from './manual-auth.strategy.js';
 
 const logger = createLogger('auth-service');
 
@@ -24,9 +29,10 @@ interface CachedSession {
 export class AuthService {
   private authSessions = new Map<string, CachedSession>();
 
-  private readonly strategies: { auto: IAuthStrategy } = {
-    auto: new AutoAuthHandler(),
-  };
+  private readonly autoStrategy: IAuthStrategy<IAutoAuthConfig> =
+    new AutoAuthHandler();
+  private readonly manualStrategy: IAuthStrategy<IManualAuthConfig> =
+    new ManualAuthHandler();
 
   /**
    * Authenticates a page according to the configuration. Reuses an existing
@@ -46,13 +52,22 @@ export class AuthService {
       'Authentication in progress',
     );
 
-    const strategy = this.strategies[authConfig.type];
-    const result = await strategy.authenticate(
-      page,
-      authConfig,
-      targetUrl,
-      authName,
-    );
+    // Dispatch by discriminant. Narrowing keeps each strategy strongly typed
+    // to its own config shape (auto: credentials, manual: interactive).
+    const result =
+      authConfig.type === 'manual'
+        ? await this.manualStrategy.authenticate(
+            page,
+            authConfig,
+            targetUrl,
+            authName,
+          )
+        : await this.autoStrategy.authenticate(
+            page,
+            authConfig,
+            targetUrl,
+            authName,
+          );
 
     if (result.success && result.cookies) {
       this.authSessions.set(authName, {

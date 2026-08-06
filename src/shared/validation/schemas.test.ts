@@ -189,4 +189,102 @@ describe('journeyRequestSchema', () => {
       expect(result.success).toBe(false);
     });
   });
+
+  // ─── Authentication modes ────────────────────────────────────────────────
+  describe('authentication modes', () => {
+    it('should accept an explicit auto type with credentials', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'auto', username: 'jdoe', password: 's3cret' },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.auth?.type).toBe('auto');
+      }
+    });
+
+    it('should accept a minimal manual auth config', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'manual' },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.auth).toEqual({ type: 'manual' });
+      }
+    });
+
+    it('should accept manual auth with loginUrl and timeoutMs', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: {
+          type: 'manual',
+          loginUrl: 'https://sso.example.com/login',
+          timeoutMs: 600000,
+        },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept manual auth with waitForManualConfirm', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'manual', waitForManualConfirm: true },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.auth).toEqual({
+          type: 'manual',
+          waitForManualConfirm: true,
+        });
+      }
+    });
+
+    it('should reject manual auth with a non-boolean waitForManualConfirm', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'manual', waitForManualConfirm: 'yes' },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should accept per-page manual auth', () => {
+      const result = journeyRequestSchema.safeParse({
+        pages: [{ url: 'https://example.com', auth: { type: 'manual' } }],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject manual auth with a timeoutMs below the minimum', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'manual', timeoutMs: 5000 },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject manual auth with a timeoutMs above the maximum', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'manual', timeoutMs: 2_000_000 },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject manual auth with an invalid loginUrl', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'manual', loginUrl: 'not-a-url' },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject an unknown auth type', () => {
+      const result = journeyRequestSchema.safeParse({
+        auth: { type: 'kerberos' },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(false);
+    });
+  });
 });

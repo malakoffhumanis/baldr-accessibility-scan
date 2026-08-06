@@ -108,9 +108,13 @@ d'évasion en langage naturel pour les cas non couverts.
 ## Authentification des pages
 
 L'authentification contre le site audité (à ne pas confondre avec la clé d'API)
-se déclare **en ligne** avec un seul modèle : **identifiant + mot de passe**. Le
-moteur s'adapte tout seul à ce que le site présente (popup native HTTP, ou
-formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
+se déclare **en ligne**. Deux modes, discriminés par le champ `type` :
+
+### Mode `auto` (par défaut)
+
+**Identifiant + mot de passe**. Le moteur s'adapte tout seul à ce que le site
+présente (popup native HTTP, ou formulaire HTML mono‑ ou bi‑étapes). `type` peut
+être omis (il vaut `auto` par défaut).
 
 ```json
 "auth": { "username": "jdoe", "password": "secret" }
@@ -118,9 +122,46 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 
 | Champ | Type | Requis | Description |
 | --- | --- | --- | --- |
+| `type` | `"auto"` | non | Discriminant ; `auto` par défaut si omis. |
 | `username` | `string` | **oui** | Identifiant (login ou email selon le site). |
 | `password` | `string` | **oui** | Mot de passe. |
 | `loginUrl` | `string` | non | Page de login à visiter d'abord, si elle diffère de l'URL auditée (auto‑détectée sinon). Validée anti‑SSRF. |
+
+> **Limite** : un SSO d'entreprise **transparent** (Kerberos/Negotiate, sans
+> aucune saisie) ne peut pas être reproduit avec un id+mot de passe depuis une
+> machine non jointe au domaine.
+
+### Mode `manual` (interactif — usage local uniquement)
+
+Pour les cas non automatisables (**2FA / MFA / SSO**), Baldr ouvre un navigateur
+**visible** et se met en pause. Vous vous authentifiez **à la main**, puis vous
+rejoignez l'URL à auditer : Baldr **reprend automatiquement** dès que le
+navigateur atteint cette URL, ou **immédiatement si vous appuyez sur Entrée**
+dans le terminal. Aucun identifiant n'est transmis à Baldr.
+
+```json
+"auth": { "type": "manual" }
+```
+
+| Champ | Type | Requis | Description |
+| --- | --- | --- | --- |
+| `type` | `"manual"` | **oui** | Sélectionne le mode manuel interactif. |
+| `loginUrl` | `string` | non | Page à ouvrir en premier (l'URL cible sinon). Validée anti‑SSRF. |
+| `timeoutMs` | `number` | non | Délai max d'attente de l'opérateur (défaut `300000` = 5 min ; `10000`..`1800000`). |
+| `waitForManualConfirm` | `boolean` | non | Si `true`, la reprise n'a lieu **que** sur appui de la touche Entrée (détection d'URL désactivée). **Recommandé pour Microsoft 365 / SharePoint** et les SSO à redirections multiples. Nécessite un terminal interactif. |
+
+> **Contraintes** : mode réservé au **CLI local/interactif**. Un navigateur
+> visible est forcé automatiquement (inutile de passer `PUPPETEER_HEADFUL`), et
+> le mode est **refusé sur le serveur HTTP et en production** (`NODE_ENV=production`)
+> car un serveur headless n'a pas d'opérateur.
+>
+> **Touche Entrée** : nécessite un vrai terminal interactif. Sous **Windows,
+> lancez `baldr run <fichier>` dans PowerShell ou cmd — pas Git Bash/MinTTY** — et
+> passez la requête en **argument fichier** (pas via stdin). Sinon la touche Entrée
+> est indisponible et Baldr se rabat sur la détection d'URL (moins fiable sur les
+> SPA lourds où l'URL apparaît avant la fin du chargement).
+
+### Portée & session
 
 `auth` peut être déclaré :
 - au **niveau racine** (`auth`) → défaut appliqué à toutes les pages ;
@@ -128,10 +169,9 @@ formulaire HTML mono‑ ou bi‑étapes). Pas de `type`, pas de `selectors`.
 
 **Pas d'authentification** = on **omet** simplement le champ `auth` (page publique).
 
-> **Limite** : un SSO d'entreprise **transparent** (Kerberos/Negotiate, sans
-> aucune saisie) ne peut pas être reproduit avec un id+mot de passe depuis une
-> machine non jointe au domaine. Dans ce cas, l'audit doit tourner depuis un
-> poste joint au domaine ou un environnement réseau adéquat.
+Une session réussie est **mise en cache (~30 min) et réutilisée** entre les
+pages : avec un `auth` **racine** unique, vous ne vous authentifiez qu'**une
+seule fois** pour tout le parcours (particulièrement utile en mode `manual`).
 
 ---
 

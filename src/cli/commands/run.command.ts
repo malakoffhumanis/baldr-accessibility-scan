@@ -43,6 +43,8 @@ JSON request (v3) — only "pages" is required:
       "viewport": { "width": 1920, "height": 1080 }    // width >= 320, height >= 240
     },
     "auth": { "username": "jdoe", "password": "secret" },   // audited-site login (optional)
+    //  ... or manual (interactive) login, local only:
+    //  "auth": { "type": "manual" },                        // 2FA/MFA by hand  (optional)
     "pages": [                              // ordered list, 1..30               (REQUIRED)
       {
         "url": "https://www.wikipedia.org", // http(s), SSRF-validated           (REQUIRED)
@@ -73,17 +75,38 @@ Actions ("type" field):
 
 Authentication (credentials of the AUDITED SITE — not the LLM key):
   Set "auth" at the root (applied to every page) and/or per page (overrides the
-  root). Omit it for public pages. A single adaptive mode handles whatever the
-  site presents:
+  root). Omit it for public pages. Two modes, discriminated by "type":
+
+  auto (default when "type" is omitted) — automated, adapts to the site:
     - Native HTTP popup (Basic / NTLM) — answered silently from username/password.
     - HTML login form — fields located by heuristics, filled and submitted;
       two-step forms (e.g. ADFS: username first, then password) are supported.
     - loginUrl (optional) — visited first when the login page differs from the
       audited URL (auto-detected otherwise); the run then returns to the page URL.
-  A successful session is cached (~30 min) and reused across pages, so each page
-  is not re-authenticated. Not supported: transparent domain SSO (Kerberos /
-  Negotiate with no prompt) — there is no field to fill from username/password.
-  Fields:  username (REQUIRED) - password (REQUIRED) - loginUrl (optional)
+    Fields:  username (REQUIRED) - password (REQUIRED) - loginUrl (optional)
+    Not supported: transparent domain SSO (Kerberos / Negotiate with no prompt).
+
+  manual (interactive — CLI / LOCAL USE ONLY) — for 2FA / MFA / SSO you log in by hand:
+    Baldr opens a VISIBLE browser and pauses. Authenticate yourself (including any
+    2FA/MFA), then reach the URL you want to audit. Baldr resumes when the browser
+    stays on that URL (debounced), or immediately when you press Enter in the terminal.
+    A visible browser is forced automatically (no PUPPETEER_HEADFUL needed). Available
+    only via the CLI in a non-production environment (rejected on the HTTP server and
+    when NODE_ENV=production).
+    For heavy multi-redirect SSO (Microsoft 365 / SharePoint) set
+    "waitForManualConfirm": true and press Enter once the page is fully rendered — the
+    URL bar shows the target before the SPA content is ready, so URL auto-resume can
+    otherwise scan a half-loaded page.
+    IMPORTANT: the Enter key needs a real interactive terminal. On Windows run in
+    PowerShell or cmd (NOT Git Bash / MinTTY), and pass the request as a FILE argument
+    (not piped via stdin) — otherwise Enter is unavailable and Baldr falls back to URL
+    auto-detection.
+    Fields:  type: "manual" (REQUIRED) - loginUrl (optional) -
+             timeoutMs (optional, default 300000 = 5 min, range 10000..1800000) -
+             waitForManualConfirm (optional bool; Enter-only resume)
+
+  A successful session is cached (~30 min) and reused across pages, so with a
+  single root-level "auth" you authenticate only once for the whole journey.
 
 LLM provider (intel/full analysis + click/hover/fill/select/ai actions):
   Configure once in your environment (presence of the API key enables AI):
@@ -116,6 +139,16 @@ Examples:
   $ baldr run request.json -o report.html \\
       --llm-endpoint https://llm.internal.example.com/v1 \\
       --llm-api-key sk-xxxx --llm-context-limit 128000
+
+  # Manual auth (2FA/MFA): a visible browser opens, you log in by hand, then
+  # Baldr resumes. Pass the request as a FILE so the terminal stays interactive.
+  # request.json → { "auth": { "type": "manual" }, "pages": [ { "url": "..." } ] }
+  $ baldr run request.json -o report.html
+
+  # Microsoft 365 / SharePoint (Windows): run in PowerShell/cmd, Enter-only resume.
+  # request.json → { "auth": { "type": "manual", "waitForManualConfirm": true }, ... }
+  # Log in, wait for the page to fully render, then press Enter in the terminal.
+  PS> baldr run request.json -o report.html
 `;
 
 /** Subset of `run` options carrying LLM provider overrides. */

@@ -44,10 +44,21 @@ export const viewportDimensionsSchema = z
       'Dimensions de la fenêtre du navigateur (width ≥ 320, height ≥ 240).',
   });
 
-// Authentication: credentials only. The engine adapts to whatever the site
-// presents (native popup or HTML login form). "No auth" = omit the field.
-const authConfigSchema = z
+// Authentication, discriminated by `type`:
+//  - "auto" (default when `type` is omitted): credentials the engine applies
+//    to whatever the site presents (native popup or HTML login form);
+//  - "manual": interactive local login — no credentials; BALDR opens a visible
+//    browser and the operator authenticates by hand (2FA/MFA included).
+// "No auth" = omit the field entirely.
+const MANUAL_MIN_TIMEOUT_MS = 10000;
+const MANUAL_MAX_TIMEOUT_MS = 1_800_000;
+
+const autoAuthConfigSchema = z
   .object({
+    type: z.literal('auto').optional().openapi({
+      description: 'Mode par défaut : identifiants (login/mot de passe).',
+      example: 'auto',
+    }),
     username: z.string().min(1).openapi({
       description: 'Identifiant (login ou email selon le site).',
       example: 'jdoe',
@@ -65,7 +76,49 @@ const authConfigSchema = z
   })
   .openapi({
     description:
-      "Identifiants du site audité (à ne pas confondre avec la clé d'API). Le moteur s'adapte au mode présenté (popup HTTP native ou formulaire HTML). Omettre = page publique.",
+      "Identifiants du site audité (à ne pas confondre avec la clé d'API). Le moteur s'adapte au mode présenté (popup HTTP native ou formulaire HTML).",
+  });
+
+const manualAuthConfigSchema = z
+  .object({
+    type: z.literal('manual').openapi({
+      description:
+        "Authentification manuelle interactive : Baldr ouvre un navigateur visible et attend que l'opérateur se connecte à la main (2FA/MFA compris). Usage local uniquement (indisponible en production).",
+      example: 'manual',
+    }),
+    // Optional explicit page to open first (the target URL otherwise); SSRF-validated.
+    loginUrl: safeUrlSchema.optional().openapi({
+      description:
+        "Page à ouvrir en premier si elle diffère de l'URL auditée (l'URL cible sinon). Validée anti-SSRF.",
+      example: 'https://sso.example.com/login',
+    }),
+    timeoutMs: z
+      .number()
+      .int()
+      .min(MANUAL_MIN_TIMEOUT_MS)
+      .max(MANUAL_MAX_TIMEOUT_MS)
+      .optional()
+      .openapi({
+        description:
+          "Délai maximum d'attente de l'opérateur, en millisecondes (défaut 300000 = 5 min ; entre 10000 et 1800000).",
+        example: 300000,
+      }),
+    waitForManualConfirm: z.boolean().optional().openapi({
+      description:
+        "Si true, la reprise n'a lieu QUE lorsque l'opérateur appuie sur Entrée dans le terminal (détection d'URL désactivée). Recommandé pour les SSO à redirections multiples (Microsoft 365 / SharePoint), où l'URL cible s'affiche avant la fin du chargement. Nécessite un terminal interactif.",
+      example: true,
+    }),
+  })
+  .openapi({
+    description:
+      "Authentification manuelle interactive (aucun identifiant transmis). L'opérateur se connecte à la main dans le navigateur ouvert par Baldr ; l'audit reprend dès qu'il atteint l'URL cible ou appuie sur Entrée dans le terminal.",
+  });
+
+const authConfigSchema = z
+  .union([manualAuthConfigSchema, autoAuthConfigSchema])
+  .openapi({
+    description:
+      "Authentification du site audité (à ne pas confondre avec la clé d'API). Deux modes discriminés par `type` : `auto` (identifiants, par défaut) ou `manual` (connexion manuelle interactive, usage local). Omettre = page publique.",
   });
 
 // ─── Journey schema (v3) ──────────────────────────────────────────────────────

@@ -21,11 +21,20 @@ import type {
 } from '@shared/types/audit-api.types.js';
 
 /**
- * Normalizes an API-facing AuthConfig (credentials) into its internal
- * IAuthConfig. Single source of truth for the mapping; reused by the journey
- * adapter.
+ * Normalizes an API-facing AuthConfig into its internal IAuthConfig. Single
+ * source of truth for the mapping; reused by the journey adapter. Discriminates
+ * on `type`: `manual` (interactive, no credentials) vs `auto` (credentials —
+ * the default when `type` is omitted).
  */
 export function normalizeAuthConfig(config: AuthConfig): IAuthConfig {
+  if (config.type === 'manual') {
+    return {
+      type: 'manual',
+      loginUrl: config.loginUrl,
+      timeoutMs: config.timeoutMs,
+      waitForManualConfirm: config.waitForManualConfirm,
+    };
+  }
   return {
     type: 'auto',
     username: config.username,

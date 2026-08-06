@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   convertResultToAPI,
   convertToConsolidatedReport,
+  normalizeAuthConfig,
 } from './audit-api.adapter';
 
 import type {
@@ -129,6 +130,63 @@ function createIAAnalysisError(
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('audit-api.adapter', () => {
+  // ═════════════════════════════════════════════════════════════════════════
+  // normalizeAuthConfig
+  // ═════════════════════════════════════════════════════════════════════════
+  describe('normalizeAuthConfig', () => {
+    it('maps credentials to the internal auto config (type defaulted)', () => {
+      const internal = normalizeAuthConfig({
+        username: 'jdoe',
+        password: 's3cret',
+      });
+      expect(internal).toEqual({
+        type: 'auto',
+        username: 'jdoe',
+        password: 's3cret',
+        loginUrl: undefined,
+      });
+    });
+
+    it('preserves an explicit auto type and loginUrl', () => {
+      const internal = normalizeAuthConfig({
+        type: 'auto',
+        username: 'jdoe',
+        password: 's3cret',
+        loginUrl: 'https://login.example.com',
+      });
+      expect(internal).toEqual({
+        type: 'auto',
+        username: 'jdoe',
+        password: 's3cret',
+        loginUrl: 'https://login.example.com',
+      });
+    });
+
+    it('maps a manual config without credentials', () => {
+      const internal = normalizeAuthConfig({ type: 'manual' });
+      expect(internal).toEqual({
+        type: 'manual',
+        loginUrl: undefined,
+        timeoutMs: undefined,
+      });
+    });
+
+    it('preserves manual loginUrl, timeoutMs and waitForManualConfirm', () => {
+      const internal = normalizeAuthConfig({
+        type: 'manual',
+        loginUrl: 'https://sso.example.com/login',
+        timeoutMs: 600000,
+        waitForManualConfirm: true,
+      });
+      expect(internal).toEqual({
+        type: 'manual',
+        loginUrl: 'https://sso.example.com/login',
+        timeoutMs: 600000,
+        waitForManualConfirm: true,
+      });
+    });
+  });
+
   // ═════════════════════════════════════════════════════════════════════════
   // convertResultToAPI
   // ═════════════════════════════════════════════════════════════════════════

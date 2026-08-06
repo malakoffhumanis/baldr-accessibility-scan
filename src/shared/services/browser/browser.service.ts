@@ -1,10 +1,12 @@
 import puppeteer, { type Browser, type Page } from 'puppeteer';
 
 import { createLogger } from '@shared/utils/logger.js';
+import { looksLikeLoginUrl } from '@shared/utils/login-url.util.js';
 import type { IAuditOptions } from '@shared/types/audit.types.js';
 import type { IAuthConfigs } from '@shared/types/auth.types.js';
 import { AuthService } from '@shared/services/auth/auth.service.js';
 import { getChromiumCaTrustArgs } from '@shared/services/browser/chromium-trust.util.js';
+import { getRuntimeMode } from '@shared/config/runtime-mode.js';
 import type { IBrowserConfig } from '@shared/config/config.js';
 
 const logger = createLogger('browser-service');
@@ -25,6 +27,7 @@ export class BrowserService {
   private authService: AuthService;
   private authConfigs: IAuthConfigs = {};
   private activePagesCount = 0;
+  private manualAuthRequested = false;
   private readonly browserConfig: IBrowserConfig;
   private readonly appEnv: string;
   private readonly allowInsecure: boolean;
@@ -41,10 +44,43 @@ export class BrowserService {
    */
   setAuthConfigs(authConfigs: IAuthConfigs): void {
     this.authConfigs = authConfigs;
+    this.manualAuthRequested = Object.values(authConfigs).some(
+      (cfg) => cfg.type === 'manual',
+    );
     logger.info(
-      { authTypes: Object.keys(authConfigs) },
+      {
+        authTypes: Object.keys(authConfigs),
+        authModes: Object.values(authConfigs).map((cfg) => cfg.type),
+        manualAuthRequested: this.manualAuthRequested,
+      },
       'Authentication configurations loaded',
     );
+    if (this.manualAuthRequested && this.appEnv === 'production') {
+      logger.warn(
+        'Manual authentication is configured but NODE_ENV=production — it will be rejected (a headless server has no interactive operator)',
+      );
+    }
+  }
+
+  /**
+   * Effective headless mode. Manual authentication needs a visible browser so
+   * the operator can log in by hand, so in non-production we override a
+   * headless config to headful whenever a manual auth config is present.
+   * Production is never overridden — manual auth is rejected there instead
+   * (see `navigateToUrl`).
+   */
+  private resolveHeadless(): boolean {
+    if (
+      this.manualAuthRequested &&
+      this.appEnv !== 'production' &&
+      this.browserConfig.headless
+    ) {
+      logger.warn(
+        'Manual authentication requested — forcing a visible (headful) browser so the operator can authenticate',
+      );
+      return false;
+    }
+    return this.browserConfig.headless;
   }
 
   /**
@@ -107,7 +143,7 @@ export class BrowserService {
       logger.info('No proxy detected');
     }
 
-    const headlessMode = this.browserConfig.headless;
+    const headlessMode = this.resolveHeadless();
     const executablePath = this.browserConfig.executablePath;
 
     logger.info(
@@ -207,6 +243,19 @@ export class BrowserService {
         throw new Error(`Auth configuration '${options.auth}' not found`);
       }
 
+      // Manual auth is interactive and local-only: it needs a visible browser
+      // and an operator at the keyboard. Reject it on the HTTP server (no
+      // operator) and in production (always headless) so a stray request fails
+      // fast instead of hanging until the timeout.
+      if (
+        authConfig.type === 'manual' &&
+        (getRuntimeMode() === 'server' || this.appEnv === 'production')
+      ) {
+        throw new Error(
+          'Manual authentication is only available via the local CLI (baldr run) in a non-production environment: it requires a visible, interactive browser with an operator present.',
+        );
+      }
+
       const authenticated = await this.authService.authenticate(
         page,
         authConfig,
@@ -218,16 +267,11 @@ export class BrowserService {
         throw new Error(`Authentication '${options.auth}' failed`);
       }
 
-      // Verify we're not still on a login page
+      // Verify we're not still on a login/SSO page — unless the audited target
+      // is itself a login page. Shared heuristic (login-url.util) so this guard
+      // and the manual strategy's auto-resume agree on what a login page is.
       const currentUrl = page.url();
-      const parsedUrl = new URL(currentUrl);
-      const pathSegments = parsedUrl.pathname.toLowerCase().split('/');
-      const isStillOnLoginPage =
-        pathSegments.includes('login') ||
-        pathSegments.includes('connexion') ||
-        pathSegments.includes('signin') ||
-        parsedUrl.pathname.toLowerCase().includes('/adfs/');
-      if (isStillOnLoginPage) {
+      if (looksLikeLoginUrl(currentUrl) && !looksLikeLoginUrl(url)) {
         throw new Error(
           `Still on authentication page after login: ${currentUrl}`,
         );
