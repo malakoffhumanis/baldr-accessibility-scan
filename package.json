@@ -1,6 +1,6 @@
 {
   "name": "baldr-accessibility-scan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automated accessibility (RGAA/WCAG) audit API & CLI built on axe-core, Puppeteer and LLMs",
   "type": "module",
   "main": "./dist/index.js",
