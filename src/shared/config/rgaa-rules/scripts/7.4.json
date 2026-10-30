@@ -67,6 +67,76 @@
           "type": "warning",
           "automatable": false,
           "aiAnalysis": true
+        },
+        {
+          "id": "7.4.6",
+          "rgaaTestRef": "Test 7.4.1",
+          "description": "Chaque script qui initie un changement de contexte avertit-il l'utilisateur avant son déclenchement, ou est-il initié par un bouton ou un lien explicite ?",
+          "methodology": [
+            "Identifier les scripts qui déclenchent un changement de contexte (redirection, soumission, ouverture de fenêtre, changement de focus forcé)",
+            "Vérifier qu'un texte avertit l'utilisateur de l'action du script et du type de changement avant son déclenchement",
+            "Ou vérifier que le changement est initié par un bouton explicite (input submit/button/image ou <button>)",
+            "Ou vérifier que le changement est initié par un lien explicite"
+          ],
+          "selector": "select[onchange], input[onchange], [onfocus], form[onsubmit]",
+          "expected": "L'utilisateur est averti du changement de contexte ou celui-ci est initié par un bouton ou un lien explicite",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "statusMessages": {
+      "description": "Restitution des messages de statut par les technologies d'assistance (RGAA 4.1 critère 7.5)",
+      "tests": [
+        {
+          "id": "7.4.3",
+          "rgaaTestRef": "Test 7.5.1",
+          "description": "Chaque message de statut qui informe de la réussite, du résultat d'une action ou de l'état d'une application utilise-t-il role=\"status\" ?",
+          "methodology": [
+            "Identifier les messages de succès, de résultat (ex. « 3 résultats trouvés », « Article ajouté au panier ») ou d'état affichés sans prise de focus",
+            "Vérifier la présence de role=\"status\" (ou aria-live=\"polite\" avec aria-atomic=\"true\") sur le conteneur du message",
+            "Vérifier que le conteneur est présent dans le DOM avant l'insertion du message"
+          ],
+          "selector": "[role='status'], [aria-live='polite']",
+          "expected": "Les messages de réussite, de résultat ou d'état utilisent role=\"status\"",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "7.4.4",
+          "rgaaTestRef": "Test 7.5.2",
+          "description": "Chaque message de statut qui présente une suggestion ou avertit de l'existence d'une erreur utilise-t-il role=\"alert\" ?",
+          "methodology": [
+            "Identifier les messages d'erreur, d'avertissement ou de suggestion affichés dynamiquement sans prise de focus",
+            "Vérifier la présence de role=\"alert\" (ou aria-live=\"assertive\" avec aria-atomic=\"true\") sur le message",
+            "Ne pas appliquer ce test aux messages d'erreur recevant le focus ou associés à un champ via aria-describedby"
+          ],
+          "selector": "[role='alert'], [aria-live='assertive'], .error, .alert, .warning",
+          "expected": "Les messages d'erreur, d'avertissement ou de suggestion utilisent role=\"alert\"",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "7.4.5",
+          "rgaaTestRef": "Test 7.5.3",
+          "description": "Chaque message de statut qui indique la progression d'un processus utilise-t-il role=\"log\", role=\"progressbar\" ou role=\"status\" ?",
+          "methodology": [
+            "Identifier les indicateurs de progression (barre de chargement, upload, étapes d'un traitement, journal d'événements)",
+            "Vérifier la présence de role=\"progressbar\" avec aria-valuenow/aria-valuemin/aria-valuemax pour une barre de progression graphique",
+            "Vérifier la présence de role=\"log\" ou role=\"status\" pour un message textuel de progression"
+          ],
+          "selector": "[role='progressbar'], [role='log'], progress",
+          "expected": "Les messages de progression utilisent role=\"log\", role=\"progressbar\" ou role=\"status\"",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
         }
       ]
     }
@@ -108,7 +178,8 @@
         "ÉTAPE 3 (violation objective) — select ou input avec onchange déclenchant une soumission/redirection (par ex. onchange contenant submit() / location / form.submit) : changement de contexte non sollicité par une validation explicite → finding type=\"warning\", severity serious (le caractère « inattendu » dépend de l'usage : invitation à la vérification manuelle, conformément au test 7.4.2).",
         "ÉTAPE 4 (JAMAIS de violation) — a[target=\"_blank\"] ouvrant une nouvelle fenêtre : chercher un avertissement dans le DOM du lien ou de son nom accessible (texte visible, texte masqué en sr-only/visually-hidden, attribut title, aria-label, ou contenu référencé par aria-describedby) mentionnant « nouvelle fenêtre », « nouvel onglet », « new window » ou « new tab ». Le TEXTE VISIBLE du lien fait partie de son nom accessible : un lien dont le libellé contient déjà « (nouvelle fenêtre) » (ex. « GitHub (nouvelle fenêtre) ») est CONFORME et NE doit PAS être signalé, MÊME s'il n'a pas d'aria-label. SI un avertissement est présent (par l'un quelconque de ces moyens) → CONFORME : n'émettre AUCUN finding. SI l'avertissement semble ABSENT ou incertain → au plus un finding type=\"warning\" (vérification manuelle), JAMAIS type=\"violation\" : l'ouverture d'une nouvelle fenêtre n'est pas traitée comme une non-conformité ferme et ne doit pas abaisser le score.",
         "ÉTAPE 5 (doute → warning) — Une live region existe (role/aria-live présents) mais on ne peut PAS vérifier statiquement qu'elle reçoit effectivement les messages au bon moment ni que aria-live a la bonne politesse : si un doute subsiste, émettre un warning de vérification manuelle au lecteur d'écran plutôt qu'une violation.",
-        "ÉTAPE 6 — Ne pas inventer de violation pour une page qui ne produit légitimement aucun message de statut : l'absence de message n'est pas en soi un défaut. Pour chaque finding, proposer une correction concrète (role=\"status\"/\"alert\", aria-live, bouton de validation explicite, mention « nouvelle fenêtre »)."
+        "ÉTAPE 6 — Ne pas inventer de violation pour une page qui ne produit légitimement aucun message de statut : l'absence de message n'est pas en soi un défaut. Pour chaque finding, proposer une correction concrète (role=\"status\"/\"alert\", aria-live, bouton de validation explicite, mention « nouvelle fenêtre »).",
+        "ÉTAPE 7 (rôle selon la nature du message, Tests 7.5.1 à 7.5.3) — Rôle attendu : réussite/résultat/état → role=\"status\" ; erreur/avertissement/suggestion → role=\"alert\" ; progression → role=\"progressbar\", \"log\" ou \"status\". Un aria-live=\"polite\" + aria-atomic=\"true\" équivaut à status, aria-live=\"assertive\" + aria-atomic=\"true\" équivaut à alert. Un rôle présent mais inadapté à la nature du message (ex. status sur une erreur bloquante) → warning de vérification manuelle, jamais violation."
       ],
       "important": [
         "Déterminisme : les mêmes signaux DOM (role/aria-live présents ou absents, onchange déclenchant une soumission, target=\"_blank\" avec/sans avertissement) doivent toujours produire le même verdict.",
@@ -136,7 +207,7 @@
           "element": "css selector",
           "issue": "string<=200",
           "recommendation": "string avec exemple HTML/ARIA",
-          "rgaaTestRef": "Test 7.4.1 ou Test 7.4.2",
+          "rgaaTestRef": "Test 7.4.1, Test 7.5.1, Test 7.5.2 ou Test 7.5.3",
           "wcagReference": "4.1.3 ou 3.2.2"
         }
       }

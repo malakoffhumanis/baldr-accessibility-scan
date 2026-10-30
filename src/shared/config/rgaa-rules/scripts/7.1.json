@@ -5,7 +5,7 @@
   "title": "Scripts - Contrôlable au clavier",
   "description": "Chaque script est-il, si nécessaire, contrôlable par le clavier et tout dispositif de pointage ?",
   "rgaaReference": "RGAA 4.1 - Critère 7.1",
-  "wcagReference": "WCAG 2.1 - 2.1.1 Clavier (A)",
+  "wcagReference": "WCAG 2.1 - 2.1.1 Clavier (A) / 2.4.7 Focus visible (AA) / 2.5.3 Étiquette dans le nom (A) / 4.1.2 Nom, rôle, valeur (A)",
   "theme": "Scripts",
   "level": "A",
   "applicability": {
@@ -84,6 +84,118 @@
           "type": "warning",
           "automatable": false,
           "aiAnalysis": true
+        },
+        {
+          "id": "7.1.4",
+          "rgaaTestRef": "Test 7.3.2",
+          "description": "Un script ne supprime-t-il pas le focus d'un élément qui le reçoit ?",
+          "methodology": [
+            "Rechercher les gestionnaires onfocus contenant blur(), ou focus() déplaçant le focus ailleurs",
+            "Rechercher les attributs onfocus=\"this.blur()\" ou équivalents sur les éléments interactifs",
+            "Naviguer au clavier (Tab) et vérifier que le focus reste sur l'élément qui le reçoit",
+            "Cas particulier : élément désactivé (disabled) ou focus géré légitimement vers une cible logique (ex. ouverture de modale)"
+          ],
+          "selector": "[onfocus*='blur'], [onfocus*='focus(']",
+          "expected": "Aucun script ne doit retirer le focus d'un élément qui le reçoit",
+          "severity": "serious",
+          "type": "violation",
+          "automatable": true,
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "assistiveTechnologyCompatibility": {
+      "description": "Compatibilité des scripts avec les technologies d'assistance (RGAA 4.1 critère 7.1)",
+      "tests": [
+        {
+          "id": "7.1.5",
+          "rgaaTestRef": "Test 7.1.1",
+          "description": "Chaque script qui génère ou contrôle un composant d'interface expose-t-il son nom, son rôle, sa valeur, son paramétrage et ses changements d'états aux technologies d'assistance (ou propose-t-il une alternative accessible) ?",
+          "methodology": [
+            "Identifier les composants d'interface créés ou pilotés par script (onglets, accordéons, menus, listbox, curseurs, boutons bascule, modales)",
+            "Vérifier que le nom accessible est fourni (contenu, aria-label, aria-labelledby)",
+            "Vérifier que le rôle est exposé (élément natif ou attribut role ARIA)",
+            "Vérifier que les états/valeurs sont exposés et mis à jour (aria-expanded, aria-selected, aria-checked, aria-pressed, aria-valuenow, aria-current, aria-disabled)",
+            "À défaut, vérifier qu'un composant accessible équivalent ou une alternative accessible donne accès aux mêmes fonctionnalités"
+          ],
+          "selector": "[role], [aria-expanded], [aria-selected], [aria-checked], [aria-pressed], [aria-haspopup], [aria-controls]",
+          "expected": "Nom, rôle, valeur, paramétrage et changements d'états accessibles via une API d'accessibilité, ou alternative accessible présente",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "7.1.6",
+          "rgaaTestRef": "Test 7.1.2",
+          "description": "Chaque composant d'interface généré ou contrôlé par un script est-il correctement restitué par les technologies d'assistance (ou une alternative accessible permet-elle d'accéder aux mêmes fonctionnalités) ?",
+          "methodology": [
+            "Tester le composant avec au moins un lecteur d'écran (NVDA, JAWS, VoiceOver) et un navigateur compatible",
+            "Vérifier que le nom, le rôle, l'état et la valeur sont annoncés et que leurs changements sont restitués",
+            "Vérifier que les attributs ARIA sont cohérents avec le comportement réel (pas d'aria-expanded figé, pas de role incohérent)",
+            "À défaut, vérifier qu'une alternative accessible donne accès aux mêmes fonctionnalités"
+          ],
+          "selector": "[role], [aria-expanded], [aria-selected], [aria-checked], [aria-pressed], [aria-live]",
+          "expected": "Le composant est correctement restitué par les technologies d'assistance, ou une alternative accessible existe",
+          "severity": "serious",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "7.1.7",
+          "rgaaTestRef": "Test 7.1.3",
+          "description": "Le composant généré ou contrôlé par un script a-t-il un nom pertinent contenant au moins l'intitulé visible, et un rôle pertinent ?",
+          "methodology": [
+            "Relever l'intitulé visible du composant et son nom accessible (aria-label, aria-labelledby, contenu, title)",
+            "Vérifier que le nom accessible contient au moins l'intitulé visible (ponctuation et casse ignorables)",
+            "Si l'intitulé visible est un symbole (ex. « > », « B », « × »), vérifier que le nom exprime la fonction (« Suivant », « Mettre en gras », « Fermer »)",
+            "Vérifier que le rôle exposé correspond à la fonction réelle (bouton pour une action, lien pour une navigation)"
+          ],
+          "selector": "[aria-label], [aria-labelledby], [role='button'], [role='link'], [role='tab'], [role='menuitem']",
+          "expected": "Nom pertinent contenant l'intitulé visible et rôle pertinent",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        }
+      ]
+    },
+    "scriptAlternatives": {
+      "description": "Pertinence des alternatives aux scripts (RGAA 4.1 critère 7.2)",
+      "tests": [
+        {
+          "id": "7.1.8",
+          "rgaaTestRef": "Test 7.2.1",
+          "description": "Chaque script ayant une alternative (noscript, page sans JavaScript, page alternative, côté serveur, alternative dans la page) donne-t-il accès à des contenus et fonctionnalités similaires ?",
+          "methodology": [
+            "Repérer les balises <script> dont une alternative est fournie",
+            "Vérifier que le contenu de <noscript> donne accès à des contenus et fonctionnalités similaires",
+            "Désactiver JavaScript et vérifier que la page affichée reste équivalente",
+            "Vérifier, le cas échéant, la page alternative ou l'alternative présente dans la page"
+          ],
+          "selector": "noscript",
+          "expected": "L'alternative donne accès à des contenus et fonctionnalités similaires",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
+        },
+        {
+          "id": "7.1.9",
+          "rgaaTestRef": "Test 7.2.2",
+          "description": "Chaque élément non textuel mis à jour par un script et ayant une alternative voit-il son alternative mise à jour de façon pertinente ?",
+          "methodology": [
+            "Identifier les images, canvas, svg, objets ou médias dont la source est modifiée dynamiquement",
+            "Vérifier que l'alternative textuelle (alt, aria-label, title, contenu alternatif) est mise à jour en même temps que l'élément",
+            "Vérifier que l'alternative mise à jour est pertinente"
+          ],
+          "selector": "img, canvas, svg, object, embed",
+          "expected": "L'alternative de l'élément non textuel est mise à jour et pertinente",
+          "severity": "moderate",
+          "type": "warning",
+          "automatable": false,
+          "aiAnalysis": true
         }
       ]
     }
@@ -132,7 +244,10 @@
         "ÉTAPE 5 (doute → warning) — Élément non natif disposant d'un tabindex=\"0\" ET d'un gestionnaire clavier en attribut : les signaux DOM sont présents, mais la PERTINENCE de la gestion (touches Enter/Espace réellement gérées, comportement attendu) n'est pas vérifiable statiquement. Émettre au plus un finding type=\"warning\" pour vérification manuelle si un doute subsiste, sinon ne rien signaler.",
         "ÉTAPE 6 (doute → warning) — Composants complexes signalés par un rôle composite (role=\"tablist\", \"menu\", \"dialog\", \"tree\", \"combobox\") : la conformité dépend de la navigation clavier au runtime (flèches, Home/End, Escape) NON observable dans le DOM. Ne jamais conclure à une violation ferme ; émettre un finding type=\"warning\" demandant une vérification manuelle selon les ARIA Authoring Practices.",
         "ÉTAPE 7 — La logique attachée via addEventListener (gestionnaires non présents en attribut HTML) n'est PAS visible dans le DOM extrait : ne pas l'inférer. En l'absence d'attribut clavier sur un élément non natif interactif, traiter selon les étapes 3-4 (violation) ; en cas d'ambiguïté sur le type d'élément, préférer le warning.",
-        "ÉTAPE 8 — Pour chaque violation ou warning, proposer une correction concrète : remplacer par un élément natif (<button>) ou ajouter role + tabindex=\"0\" + gestion clavier Enter/Espace."
+        "ÉTAPE 8 — Pour chaque violation ou warning, proposer une correction concrète : remplacer par un élément natif (<button>) ou ajouter role + tabindex=\"0\" + gestion clavier Enter/Espace.",
+        "ÉTAPE 9 (violation objective, Test 7.3.2) — Élément portant un gestionnaire onfocus contenant blur() (ex. onfocus=\"this.blur()\") : le script retire le focus de l'élément qui le reçoit, finding type=\"violation\", severity serious. Un onfocus qui ne déplace pas le focus n'est pas un défaut.",
+        "ÉTAPE 10 (doute → warning, Tests 7.1.1 à 7.1.3) — Pour les composants d'interface pilotés par script (rôles composites, éléments à aria-expanded/aria-selected/aria-checked/aria-pressed) : vérifier mécaniquement la présence d'un nom accessible, d'un rôle et des attributs d'état pertinents. Tout défaut manifeste (role interactif sans nom accessible, état ARIA absent sur un bouton bascule évident) → warning ; la restitution réelle par les lecteurs d'écran et la cohérence du nom avec l'intitulé visible exigent une vérification manuelle, jamais une violation ferme.",
+        "ÉTAPE 11 (doute → warning, Tests 7.2.1 et 7.2.2) — Un <noscript> vide ou sans contenu équivalent alors que la page repose manifestement sur JavaScript, ou une image/canvas mise à jour dynamiquement dont l'alternative n'est pas visiblement mise à jour : émettre au plus un warning de vérification manuelle. L'absence de <noscript> n'est PAS en soi un défaut."
       ],
       "important": [
         "Déterminisme : les mêmes signaux DOM (type d'élément, gestionnaires en attribut, tabindex, role) doivent toujours produire le même verdict.",
@@ -158,7 +273,7 @@
           "element": "css selector",
           "issue": "string<=200",
           "recommendation": "string avec exemple de code HTML/JS accessible",
-          "rgaaTestRef": "Test 7.1.1, 7.1.2 ou 7.1.3",
+          "rgaaTestRef": "Test 7.1.1, 7.1.2, 7.1.3, 7.2.1, 7.2.2, 7.3.1 ou 7.3.2",
           "wcagReference": "2.1.1"
         }
       }
