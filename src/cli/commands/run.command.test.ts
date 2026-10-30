@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 // each branch per-test via vi.mocked(...) / h.*.mockImplementation(...).
 const h = vi.hoisted(() => ({
   execute: vi.fn(),
-  generateReport: vi.fn(),
+  generateReports: vi.fn(),
   cleanup: vi.fn(),
   convert: vi.fn(),
 }));
@@ -73,7 +73,7 @@ vi.mock('@shared/services/journey/cookie-banner.service.js', () => ({
 vi.mock('@shared/services/journey/journey-orchestration.service.js', () => ({
   JourneyOrchestrationService: class {
     execute = h.execute;
-    generateReport = h.generateReport;
+    generateReports = h.generateReports;
     cleanup = h.cleanup;
   },
 }));
@@ -141,14 +141,16 @@ beforeEach(() => {
     journeyStopped: false,
     durationMs: 10,
   });
-  h.generateReport.mockResolvedValue({ content: '<html>report</html>' });
+  h.generateReports.mockResolvedValue([
+    { content: '<html>report</html>', filename: 'rapport-journey.html' },
+  ]);
   h.cleanup.mockResolvedValue(undefined);
   h.convert.mockReturnValue({
     name: 'test',
     blocks: [{ url: 'https://example.com', actions: ['scan'] }],
     authConfigs: {},
     analysisType: 'static',
-    reportFormat: 'html',
+    reportFormats: ['html'],
   });
 });
 
@@ -295,9 +297,9 @@ describe('run command — happy paths', () => {
       'utf-8',
     );
     expect(h.execute).toHaveBeenCalledTimes(1);
-    expect(h.generateReport).toHaveBeenCalledWith(
+    expect(h.generateReports).toHaveBeenCalledWith(
       expect.any(Object),
-      'html',
+      ['html'],
       'test',
     );
     // Output goes to stdout when no -o
@@ -349,6 +351,58 @@ describe('run command — happy paths', () => {
         options: expect.objectContaining({ reportFormat: 'json' }),
       }),
     );
+  });
+
+  it('writes one file per format for a multi-format run, deriving both from -o', async () => {
+    vi.mocked(readFileSync).mockReturnValue(VALID_PAYLOAD);
+    h.generateReports.mockResolvedValue([
+      { content: '<html>report</html>', filename: 'rapport-journey.html' },
+      { content: '{"ok":true}', filename: 'rapport-journey.json' },
+    ]);
+    const ctx = spyProcess();
+
+    await runWith(['/tmp/req.json', '--format', 'html,json', '-o', 'out.html']);
+
+    // A comma-separated --format becomes a list in the payload
+    expect(h.convert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({ reportFormat: ['html', 'json'] }),
+      }),
+    );
+    expect(writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('out.html'),
+      '<html>report</html>',
+      'utf-8',
+    );
+    expect(writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('out.json'),
+      '{"ok":true}',
+      'utf-8',
+    );
+    expect(ctx.stdout).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the report filenames when a multi-format run has no -o', async () => {
+    vi.mocked(readFileSync).mockReturnValue(VALID_PAYLOAD);
+    h.generateReports.mockResolvedValue([
+      { content: '<html>report</html>', filename: 'mon-audit.html' },
+      { content: '{"ok":true}', filename: 'mon-audit.json' },
+    ]);
+    const ctx = spyProcess();
+
+    await runWith(['/tmp/req.json', '--format', 'html,json']);
+
+    expect(writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('mon-audit.html'),
+      '<html>report</html>',
+      'utf-8',
+    );
+    expect(writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('mon-audit.json'),
+      '{"ok":true}',
+      'utf-8',
+    );
+    expect(ctx.stdout).not.toHaveBeenCalled();
   });
 });
 

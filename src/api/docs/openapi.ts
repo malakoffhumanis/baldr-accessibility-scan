@@ -106,7 +106,8 @@ registry.registerPath({
     'wait, click, hover, fill, select) plus an `ai` escape hatch for free-form ' +
     'navigation. A page without actions defaults to a single scan. Returns the ' +
     'generated report in the requested format (`options.reportFormat`: html, ' +
-    'json or csv).',
+    'json or csv). A list of formats produces several files and is therefore ' +
+    'CLI-only: it is rejected here with a 400.',
   tags: ['Journey'],
   security: [{ [apiKeyAuthScheme.name]: [] }],
   request: {

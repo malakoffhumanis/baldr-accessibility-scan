@@ -188,6 +188,22 @@ describe('journeyRequestSchema', () => {
       });
       expect(result.success).toBe(false);
     });
+
+    it('should accept a list of reportFormat values', () => {
+      const result = journeyRequestSchema.safeParse({
+        options: { reportFormat: ['html', 'json'] },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject an empty reportFormat list', () => {
+      const result = journeyRequestSchema.safeParse({
+        options: { reportFormat: [] },
+        pages: [{ url: 'https://example.com' }],
+      });
+      expect(result.success).toBe(false);
+    });
   });
 
   // ─── Authentication modes ────────────────────────────────────────────────

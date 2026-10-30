@@ -34,6 +34,14 @@ export const reportFormatSchema = z.enum(['html', 'json', 'csv']).openapi({
   example: 'html',
 });
 
+export const requestedReportFormatSchema = z
+  .union([reportFormatSchema, z.array(reportFormatSchema).min(1).max(3)])
+  .openapi({
+    description:
+      'Format du rapport : une valeur, ou une liste (ex. ["html", "json"]) pour générer plusieurs rapports en une seule exécution. La liste est réservée à la CLI (un fichier par format) : l\'API HTTP ne renvoie qu\'un seul corps de réponse.',
+    example: 'html',
+  });
+
 export const viewportDimensionsSchema = z
   .object({
     width: z.number().int().min(320).openapi({ example: 1920 }),
@@ -227,7 +235,7 @@ const journeyPageSchema = z
 const journeyOptionsSchema = z
   .object({
     analysisType: analysisTypeSchema.optional(),
-    reportFormat: reportFormatSchema.optional(),
+    reportFormat: requestedReportFormatSchema.optional(),
     rules: z
       .array(z.string())
       .optional()

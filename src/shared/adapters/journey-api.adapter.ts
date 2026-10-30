@@ -13,7 +13,11 @@
  * - default a page without actions to a single scan.
  */
 
-import type { AuthConfig } from '@shared/types/audit-api.types.js';
+import type {
+  AuthConfig,
+  ReportFormats,
+  RequestedReportFormat,
+} from '@shared/types/audit-api.types.js';
 import type { IAuthConfigs } from '@shared/types/auth.types.js';
 import type {
   JourneyAction,
@@ -33,6 +37,16 @@ const INTERNAL_AUTH_PREFIX = '__auth_';
  * a single scan — the page is loaded by the navigation step, then audited.
  */
 const DEFAULT_PAGE_ACTIONS = ['scanner'];
+
+/** Turns the single-or-list `reportFormat` into a deduped, non-empty list. */
+function normalizeReportFormats(
+  requested: RequestedReportFormat | undefined,
+): ReportFormats {
+  if (requested === undefined) return ['html'];
+  if (!Array.isArray(requested)) return [requested];
+  // The schema rejects an empty list, so the result always has one entry.
+  return [...new Set(requested)] as ReportFormats;
+}
 
 /**
  * Maps a typed action to the canonical natural-language string understood by
@@ -116,7 +130,7 @@ export function convertJourneyRequestToOptions(
     blocks,
     authConfigs,
     analysisType: req.options?.analysisType ?? 'full',
-    reportFormat: req.options?.reportFormat ?? 'html',
+    reportFormats: normalizeReportFormats(req.options?.reportFormat),
   };
   if (req.name !== undefined) result.name = req.name;
   if (req.options?.rules !== undefined)

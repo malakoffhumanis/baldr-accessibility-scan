@@ -2,14 +2,19 @@ import { convertToConsolidatedReport } from '@shared/adapters/audit-api.adapter.
 import type { AIAnalyzerService } from '@shared/services/ai/ai-analyzer.service.js';
 import type { ReportGeneratorService } from '@shared/services/report/report-generator.service.js';
 import type { ConsolidatedJourneyReport } from '@shared/types/journey-api.types.js';
+import type {
+  ReportFormat,
+  ReportFormats,
+} from '@shared/types/audit-api.types.js';
 import { slugifyReportName } from '@shared/utils/report-name.util.js';
 
 import type {
   IJourneyExecutionResult,
   IJourneyReport,
+  JourneyReports,
 } from './journey-orchestration.types.js';
 
-export type ReportFormat = 'html' | 'json' | 'csv';
+export type { ReportFormat };
 
 /**
  * Builds the final journey report in the requested format.
@@ -24,6 +29,23 @@ export class JourneyReportBuilder {
     private readonly reportGenerator: ReportGeneratorService,
     private readonly aiAnalyzer: AIAnalyzerService,
   ) {}
+
+  /** One report per requested format, all from the same execution result. */
+  async buildAll(
+    execResult: IJourneyExecutionResult,
+    formats: ReportFormats,
+    auditName?: string,
+  ): Promise<JourneyReports> {
+    const [firstFormat, ...others] = formats;
+    // Sequential: the HTML build calls the AI, no point racing it with the rest.
+    const reports: JourneyReports = [
+      await this.build(execResult, firstFormat, auditName),
+    ];
+    for (const format of others) {
+      reports.push(await this.build(execResult, format, auditName));
+    }
+    return reports;
+  }
 
   async build(
     execResult: IJourneyExecutionResult,

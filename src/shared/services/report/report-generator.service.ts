@@ -12,6 +12,7 @@ import type {
 import { ReportFormatterService } from './report-formatter.service.js';
 import { getAccessibilityLevel } from './accessibility-score.util.js';
 import { escapeHtml, levelClass } from './html.util.js';
+import { computeGlobalScoring } from './report-scoring.util.js';
 
 const logger = createLogger('report-generator');
 
@@ -173,10 +174,6 @@ export class ReportGeneratorService {
     const dedupeByUrl = options?.dedupeByUrl ?? true;
     const commonProblems = options?.commonProblems ?? null;
 
-    // Compute global totals
-    let totalCompliant = 0;
-    let totalNonCompliant = 0;
-
     // Either deduplicate by URL (multi-URL audit mode), or keep all results
     // in order (journey mode: several scans may share the same URL with a
     // different DOM).
@@ -187,21 +184,10 @@ export class ReportGeneratorService {
       : results;
 
     const pagesHtml = uniqueResults
-      .map((result) => {
-        // Compute statistics for each page
-        const stats = this.formatter.calculateAccessibilityScore(result);
-        totalCompliant += stats.compliant;
-        totalNonCompliant += stats.nonCompliant;
-
-        // Generate the HTML section for this page
-        return this.formatter.formatAsHTMLSection(result);
-      })
+      .map((result) => this.formatter.formatAsHTMLSection(result))
       .join('\n');
 
-    // Compute the global RGAA score
-    const total = totalCompliant + totalNonCompliant;
-    const globalScore =
-      total === 0 ? 100 : Math.round((totalCompliant / total) * 100);
+    const { score: globalScore } = computeGlobalScoring(uniqueResults);
 
     const globalSummaryTable =
       this.formatter.generateGlobalSummaryTable(uniqueResults);

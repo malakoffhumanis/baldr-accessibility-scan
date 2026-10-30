@@ -17,7 +17,7 @@ const {
 
   const mockOrchestration = {
     execute: vi.fn(),
-    generateReport: vi.fn(),
+    generateReports: vi.fn(),
     cleanup: vi.fn(),
   };
 
@@ -109,10 +109,12 @@ describe('JourneyController', () => {
       journeyStoppedd: false,
       durationMs: 500,
     });
-    mockOrchestration.generateReport.mockResolvedValue({
-      content: '<html>journey report</html>',
-      contentType: 'text/html; charset=utf-8',
-    });
+    mockOrchestration.generateReports.mockResolvedValue([
+      {
+        content: '<html>journey report</html>',
+        contentType: 'text/html; charset=utf-8',
+      },
+    ]);
     mockOrchestration.cleanup.mockResolvedValue(undefined);
     mockRandomUUID.mockReturnValue('test-uuid-1234');
 
@@ -135,19 +137,19 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
 
       await controller.executeJourney(req, res);
 
       expect(mockOrchestration.execute).toHaveBeenCalled();
-      expect(mockOrchestration.generateReport).toHaveBeenCalledWith(
+      expect(mockOrchestration.generateReports).toHaveBeenCalledWith(
         expect.objectContaining({
           results: [],
           journeyUrls: ['https://example.com'],
           executedBlocksCount: 1,
         }),
-        'html',
+        ['html'],
         'Test Journey',
       );
       expect(setHeaderFn).toHaveBeenCalledWith(
@@ -169,7 +171,7 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
 
       await controller.executeJourney(req, res);
@@ -200,7 +202,7 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
 
       await controller.executeJourney(req, res);
@@ -222,7 +224,7 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
       mockOrchestration.execute.mockRejectedValue(new Error('Browser crash'));
 
@@ -250,12 +252,14 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'json',
+        reportFormats: ['json'],
       });
-      mockOrchestration.generateReport.mockResolvedValue({
-        content: '{"result":"ok"}',
-        contentType: 'application/json; charset=utf-8',
-      });
+      mockOrchestration.generateReports.mockResolvedValue([
+        {
+          content: '{"result":"ok"}',
+          contentType: 'application/json; charset=utf-8',
+        },
+      ]);
 
       await controller.executeJourney(req, res);
 
@@ -279,13 +283,15 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'csv',
+        reportFormats: ['csv'],
       });
-      mockOrchestration.generateReport.mockResolvedValue({
-        content: 'col1;col2\nval1;val2',
-        contentType: 'text/csv; charset=utf-8',
-        filename: 'rapport-journey.csv',
-      });
+      mockOrchestration.generateReports.mockResolvedValue([
+        {
+          content: 'col1;col2\nval1;val2',
+          contentType: 'text/csv; charset=utf-8',
+          filename: 'rapport-journey.csv',
+        },
+      ]);
 
       await controller.executeJourney(req, res);
 
@@ -313,7 +319,7 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
       mockOrchestration.execute.mockRejectedValue(new Error('Browser crash'));
 
@@ -331,7 +337,7 @@ describe('JourneyController', () => {
       );
     });
 
-    it('should return 500 on orchestration.generateReport() failure', async () => {
+    it('should return 500 on orchestration.generateReports() failure', async () => {
       const req = createMockReq({
         journey: [{ url: 'https://example.com', actions: ['scanner'] }],
         analysisType: 'static',
@@ -343,9 +349,9 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
-      mockOrchestration.generateReport.mockRejectedValue(
+      mockOrchestration.generateReports.mockRejectedValue(
         new Error('Report generation failed'),
       );
 
@@ -363,6 +369,26 @@ describe('JourneyController', () => {
       );
     });
 
+    it('should reject a multi-format reportFormat list with a 400', async () => {
+      const req = createMockReq({
+        options: { reportFormat: ['html', 'json'] },
+        pages: [{ url: 'https://example.com' }],
+      });
+      const { res, statusFn, jsonFn } = createMockRes();
+
+      await controller.executeJourney(req, res);
+
+      expect(statusFn).toHaveBeenCalledWith(400);
+      expect(jsonFn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ code: 'VALIDATION_ERROR' }),
+        }),
+      );
+      expect(mockOrchestration.execute).not.toHaveBeenCalled();
+      expect(mockMetrics.activeAudits.inc).not.toHaveBeenCalled();
+    });
+
     it('should always call orchestration.cleanup() in finally block', async () => {
       const req = createMockReq({
         journey: [{ url: 'https://example.com', actions: ['scanner'] }],
@@ -374,7 +400,7 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
 
       // Success case
@@ -388,7 +414,7 @@ describe('JourneyController', () => {
         blocks: [{ url: 'https://example.com', actions: ['scanner'] }],
         authConfigs: {},
         analysisType: 'static',
-        reportFormat: 'html',
+        reportFormats: ['html'],
       });
       mockOrchestration.execute.mockRejectedValue(new Error('fail'));
       mockOrchestration.cleanup.mockResolvedValue(undefined);

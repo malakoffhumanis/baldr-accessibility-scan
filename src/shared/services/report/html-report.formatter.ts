@@ -12,9 +12,9 @@ import {
   getAccessibilityLevel,
 } from './accessibility-score.util.js';
 import { escapeHtml, generatePageId, levelClass } from './html.util.js';
+import { computeSummaryCounts } from './report-scoring.util.js';
 import {
   RGAA_THEMATICS,
-  classifyAiAnalysis,
   mapRulesToThematics,
 } from './rgaa-thematics-mapper.util.js';
 
@@ -206,51 +206,20 @@ function generateRGAAThematicsTable(result: IAxeResult): string {
 }
 
 function generateSummaryCards(result: IAxeResult): string {
-  const hasAI = !!result.aiEnrichedResult;
-  const hasAxe =
-    result.summary.violations > 0 ||
-    result.summary.passes > 0 ||
-    result.summary.incomplete > 0;
-
-  let aiViolations = 0;
-  let aiCompliant = 0;
-  let aiNotApplicable = 0;
-
-  if (result.aiEnrichedResult?.ruleAnalyses) {
-    result.aiEnrichedResult.ruleAnalyses.forEach((ruleAnalysis) => {
-      const { kind, violationCount } = classifyAiAnalysis(ruleAnalysis);
-
-      if (kind === 'nonCompliant') {
-        aiViolations += violationCount;
-      } else if (kind === 'compliant') {
-        aiCompliant++;
-      } else {
-        aiNotApplicable++;
-      }
-    });
-  }
-
-  let totalViolations: number;
-  let totalPasses: number;
-  let totalIncomplete: number;
-  let cardsLabel: string;
-
-  if (!hasAI) {
-    totalViolations = result.summary.violations;
-    totalPasses = result.summary.passes;
-    totalIncomplete = result.summary.incomplete;
-    cardsLabel = 'Axe-Core';
-  } else if (!hasAxe) {
-    totalViolations = aiViolations;
-    totalPasses = aiCompliant;
-    totalIncomplete = aiNotApplicable;
-    cardsLabel = 'IA';
-  } else {
-    totalViolations = result.summary.violations + aiViolations;
-    totalPasses = result.summary.passes + aiCompliant;
-    totalIncomplete = result.summary.incomplete + aiNotApplicable;
-    cardsLabel = 'Totales (Axe + IA)';
-  }
+  const {
+    violations: totalViolations,
+    passes: totalPasses,
+    incomplete: totalIncomplete,
+    source,
+  } = computeSummaryCounts(result);
+  const hasAI = source !== 'axe';
+  const hasAxe = source !== 'ai';
+  const cardsLabel =
+    source === 'axe'
+      ? 'Axe-Core'
+      : source === 'ai'
+        ? 'IA'
+        : 'Totales (Axe + IA)';
 
   return `
         <div class="summary">

@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { extname, resolve } from 'node:path';
 
 import { loadConfig } from '@shared/config/config.js';
 import { createLogger } from '@shared/utils/logger.js';
@@ -17,6 +17,10 @@ import { ActionParserService } from '@shared/services/journey/action-parser.serv
 import { CookieBannerService } from '@shared/services/journey/cookie-banner.service.js';
 import { JourneyOrchestrationService } from '@shared/services/journey/journey-orchestration.service.js';
 import { convertJourneyRequestToOptions } from '@shared/adapters/journey-api.adapter.js';
+import type {
+  IJourneyReport,
+  JourneyReports,
+} from '@shared/services/journey/journey-orchestration.types.js';
 import type { ValidatedJourneyRequest } from '@shared/validation/schemas.js';
 
 const logger = createLogger('cli');
@@ -32,13 +36,18 @@ Input & output:
   The report goes to <path> with -o (a confirmation line is printed on stderr),
   otherwise to stdout — so it can be piped or redirected. --format overrides
   options.reportFormat from the file for this run.
+  Asking for several formats (e.g. ["html", "json"]) produces one report per
+  format: they are always written to files (never stdout), -o giving the base
+  path — "-o report.html" yields report.html and report.json; without -o the
+  audit name is used.
 
 JSON request (v3) — only "pages" is required:
   {
     "name": "Customer Area Audit",          // report title + output filename   (optional)
     "options": {
       "analysisType": "full",               // static | intel | full            (default full)
-      "reportFormat": "html",               // html | json | csv                (default html)
+      "reportFormat": "html",               // html | json | csv, or a list     (default html)
+                                            //   e.g. ["html", "json"] -> 2 files
       "rules": ["1.1", "3.1"],              // restrict to RGAA rule ids         (all by default)
       "viewport": { "width": 1920, "height": 1080 }    // width >= 320, height >= 240
     },
@@ -132,6 +141,9 @@ Examples:
   # Force the report format regardless of options.reportFormat in the file
   $ baldr run request.json --format json -o report.json
 
+  # Several formats in a single run -> report.html + report.json
+  $ baldr run request.json --format html,json -o report.html
+
   # Enable AI for this run only and pick the model
   $ baldr run request.json -o report.html --llm-api-key sk-xxxx --llm-model gpt-4o
 
@@ -188,7 +200,10 @@ export function createRunCommand(): Command {
     .description('Execute an accessibility audit journey')
     .argument('[file]', 'Path to a JSON request file (omit to read from stdin)')
     .option('-o, --output <path>', 'Write report to file instead of stdout')
-    .option('--format <format>', 'Override reportFormat (html|json|csv)')
+    .option(
+      '--format <formats>',
+      'Override reportFormat: html|json|csv, comma-separated for several (html,json)',
+    )
     .option('--llm-model <model>', 'Override LLM_PROVIDER_MODEL for this run')
     .option(
       '--llm-endpoint <url>',
@@ -211,11 +226,11 @@ export function createRunCommand(): Command {
         try {
           const input = readInput(file);
           const payload = parseAndValidate(input, options.format);
-          const report = await executeAudit(
+          const reports = await executeAudit(
             payload,
             buildEnvOverrides(options),
           );
-          writeOutput(report, options.output);
+          writeOutput(reports, options.output);
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           logger.error({ error: err }, message);
@@ -250,13 +265,15 @@ function parseAndValidate(
     typeof payload === 'object' &&
     payload !== null
   ) {
-    // reportFormat lives under `options` in the v3 contract.
+    // reportFormat lives under `options` in the v3 contract; "html,json" asks
+    // for one report per format.
+    const formats = formatOverride.split(',').map((f) => f.trim());
     const p = payload as Record<string, unknown>;
     const opts =
       typeof p['options'] === 'object' && p['options'] !== null
         ? (p['options'] as Record<string, unknown>)
         : {};
-    opts['reportFormat'] = formatOverride;
+    opts['reportFormat'] = formats.length > 1 ? formats : formats[0];
     p['options'] = opts;
   }
 
@@ -274,7 +291,7 @@ function parseAndValidate(
 async function executeAudit(
   payload: ValidatedJourneyRequest,
   envOverrides: Record<string, string> = {},
-): Promise<string> {
+): Promise<JourneyReports> {
   const config = loadConfig(envOverrides);
 
   const browserService = new BrowserService({
@@ -322,22 +339,52 @@ async function executeAudit(
   try {
     const options = convertJourneyRequestToOptions(payload);
     const execResult = await orchestration.execute(options);
-    const report = await orchestration.generateReport(
+    return await orchestration.generateReports(
       execResult,
-      options.reportFormat,
+      options.reportFormats,
       options.name,
     );
-    return report.content;
   } finally {
     await orchestration.cleanup();
   }
 }
 
-function writeOutput(report: string, outputPath?: string): void {
-  if (outputPath != null && outputPath !== '') {
-    writeFileSync(resolve(outputPath), report, 'utf-8');
-    process.stderr.write(`Report written to ${outputPath}\n`);
-  } else {
-    process.stdout.write(report);
+/** Report extensions the CLI may swap when a run produces several files. */
+const REPORT_EXTENSIONS = new Set(['.html', '.json', '.csv']);
+
+/**
+ * Target path of one report. A single report honours `-o` as given; a
+ * multi-format run treats `-o` as a base path whose extension is swapped
+ * (`-o report.html` -> report.html + report.json).
+ */
+function targetPathFor(
+  report: IJourneyReport,
+  outputPath: string | undefined,
+  multiple: boolean,
+): string {
+  const filename = report.filename ?? 'rapport-journey.html';
+  if (outputPath == null || outputPath === '') return filename;
+  if (!multiple) return outputPath;
+
+  const currentExt = extname(outputPath).toLowerCase();
+  const stem = REPORT_EXTENSIONS.has(currentExt)
+    ? outputPath.slice(0, -currentExt.length)
+    : outputPath;
+  return `${stem}${extname(filename)}`;
+}
+
+function writeOutput(reports: JourneyReports, outputPath?: string): void {
+  const hasOutput = outputPath != null && outputPath !== '';
+  const multiple = reports.length > 1;
+
+  for (const report of reports) {
+    // stdout carries a single payload: a multi-format run always writes files.
+    if (!hasOutput && !multiple) {
+      process.stdout.write(report.content);
+      continue;
+    }
+    const path = targetPathFor(report, outputPath, multiple);
+    writeFileSync(resolve(path), report.content, 'utf-8');
+    process.stderr.write(`Report written to ${path}\n`);
   }
 }

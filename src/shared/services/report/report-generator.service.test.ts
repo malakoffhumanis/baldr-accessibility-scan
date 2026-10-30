@@ -21,6 +21,7 @@ vi.mock('../../utils/logger.js', () => ({
 
 import fs from 'fs-extra';
 import { ReportGeneratorService } from './report-generator.service.js';
+import { computeGlobalScoring } from './report-scoring.util.js';
 import type {
   IAxeResult,
   IAxeViolation,
@@ -422,6 +423,34 @@ describe('ReportGeneratorService', () => {
 
       // Score should be present in the HTML
       expect(html).toMatch(/\d+%/);
+    });
+
+    it('displays the global score computed by computeGlobalScoring', async () => {
+      const results = [
+        createBaseResult({
+          url: 'https://example.com/page1',
+          passes: [
+            createPass({ id: 'html-has-lang' }),
+            createPass({ id: 'document-title' }),
+          ],
+          violations: [createViolation({ id: 'image-alt' })],
+          summary: { violations: 1, passes: 2, incomplete: 0, inapplicable: 0 },
+        }),
+        createBaseResult({
+          url: 'https://example.com/page2',
+          passes: [createPass({ id: 'link-name' })],
+          violations: [createViolation({ id: 'color-contrast' })],
+          summary: { violations: 1, passes: 1, incomplete: 0, inapplicable: 0 },
+        }),
+      ];
+
+      const html = await generator.generateConsolidatedHTMLReport(results);
+      const { score, level } = computeGlobalScoring(results);
+
+      expect(score).toBe(60);
+      expect(html).toContain(
+        `<strong>Score RGAA Global:</strong> <span class="global-score lvl-moyen">${String(score)}% — ${level}</span>`,
+      );
     });
 
     it('should deduplicate results with the same URL', async () => {
