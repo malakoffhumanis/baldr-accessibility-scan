@@ -1,5 +1,6 @@
 import type { IAxeResult } from '@shared/types/audit.types.js';
 import type { IAuthConfigs } from '@shared/types/auth.types.js';
+import type { ReportFormats } from '@shared/types/audit-api.types.js';
 import type {
   JourneyBlock,
   ActionErrorResult,
@@ -14,8 +15,9 @@ export interface IJourneyInternalOptions {
   blocks: JourneyBlock[];
   authConfigs: IAuthConfigs;
   analysisType: 'static' | 'intel' | 'full';
+  /** Normalized to a non-empty, deduped list of formats to generate. */
+  reportFormats: ReportFormats;
   specificRules?: string[];
-  reportFormat: 'html' | 'json' | 'csv';
   viewport?: { width: number; height: number };
 }
 
@@ -43,3 +45,6 @@ export interface IJourneyReport {
   contentType: string;
   filename?: string;
 }
+
+/** Reports of a run: one per requested format, so never empty. */
+export type JourneyReports = [IJourneyReport, ...IJourneyReport[]];

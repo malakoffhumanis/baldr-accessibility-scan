@@ -291,7 +291,7 @@ Le même contrat JSON alimente la CLI et l'API. **Seul `pages` est obligatoire.*
   "name": "Audit Espace Client",          // optionnel — titre + nom du fichier de rapport
   "options": {                            // optionnel — config globale d'audit
     "analysisType": "full",               // "static" | "intel" | "full"  (défaut: "full")
-    "reportFormat": "html",               // "html" | "json" | "csv"       (défaut: "html")
+    "reportFormat": "html",               // "html" | "json" | "csv", ou une liste ["html", "json"] (défaut: "html")
     "rules": ["1.1", "3.1"],              // optionnel — restreint aux règles RGAA listées
     "viewport": { "width": 1920, "height": 1080 } // optionnel — width ≥ 320, height ≥ 240
   },
@@ -366,11 +366,14 @@ baldr run [fichier] [options]
 
 - La requête est lue depuis `[fichier]`, ou depuis **stdin** s'il est omis.
 - Le rapport part sur **stdout**, ou dans un fichier avec `-o`.
+- Une **liste de formats** (`["html", "json"]`) produit **un rapport par
+  format** : ils sont toujours écrits dans des fichiers (jamais sur stdout),
+  `-o` servant de chemin de base dont l'extension est adaptée.
 
 | Option                   | Description                                              |
 | ------------------------ | -------------------------------------------------------- |
 | `-o, --output <path>`    | Écrit le rapport dans un fichier au lieu de stdout.      |
-| `--format <html\|json\|csv>` | Force `reportFormat` pour ce run (prime sur le fichier). |
+| `--format <formats>`     | Force `reportFormat` pour ce run (prime sur le fichier) : `html`, `json`, `csv`, ou plusieurs séparés par une virgule (`html,json`). |
 | `--llm-model <model>`    | Voir [Surcharge des paramètres](#surcharge-des-paramètres). |
 | `--llm-endpoint <url>`   | idem                                                     |
 | `--llm-api-key <key>`    | idem                                                     |
@@ -386,6 +389,9 @@ baldr run < request.json
 
 # Forcer le format quel que soit options.reportFormat du fichier
 baldr run request.json --format json -o rapport.json
+
+# Les deux rapports en une seule exécution -> rapport.html + rapport.json
+baldr run request.json --format html,json -o rapport.html
 ```
 
 ## Surcharge des paramètres

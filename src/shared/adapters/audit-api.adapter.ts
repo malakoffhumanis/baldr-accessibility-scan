@@ -7,7 +7,10 @@ import type {
   IAxeResult,
   IAxeViolation,
   IAxeNode,
+  IAxePass,
+  IAxeIncomplete,
   IAIEnrichedResult,
+  IAIRuleAnalysis,
 } from '@shared/types/audit.types.js';
 import type { IAuthConfig } from '@shared/types/auth.types.js';
 import type {
@@ -17,8 +20,29 @@ import type {
   AuthConfig,
   ConsolidatedAuditReport,
   AIEnrichedResult,
+  AIRuleAnalysis,
+  AIScoring,
   AuthType,
+  AxeRuleOutcome,
+  PageScoring,
+  ReportScoring,
+  ThematicScoring,
 } from '@shared/types/audit-api.types.js';
+import {
+  calculateAccessibilityScore,
+  getAccessibilityLevel,
+} from '@shared/services/report/accessibility-score.util.js';
+import {
+  computeGlobalScoring,
+  computeSummaryCounts,
+  countViolationsByImpact,
+  hasAnalysisError,
+} from '@shared/services/report/report-scoring.util.js';
+import {
+  RGAA_THEMATICS,
+  classifyAiAnalysis,
+  mapRulesToThematics,
+} from '@shared/services/report/rgaa-thematics-mapper.util.js';
 
 /**
  * Normalizes an API-facing AuthConfig into its internal IAuthConfig. Single
@@ -74,6 +98,49 @@ function convertViolation(violation: IAxeViolation): AccessibilityViolation {
 }
 
 /**
+ * @param outcome - Axe-Core pass or incomplete entry
+ * @returns Reduced rule outcome in the API format
+ */
+function convertRuleOutcome(
+  outcome: IAxePass | IAxeIncomplete,
+): AxeRuleOutcome {
+  return {
+    id: outcome.id,
+    impact: outcome.impact,
+    tags: outcome.tags,
+    help: outcome.help,
+    nodeCount: outcome.nodes.length,
+  };
+}
+
+/**
+ * @param analysis - Internal AI rule analysis
+ * @returns Analysis in the API format
+ */
+function convertAIRuleAnalysis(analysis: IAIRuleAnalysis): AIRuleAnalysis {
+  const { kind, violationCount } = classifyAiAnalysis(analysis);
+
+  return {
+    ruleId: analysis.ruleId,
+    ruleTitle: analysis.summary,
+    status: analysis.compliant ? 'compliant' : 'non-compliant',
+    confidenceScore: 0,
+    findings: analysis.findings.map((finding) => ({
+      type: finding.type,
+      element: finding.element ?? '',
+      issue: finding.issue,
+      recommendation: finding.recommendation,
+      referenceWCAG: finding.wcagReference ?? '',
+    })),
+    recommendations: [],
+    wcagReferences: [],
+    scoreClass: kind,
+    violationCount,
+    hasError: hasAnalysisError(analysis),
+  };
+}
+
+/**
  * Converts an internal AI result into an API result
  * @param aiResult - Internal AI result
  * @returns AI result in the API format
@@ -92,21 +159,7 @@ function convertAIResult(aiResult: IAIEnrichedResult): AIEnrichedResult {
   }
 
   return {
-    ruleAnalyses: aiResult.ruleAnalyses.map((analysis) => ({
-      ruleId: analysis.ruleId,
-      ruleTitle: analysis.summary,
-      status: analysis.compliant ? 'compliant' : 'non-compliant',
-      confidenceScore: 0,
-      findings: analysis.findings.map((finding) => ({
-        type: finding.type,
-        element: finding.element ?? '',
-        issue: finding.issue,
-        recommendation: finding.recommendation,
-        referenceWCAG: finding.wcagReference ?? '',
-      })),
-      recommendations: [],
-      wcagReferences: [],
-    })),
+    ruleAnalyses: aiResult.ruleAnalyses.map(convertAIRuleAnalysis),
     rulesAnalyzedCount: aiResult.totalRulesAnalyzed,
     metadata: {
       model: aiResult.metadata.model,
@@ -120,6 +173,134 @@ function convertAIResult(aiResult: IAIEnrichedResult): AIEnrichedResult {
     },
     screenshot: aiResult.screenshot,
     extractedDom: aiResult.extractedDOM,
+  };
+}
+
+/**
+ * @param result - Internal audit result
+ * @returns AI counters, or null when the page has no AI result
+ */
+function buildAIScoring(result: IAxeResult): AIScoring | null {
+  const aiResult = result.aiEnrichedResult;
+  if (aiResult === undefined) {
+    return null;
+  }
+
+  const counts = computeSummaryCounts(result);
+  const findings = { violation: 0, warning: 0, recommendation: 0 };
+  let nonCompliantDeclared = 0;
+
+  for (const analysis of aiResult.ruleAnalyses) {
+    if (!analysis.compliant) {
+      nonCompliantDeclared++;
+    }
+    for (const finding of analysis.findings) {
+      findings[finding.type]++;
+    }
+  }
+
+  return {
+    analyzed: aiResult.totalRulesAnalyzed,
+    compliant: counts.aiCompliant,
+    nonCompliant: counts.aiNonCompliant,
+    notApplicable: counts.aiNotApplicable,
+    errors: counts.aiErrors,
+    nonCompliantDeclared,
+    findings,
+  };
+}
+
+/**
+ * Counters per RGAA thematic (13 entries, in the official order), with a
+ * thematic score (null when no criterion of the thematic applies).
+ * @param result - Internal audit result
+ * @returns Thematic counters in the API format
+ */
+function buildThematicScoring(result: IAxeResult): ThematicScoring[] {
+  const stats = mapRulesToThematics(result);
+
+  return RGAA_THEMATICS.map((thematic) => {
+    const { compliant, nonCompliant, notApplicable } = stats[thematic.id] ?? {
+      compliant: 0,
+      nonCompliant: 0,
+      notApplicable: 0,
+    };
+    const total = compliant + nonCompliant;
+
+    return {
+      id: thematic.id,
+      name: thematic.name,
+      compliant,
+      nonCompliant,
+      notApplicable,
+      score: total === 0 ? null : Math.round((compliant / total) * 100),
+    };
+  });
+}
+
+/**
+ * @param result - Internal audit result
+ * @returns Page scoring in the API format
+ */
+export function buildPageScoring(result: IAxeResult): PageScoring {
+  const { score, compliant, nonCompliant, notApplicable } =
+    calculateAccessibilityScore(result);
+  const { violations, passes, incomplete, source } =
+    computeSummaryCounts(result);
+  const { byImpact, affectedNodes } = countViolationsByImpact(
+    result.violations,
+  );
+
+  return {
+    score,
+    level: getAccessibilityLevel(score).label,
+    compliant,
+    nonCompliant,
+    notApplicable,
+    thematics: buildThematicScoring(result),
+    cards: { violations, passes, incomplete, source },
+    violationsByImpact: byImpact,
+    affectedNodes,
+    ai: buildAIScoring(result),
+  };
+}
+
+/**
+ * @param results - Internal audit results
+ * @returns Report scoring in the API format
+ */
+export function buildReportScoring(results: IAxeResult[]): ReportScoring {
+  const global = computeGlobalScoring(results);
+  const cards = { violations: 0, passes: 0, incomplete: 0 };
+  const violationsByImpact = {
+    critical: 0,
+    serious: 0,
+    moderate: 0,
+    minor: 0,
+    other: 0,
+  };
+  let affectedNodes = 0;
+
+  for (const result of results) {
+    const counts = computeSummaryCounts(result);
+    cards.violations += counts.violations;
+    cards.passes += counts.passes;
+    cards.incomplete += counts.incomplete;
+
+    const impact = countViolationsByImpact(result.violations);
+    violationsByImpact.critical += impact.byImpact.critical;
+    violationsByImpact.serious += impact.byImpact.serious;
+    violationsByImpact.moderate += impact.byImpact.moderate;
+    violationsByImpact.minor += impact.byImpact.minor;
+    violationsByImpact.other += impact.byImpact.other;
+    affectedNodes += impact.affectedNodes;
+  }
+
+  return {
+    ...global,
+    cards,
+    violationsByImpact,
+    affectedNodes,
   };
 }
 
@@ -150,6 +331,9 @@ export function convertResultToAPI(result: IAxeResult): PageAuditResult {
       inapplicableCount: result.summary.inapplicable,
     },
     violations: result.violations.map(convertViolation),
+    passes: result.passes.map(convertRuleOutcome),
+    incomplete: result.incomplete.map(convertRuleOutcome),
+    scoring: buildPageScoring(result),
   };
 
   // Add the AI result if available
@@ -189,5 +373,6 @@ export function convertToConsolidatedReport(
     urlCount: results.length,
     results: results.map(convertResultToAPI),
     durationMs: durationMs ?? 0,
+    scoring: buildReportScoring(results),
   };
 }

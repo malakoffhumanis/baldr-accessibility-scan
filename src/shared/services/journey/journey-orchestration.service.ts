@@ -9,6 +9,7 @@ import type { OpenAIClientService } from '@shared/services/ai/openai-client.serv
 import type { ReportGeneratorService } from '@shared/services/report/report-generator.service.js';
 import type { ScreenshotService } from '@shared/services/screenshot/screenshot.service.js';
 import type { IAxeResult } from '@shared/types/audit.types.js';
+import type { ReportFormats } from '@shared/types/audit-api.types.js';
 import type {
   JourneyBlock,
   ActionErrorResult,
@@ -32,7 +33,7 @@ import { buildActionError, JourneyError } from './journey-error.util.js';
 import type {
   IJourneyExecutionResult,
   IJourneyInternalOptions,
-  IJourneyReport,
+  JourneyReports,
 } from './journey-orchestration.types.js';
 import { JourneyReportBuilder } from './journey-report.builder.js';
 import {
@@ -165,12 +166,13 @@ export class JourneyOrchestrationService {
     };
   }
 
-  async generateReport(
+  /** One report per requested format (`['html', 'json']` yields two). */
+  async generateReports(
     execResult: IJourneyExecutionResult,
-    format: 'html' | 'json' | 'csv',
+    formats: ReportFormats,
     auditName?: string,
-  ): Promise<IJourneyReport> {
-    return this.reportBuilder.build(execResult, format, auditName);
+  ): Promise<JourneyReports> {
+    return this.reportBuilder.buildAll(execResult, formats, auditName);
   }
 
   async cleanup(): Promise<void> {
@@ -277,7 +279,6 @@ export class JourneyOrchestrationService {
       name: options.name ?? block.url,
       auth: authKey,
       analysisType: options.analysisType,
-      reportFormat: options.reportFormat,
     };
     if (options.specificRules !== undefined) {
       pageOptions.specificRules = options.specificRules;

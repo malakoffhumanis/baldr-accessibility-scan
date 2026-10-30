@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { ReportFormatterService } from './report-formatter.service.js';
+import { computeSummaryCounts } from './report-scoring.util.js';
 import type {
   IAxeResult,
   IAxeViolation,
@@ -1311,6 +1312,119 @@ describe('ReportFormatterService', () => {
   // -----------------------------------------------------------------------
   // getHTMLStyles
   // -----------------------------------------------------------------------
+  describe('summary cards (via formatAsHTMLSection)', () => {
+    function cardNumbers(html: string): number[] {
+      return [...html.matchAll(/summary-number">(\d+)</g)].map((m) =>
+        Number(m[1]),
+      );
+    }
+
+    it('renders the Axe figures when there is no AI result', () => {
+      const result = createBaseResult({
+        summary: { violations: 3, passes: 40, incomplete: 2, inapplicable: 1 },
+      });
+
+      const html = formatter.formatAsHTMLSection(result);
+      const counts = computeSummaryCounts(result);
+
+      expect(cardNumbers(html)).toEqual([3, 40, 2]);
+      expect(cardNumbers(html)).toEqual([
+        counts.violations,
+        counts.passes,
+        counts.incomplete,
+      ]);
+      expect(html).toContain('Violations Axe-Core');
+      expect(html).toContain('Tests Réussis Axe-Core');
+      expect(html).toContain('Incomplets Axe-Core');
+    });
+
+    it('adds the AI figures to the Axe ones (Axe + IA)', () => {
+      const result = createBaseResult({
+        summary: { violations: 3, passes: 40, incomplete: 2, inapplicable: 1 },
+        aiEnrichedResult: createAIEnrichedResult({
+          ruleAnalyses: [
+            {
+              ruleId: 'link-purpose',
+              compliant: true,
+              severity: 'minor',
+              summary: 'Liens explicites',
+              findings: [],
+            },
+            {
+              ruleId: 'image-alt',
+              compliant: false,
+              severity: 'critical',
+              summary: 'Images sans alternative',
+              findings: [
+                { type: 'violation', issue: 'img 1', recommendation: 'alt' },
+                { type: 'violation', issue: 'img 2', recommendation: 'alt' },
+              ],
+            },
+            {
+              ruleId: 'form-labels',
+              compliant: true,
+              severity: 'moderate',
+              summary: 'À vérifier',
+              findings: [
+                { type: 'warning', issue: 'label', recommendation: '—' },
+              ],
+            },
+          ],
+          totalRulesAnalyzed: 3,
+        }),
+      });
+
+      const html = formatter.formatAsHTMLSection(result);
+      const counts = computeSummaryCounts(result);
+
+      // 3 + 2 violations ; 40 + 1 compliant ; 2 + 1 advisory-only (NA)
+      expect(cardNumbers(html)).toEqual([5, 41, 3]);
+      expect(cardNumbers(html)).toEqual([
+        counts.violations,
+        counts.passes,
+        counts.incomplete,
+      ]);
+      expect(counts.source).toBe('axe+ai');
+      expect(html).toContain('Violations Totales (Axe + IA)');
+      expect(html).toContain('Tests Réussis Totales (Axe + IA)');
+      expect(html).toContain('Incomplets/NA Totales (Axe + IA)');
+    });
+
+    it('renders the AI figures only when the page has no Axe test', () => {
+      const result = createBaseResult({
+        aiEnrichedResult: createAIEnrichedResult({
+          ruleAnalyses: [
+            {
+              ruleId: 'link-purpose',
+              compliant: true,
+              severity: 'minor',
+              summary: 'Liens explicites',
+              findings: [],
+            },
+            {
+              ruleId: 'image-alt',
+              compliant: false,
+              severity: 'critical',
+              summary: 'Image sans alternative',
+              findings: [
+                { type: 'violation', issue: 'img', recommendation: 'alt' },
+              ],
+            },
+          ],
+          totalRulesAnalyzed: 2,
+        }),
+      });
+
+      const html = formatter.formatAsHTMLSection(result);
+
+      expect(cardNumbers(html)).toEqual([1, 1, 0]);
+      expect(computeSummaryCounts(result).source).toBe('ai');
+      expect(html).toContain('Non Conformes IA');
+      expect(html).toContain('Conformes IA');
+      expect(html).toContain('Non Applicables IA');
+    });
+  });
+
   describe('getHTMLStyles', () => {
     it('should return CSS style block', () => {
       const styles = formatter.getHTMLStyles();

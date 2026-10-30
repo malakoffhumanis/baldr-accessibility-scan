@@ -18,7 +18,7 @@ par un navigateur headless. Chaque action `scan` déclenche un audit Axe-Core
   "name": "Audit Espace Client",          // optionnel — titre + nom de fichier du rapport
   "options": {                            // optionnel — config d'audit globale
     "analysisType": "full",               // "static" | "intel" | "full" (défaut: "full")
-    "reportFormat": "html",               // "html" | "json" | "csv" (défaut: "html")
+    "reportFormat": "html",               // "html" | "json" | "csv" (défaut: "html") — liste (ex. ["html", "json"]) en CLI uniquement
     "rules": ["1.1", "3.1"],              // optionnel — restreint l'audit à ces règles RGAA
     "viewport": { "width": 1920, "height": 1080 } // optionnel
   },
@@ -50,7 +50,7 @@ par un navigateur headless. Chaque action `scan` déclenche un audit Axe-Core
 | Champ | Type | Défaut | Description |
 | --- | --- | --- | --- |
 | `analysisType` | `"static" \| "intel" \| "full"` | `"full"` | Profondeur d'analyse appliquée à chaque scan (voir [Types d'analyse](#types-danalyse)). |
-| `reportFormat` | `"html" \| "json" \| "csv"` | `"html"` | Format du rapport renvoyé. |
+| `reportFormat` | `"html" \| "json" \| "csv"` ou une liste de ces valeurs | `"html"` | Format du rapport renvoyé. Une liste (ex. `["html", "json"]`) génère un rapport par format en une seule exécution : réservé à la CLI (un fichier par format), refusé en HTTP avec un `400` car une réponse ne porte qu'un seul corps. |
 | `rules` | `string[]` | _(toutes)_ | Restreint l'audit à des identifiants de règles RGAA précis (ex. `"1.1"`). |
 | `viewport` | `{ width, height }` | _(défaut navigateur)_ | Dimensions de la fenêtre. `width ≥ 320`, `height ≥ 240`. |
 

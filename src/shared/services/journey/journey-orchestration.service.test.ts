@@ -113,7 +113,7 @@ function createOptions(
     ],
     authConfigs: {},
     analysisType: 'static',
-    reportFormat: 'json',
+    reportFormats: ['json'],
     ...overrides,
   };
 }
@@ -178,12 +178,31 @@ describe('JourneyOrchestrationService', () => {
     });
   });
 
-  describe('generateReport', () => {
+  describe('generateReports', () => {
     it('delegates to report builder', async () => {
       const { service } = createService();
       const execResult = await service.execute(createOptions());
-      const report = await service.generateReport(execResult, 'json', 'test');
-      expect(report.contentType).toBe('application/json; charset=utf-8');
+      const reports = await service.generateReports(
+        execResult,
+        ['json'],
+        'test',
+      );
+      expect(reports).toHaveLength(1);
+      expect(reports[0].contentType).toBe('application/json; charset=utf-8');
+    });
+
+    it('returns one report per requested format', async () => {
+      const { service } = createService();
+      const execResult = await service.execute(createOptions());
+      const reports = await service.generateReports(
+        execResult,
+        ['html', 'json'],
+        'test',
+      );
+      expect(reports.map((r) => r.contentType)).toEqual([
+        'text/html; charset=utf-8',
+        'application/json; charset=utf-8',
+      ]);
     });
   });
 
