@@ -15,7 +15,7 @@
 
 import type {
   AnalysisType,
-  ReportFormat,
+  RequestedReportFormat,
   ViewportDimensions,
   AuthConfig,
   ConsolidatedAuditReport,
@@ -96,8 +96,8 @@ export interface JourneyPage {
 export interface JourneyOptions {
   /** Analysis depth applied to each scan (default: 'full'). */
   analysisType?: AnalysisType;
-  /** Output report format (default: 'html'). */
-  reportFormat?: ReportFormat;
+  /** Output report format, or a list of formats to generate (default: 'html'). */
+  reportFormat?: RequestedReportFormat;
   /** Specific RGAA rule IDs to restrict the audit to (e.g. ["1.1", "3.1"]). */
   rules?: string[];
   /** Custom window dimensions. */

@@ -73,11 +73,20 @@ describe('convertJourneyRequestToOptions', () => {
       }),
     );
     expect(withOpts.analysisType).toBe('static');
-    expect(withOpts.reportFormat).toBe('json');
+    expect(withOpts.reportFormats).toEqual(['json']);
 
     const defaults = convertJourneyRequestToOptions(validRequest());
     expect(defaults.analysisType).toBe('full');
-    expect(defaults.reportFormat).toBe('html');
+    expect(defaults.reportFormats).toEqual(['html']);
+  });
+
+  it('normalizes a list of reportFormat values, removing duplicates', () => {
+    const result = convertJourneyRequestToOptions(
+      validRequest({
+        options: { reportFormat: ['html', 'json', 'html'] },
+      }),
+    );
+    expect(result.reportFormats).toEqual(['html', 'json']);
   });
 
   it('includes name when present', () => {

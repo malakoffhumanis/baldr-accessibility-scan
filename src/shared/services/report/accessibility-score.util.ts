@@ -17,8 +17,11 @@ export interface AccessibilityScore {
   notApplicable: number;
 }
 
+export type AccessibilityLevelLabel =
+  'Excellent' | 'Bon' | 'Moyen' | 'Faible' | 'Critique';
+
 export interface AccessibilityLevel {
-  label: string;
+  label: AccessibilityLevelLabel;
   color: string;
   icon: string;
 }

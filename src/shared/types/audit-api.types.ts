@@ -20,6 +20,16 @@ export type AnalysisType = 'static' | 'intel' | 'full';
 export type ReportFormat = 'html' | 'json' | 'csv';
 
 /**
+ * Report format(s) asked for by the client: a single value, or a list such as
+ * `["html", "json"]` to produce one report per format in the same run. Lists
+ * are CLI-only, since an HTTP response carries one body.
+ */
+export type RequestedReportFormat = ReportFormat | ReportFormat[];
+
+/** Requested formats once normalized: deduped and never empty. */
+export type ReportFormats = [ReportFormat, ...ReportFormat[]];
+
+/**
  * Authentication type
  * - none: No authentication (public page)
  * - form: HTML form authentication
@@ -170,6 +180,7 @@ export interface DetailedFinding {
   /** WCAG reference associated with the issue (e.g. "1.1.1", "2.4.1") */
   referenceWCAG?: string;
 }
+export type AIScoreClass = 'compliant' | 'nonCompliant' | 'notApplicable';
 
 /**
  * AI analysis of a specific RGAA rule
@@ -189,6 +200,127 @@ export interface AIRuleAnalysis {
   recommendations: string[];
   /** WCAG references associated with this rule */
   wcagReferences: string[];
+
+  scoreClass?: AIScoreClass;
+  violationCount?: number;
+  hasError?: boolean;
+}
+
+export type AccessibilityLevelLabel =
+  'Excellent' | 'Bon' | 'Moyen' | 'Faible' | 'Critique';
+
+export interface AxeRuleOutcome {
+  /** Axe rule identifier */
+  id: string;
+  impact: string | null;
+  /** Associated tags (WCAG, RGAA, best-practice, etc.) */
+  tags: string[];
+  /** Help message of the rule */
+  help: string;
+  /** Number of DOM nodes matched by the rule */
+  nodeCount: number;
+}
+
+/** Number of Axe violations (rules) per impact level */
+export interface ViolationsByImpact {
+  critical: number;
+  serious: number;
+  moderate: number;
+  minor: number;
+  other: number;
+}
+
+export interface SummaryCards {
+  /** Axe violations + AI violation findings */
+  violations: number;
+  /** Axe passes + AI compliant rules */
+  passes: number;
+  /** Axe incomplete + AI non-applicable rules */
+  incomplete: number;
+  /** Sources merged into the cards ('ai' when the page has no Axe test) */
+  source: 'axe' | 'ai' | 'axe+ai';
+}
+
+/** RGAA criteria counters of one thematic */
+export interface ThematicScoring {
+  /** RGAA thematic identifier (1-13) */
+  id: number;
+  /** RGAA thematic name */
+  name: string;
+  compliant: number;
+  nonCompliant: number;
+  notApplicable: number;
+  score: number | null;
+}
+
+/** AI analysis counters, as classified for the RGAA score */
+export interface AIScoring {
+  /** Number of RGAA rules analyzed by the AI */
+  analyzed: number;
+  /** Rules classified compliant */
+  compliant: number;
+  /** Rules classified non-compliant (≥ 1 violation finding) */
+  nonCompliant: number;
+  /** Rules classified non-applicable (incl. advisory-only and errors) */
+  notApplicable: number;
+  /** Rules whose analysis failed */
+  errors: number;
+  nonCompliantDeclared: number;
+  /** Number of findings per type over all rules */
+  findings: {
+    violation: number;
+    warning: number;
+    recommendation: number;
+  };
+}
+
+export interface PageScoring {
+  /** RGAA score in % (0-100) */
+  score: number;
+  /** Qualitative level derived from the score */
+  level: AccessibilityLevelLabel;
+  /** Compliant criteria (Axe passes + AI compliant) */
+  compliant: number;
+  /** Non-compliant criteria */
+  nonCompliant: number;
+  /** Non-applicable criteria (106 - C - NC) */
+  notApplicable: number;
+  /** Counters per RGAA thematic (13 entries) */
+  thematics: ThematicScoring[];
+  /** Figures of the three summary cards */
+  cards: SummaryCards;
+  /** Axe violations per impact level */
+  violationsByImpact: ViolationsByImpact;
+  /** Sum of the DOM nodes affected by the Axe violations */
+  affectedNodes: number;
+  /** AI counters, null when the page has no AI result */
+  ai: AIScoring | null;
+}
+
+/** Global RGAA scoring of the consolidated report */
+export interface ReportScoring {
+  /** Global RGAA score in % (C and NC summed over the pages) */
+  score: number;
+  /** Qualitative level derived from the global score */
+  level: AccessibilityLevelLabel;
+  /** Sum of the compliant criteria of the pages */
+  compliant: number;
+  /** Sum of the non-compliant criteria of the pages */
+  nonCompliant: number;
+  /** Sum of the non-applicable criteria of the pages */
+  notApplicable: number;
+  /** Number of scored pages */
+  pageCount: number;
+  /** Sum of the summary cards of the pages */
+  cards: {
+    violations: number;
+    passes: number;
+    incomplete: number;
+  };
+  /** Sum of the Axe violations per impact level */
+  violationsByImpact: ViolationsByImpact;
+  /** Sum of the affected DOM nodes */
+  affectedNodes: number;
 }
 
 /**
@@ -248,6 +380,9 @@ export interface PageAuditResult {
   axeSummary: AxeResultsSummary;
   /** Full list of detected accessibility violations */
   violations: AccessibilityViolation[];
+  passes?: AxeRuleOutcome[];
+  incomplete?: AxeRuleOutcome[];
+  scoring?: PageScoring;
   /** Result enriched by the AI analysis (available in 'intel' or 'full' mode) */
   aiResult?: AIEnrichedResult;
   /** Error details if the AI analysis failed */
@@ -287,6 +422,8 @@ export interface ConsolidatedAuditReport {
   results: PageAuditResult[];
   /** Total audit duration in milliseconds */
   durationMs: number;
+  /** Global RGAA scoring */
+  scoring?: ReportScoring;
 }
 
 /**

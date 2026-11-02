@@ -30,6 +30,22 @@ export class JourneyController {
     // Set by the API-key middleware on a match; "anonymous" when auth is off.
     const apiKeyId =
       (res.locals['apiKeyId'] as string | undefined) ?? 'anonymous';
+
+    // A single HTTP response carries one report: multi-format is CLI-only.
+    const requestedFormat = (req.body as ValidatedJourneyRequest).options
+      ?.reportFormat;
+    if (Array.isArray(requestedFormat) && requestedFormat.length > 1) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message:
+            '"options.reportFormat" invalid. A list of formats produces one file per format and is only available via the CLI (baldr run); request a single format here.',
+        },
+      } satisfies APIResponse);
+      return;
+    }
+
     activeAudits.inc();
 
     try {
@@ -46,7 +62,7 @@ export class JourneyController {
             0,
           ),
           analysisType: options.analysisType,
-          reportFormat: options.reportFormat,
+          reportFormat: options.reportFormats,
         },
         'Journey request received',
       );
@@ -68,9 +84,9 @@ export class JourneyController {
       );
 
       // Generate and send report
-      const report = await this.orchestration.generateReport(
+      const [report] = await this.orchestration.generateReports(
         execResult,
-        options.reportFormat,
+        options.reportFormats,
         options.name,
       );
 

@@ -10,6 +10,7 @@ import type {
   IAxeResult,
   IAxeViolation,
   IAxeNode,
+  IAxePass,
   IAIEnrichedResult,
   IAIAnalysisError,
 } from '@shared/types/audit.types.js';
@@ -742,6 +743,277 @@ describe('audit-api.adapter', () => {
       expect(report.results[0].pageName).toBe('Home');
       expect(report.results[0].aiResult).toBeDefined();
       expect(report.results[0].aiResult!.metadata.model).toBe('gpt-4o');
+    });
+  });
+
+  describe('scoring export', () => {
+    function createPass(id: string, nodeCount = 1): IAxePass {
+      return {
+        id,
+        impact: null,
+        tags: ['wcag2a'],
+        description: `${id} description`,
+        help: `${id} help`,
+        helpUrl: `https://dequeuniversity.com/rules/axe/4.8/${id}`,
+        nodes: Array.from({ length: nodeCount }, () => createAxeNode()),
+      };
+    }
+
+    function createMixedAIResult(): IAIEnrichedResult {
+      return createAIEnrichedResult({
+        ruleAnalyses: [
+          {
+            ruleId: 'link-purpose',
+            compliant: true,
+            severity: 'minor',
+            summary: 'Les liens sont explicites',
+            findings: [],
+          },
+          {
+            ruleId: 'frame-title',
+            compliant: true,
+            severity: 'minor',
+            summary: 'Aucun cadre dans la page',
+            findings: [],
+          },
+          {
+            ruleId: 'form-labels',
+            compliant: true,
+            severity: 'moderate',
+            summary: 'Étiquettes à vérifier',
+            findings: [
+              { type: 'warning', issue: 'À vérifier', recommendation: '—' },
+            ],
+          },
+          {
+            ruleId: 'image-alt',
+            compliant: false,
+            severity: 'critical',
+            summary: 'Deux images sans alternative',
+            findings: [
+              { type: 'violation', issue: 'img 1', recommendation: 'alt' },
+              { type: 'violation', issue: 'img 2', recommendation: 'alt' },
+              { type: 'recommendation', issue: 'bonus', recommendation: '—' },
+            ],
+          },
+          {
+            ruleId: 'table-headers',
+            compliant: false,
+            severity: 'serious',
+            summary: 'Analyse impossible',
+            findings: [],
+            error: 'timeout',
+          },
+        ],
+        totalRulesAnalyzed: 5,
+        summary: { violations: 2, compliant: 1, notApplicable: 2, errors: 1 },
+      });
+    }
+
+    function createScoredResult(): IAxeResult {
+      return createAxeResult({
+        summary: { violations: 2, passes: 3, incomplete: 1, inapplicable: 5 },
+        violations: [
+          createAxeViolation({ id: 'image-alt', impact: 'critical' }),
+          createAxeViolation({
+            id: 'color-contrast',
+            impact: 'serious',
+            nodes: [createAxeNode(), createAxeNode()],
+          }),
+        ],
+        passes: [
+          createPass('html-has-lang'),
+          createPass('document-title', 0),
+          createPass('aria-allowed-attr', 3), // not mapped to a thematic
+        ],
+        incomplete: [createPass('color-contrast', 2)],
+        aiEnrichedResult: createMixedAIResult(),
+      });
+    }
+
+    it('exports the reduced Axe passes and incomplete tests', () => {
+      const api = convertResultToAPI(createScoredResult());
+
+      expect(api.passes).toEqual([
+        {
+          id: 'html-has-lang',
+          impact: null,
+          tags: ['wcag2a'],
+          help: 'html-has-lang help',
+          nodeCount: 1,
+        },
+        {
+          id: 'document-title',
+          impact: null,
+          tags: ['wcag2a'],
+          help: 'document-title help',
+          nodeCount: 0,
+        },
+        {
+          id: 'aria-allowed-attr',
+          impact: null,
+          tags: ['wcag2a'],
+          help: 'aria-allowed-attr help',
+          nodeCount: 3,
+        },
+      ]);
+      expect(api.incomplete).toEqual([
+        {
+          id: 'color-contrast',
+          impact: null,
+          tags: ['wcag2a'],
+          help: 'color-contrast help',
+          nodeCount: 2,
+        },
+      ]);
+    });
+
+    it('exports the page scoring with the HTML figures', () => {
+      const api = convertResultToAPI(createScoredResult());
+      const scoring = api.scoring!;
+
+      expect(scoring.score).toBe(43);
+      expect(scoring.level).toBe('Faible');
+      expect(scoring.compliant).toBe(3);
+      expect(scoring.nonCompliant).toBe(4);
+      expect(scoring.notApplicable).toBe(99);
+
+      expect(scoring.cards).toEqual({
+        violations: 4,
+        passes: 4,
+        incomplete: 4,
+        source: 'axe+ai',
+      });
+      expect(scoring.violationsByImpact).toEqual({
+        critical: 1,
+        serious: 1,
+        moderate: 0,
+        minor: 0,
+        other: 0,
+      });
+      expect(scoring.affectedNodes).toBe(3);
+      expect(scoring.ai).toEqual({
+        analyzed: 5,
+        compliant: 1,
+        nonCompliant: 1,
+        notApplicable: 3,
+        errors: 1,
+        nonCompliantDeclared: 2,
+        findings: { violation: 2, warning: 1, recommendation: 1 },
+      });
+    });
+
+    it('exports the 13 thematics with their counters and score', () => {
+      const { thematics } = convertResultToAPI(createScoredResult()).scoring!;
+
+      expect(thematics).toHaveLength(13);
+      expect(thematics.map((t) => t.id)).toEqual([
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+      ]);
+      // 1 Images: NC image-alt (Axe) + 2 violations IA → 0 %
+      expect(thematics[0]).toEqual({
+        id: 1,
+        name: 'Images',
+        compliant: 0,
+        nonCompliant: 3,
+        notApplicable: 0,
+        score: 0,
+      });
+      // 8 Éléments obligatoires: C html-has-lang + document-title → 100 %
+      expect(thematics[7]).toMatchObject({ compliant: 2, score: 100 });
+      // 4 Multimédia: nothing applies → null
+      expect(thematics[3]).toMatchObject({ compliant: 0, score: null });
+    });
+
+    it('adds scoreClass / violationCount / hasError to each AI analysis', () => {
+      const api = convertResultToAPI(createScoredResult());
+      const analyses = api.aiResult!.ruleAnalyses;
+
+      expect(
+        analyses.map((a) => [a.scoreClass, a.violationCount, a.hasError]),
+      ).toEqual([
+        ['compliant', 0, false],
+        ['notApplicable', 0, false],
+        ['notApplicable', 0, false],
+        ['nonCompliant', 2, false],
+        ['notApplicable', 0, true],
+      ]);
+      // Historical fields are unchanged
+      expect(analyses.map((a) => a.status)).toEqual([
+        'compliant',
+        'compliant',
+        'compliant',
+        'non-compliant',
+        'non-compliant',
+      ]);
+      expect(analyses[3].ruleTitle).toBe('Deux images sans alternative');
+      expect(api.aiResult!.summary).toEqual({
+        violationCount: 2,
+        compliantRulesCount: 3,
+        inapplicableRulesCount: 0,
+      });
+    });
+
+    it('sets ai to null and source to axe without AI result', () => {
+      const api = convertResultToAPI(
+        createAxeResult({
+          summary: { violations: 1, passes: 0, incomplete: 0, inapplicable: 0 },
+        }),
+      );
+
+      expect(api.scoring!.ai).toBeNull();
+      expect(api.scoring!.cards).toEqual({
+        violations: 1,
+        passes: 0,
+        incomplete: 0,
+        source: 'axe',
+      });
+    });
+
+    it('exports the global scoring of the consolidated report', () => {
+      const report = convertToConsolidatedReport(
+        [createScoredResult(), createScoredResult()],
+        'Audit scoring',
+      );
+
+      // Same page twice: C 6, NC 8 → 43 %, NA 198, cards and impacts doubled
+      expect(report.scoring).toEqual({
+        score: 43,
+        level: 'Faible',
+        compliant: 6,
+        nonCompliant: 8,
+        notApplicable: 198,
+        pageCount: 2,
+        cards: { violations: 8, passes: 8, incomplete: 8 },
+        violationsByImpact: {
+          critical: 2,
+          serious: 2,
+          moderate: 0,
+          minor: 0,
+          other: 0,
+        },
+        affectedNodes: 6,
+      });
+    });
+
+    it('exports a neutral global scoring for an empty report', () => {
+      expect(convertToConsolidatedReport([]).scoring).toEqual({
+        score: 100,
+        level: 'Excellent',
+        compliant: 0,
+        nonCompliant: 0,
+        notApplicable: 0,
+        pageCount: 0,
+        cards: { violations: 0, passes: 0, incomplete: 0 },
+        violationsByImpact: {
+          critical: 0,
+          serious: 0,
+          moderate: 0,
+          minor: 0,
+          other: 0,
+        },
+        affectedNodes: 0,
+      });
     });
   });
 });
