@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { extname, resolve } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { extname, join, resolve } from 'node:path';
 
 import { loadConfig } from '@shared/config/config.js';
 import { createLogger } from '@shared/utils/logger.js';
@@ -34,12 +34,19 @@ const RUN_HELP = `
 Input & output:
   The request is read from <file>, or from stdin when <file> is omitted.
   The report goes to <path> with -o (a confirmation line is printed on stderr),
-  otherwise to stdout — so it can be piped or redirected. --format overrides
-  options.reportFormat from the file for this run.
-  Asking for several formats (e.g. ["html", "json"]) produces one report per
-  format: they are always written to files (never stdout), -o giving the base
-  path — "-o report.html" yields report.html and report.json; without -o the
-  audit name is used.
+  otherwise to stdout — so it can be piped or redirected.
+
+  One report  -> --format <html|json|csv>   (overrides options.reportFormat)
+                 -o <path> names the output file; its extension must match
+                 the format (.html, .json or .csv).
+  Several     -> --formats <a,b[,c]>        (overrides options.reportFormat)
+                 one file per format, always written to files (never stdout),
+                 named "<audit name>.<ext>". -d <dir> picks the destination
+                 directory (created if missing, default: current directory).
+                 -o is NOT accepted with several formats; -d is NOT accepted
+                 with a single format. --format and --formats are exclusive.
+                 A list in options.reportFormat (e.g. ["html", "json"]) is
+                 treated as a multi-format run too.
 
 JSON request (v3) — only "pages" is required:
   {
@@ -138,11 +145,23 @@ Examples:
   $ cat request.json | baldr run
   $ baldr run < request.json
 
-  # Force the report format regardless of options.reportFormat in the file
+  # ONE report: force the format with --format (singular), name it with -o
   $ baldr run request.json --format json -o report.json
+  $ baldr run request.json --format csv -o report.csv
 
-  # Several formats in a single run -> report.html + report.json
-  $ baldr run request.json --format html,json -o report.html
+  # SEVERAL reports: use --formats (plural), comma-separated, no spaces
+  # -> ./<audit name>.html + ./<audit name>.json in the current directory
+  $ baldr run request.json --formats html,json
+
+  # SEVERAL reports into a destination directory (-d, optional, not -o)
+  # -> ./reports/<audit name>.html, .json and .csv
+  $ baldr run request.json --formats html,json,csv -d ./reports
+
+  # Invalid combinations (rejected with an explicit error)
+  #   baldr run request.json --formats html,json -o report.html   (use -d)
+  #   baldr run request.json --format html,json                   (use --formats)
+  #   baldr run request.json --format json -d ./reports           (use -o)
+  #   baldr run request.json --format json -o report.html         (extension must be .json)
 
   # Enable AI for this run only and pick the model
   $ baldr run request.json -o report.html --llm-api-key sk-xxxx --llm-model gpt-4o
@@ -199,10 +218,21 @@ export function createRunCommand(): Command {
   return new Command('run')
     .description('Execute an accessibility audit journey')
     .argument('[file]', 'Path to a JSON request file (omit to read from stdin)')
-    .option('-o, --output <path>', 'Write report to file instead of stdout')
     .option(
-      '--format <formats>',
-      'Override reportFormat: html|json|csv, comma-separated for several (html,json)',
+      '-o, --output <path>',
+      'Write the report to a file instead of stdout (single format only)',
+    )
+    .option(
+      '-d, --dest <dir>',
+      'Destination directory for a multi-format run (default: current directory)',
+    )
+    .option(
+      '--format <format>',
+      'One report: override reportFormat with html|json|csv',
+    )
+    .option(
+      '--formats <formats>',
+      'Several reports: comma-separated formats, e.g. html,json (one file each)',
     )
     .option('--llm-model <model>', 'Override LLM_PROVIDER_MODEL for this run')
     .option(
@@ -221,16 +251,22 @@ export function createRunCommand(): Command {
     .action(
       async (
         file: string | undefined,
-        options: { output?: string; format?: string } & LlmCliOptions,
+        options: {
+          output?: string;
+          dest?: string;
+          format?: string;
+          formats?: string;
+        } & LlmCliOptions,
       ) => {
         try {
           const input = readInput(file);
-          const payload = parseAndValidate(input, options.format);
+          const payload = parseAndValidate(input, options);
+          assertOutputOptions(payload, options);
           const reports = await executeAudit(
             payload,
             buildEnvOverrides(options),
           );
-          writeOutput(reports, options.output);
+          writeOutput(reports, options.output, options.dest);
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           logger.error({ error: err }, message);
@@ -248,10 +284,86 @@ function readInput(file: string | undefined): string {
   return readFileSync(0, 'utf-8');
 }
 
+/** Resolves --format / --formats into the value for options.reportFormat. */
+function resolveFormatOverride(flags: {
+  format?: string;
+  formats?: string;
+}): string | string[] | undefined {
+  const { format, formats } = flags;
+  const hasFormat = format != null && format !== '';
+  const hasFormats = formats != null && formats !== '';
+  if (hasFormat && hasFormats) {
+    throw new Error('--format and --formats cannot be used together');
+  }
+  if (hasFormat) {
+    if (format.includes(',')) {
+      throw new Error(
+        `--format takes a single format; use --formats ${format} for several reports`,
+      );
+    }
+    return format.trim();
+  }
+  if (hasFormats) {
+    const list = formats.split(',').map((f) => f.trim());
+    if (list.length < 2) {
+      throw new Error(
+        `--formats needs at least two comma-separated formats (e.g. html,json); use --format ${formats} for a single report`,
+      );
+    }
+    return list;
+  }
+  return undefined;
+}
+
+/** -o is for one report, -d for several: reject the mismatched flag. */
+function assertOutputOptions(
+  payload: ValidatedJourneyRequest,
+  flags: { output?: string; dest?: string },
+): void {
+  const requested = payload.options?.reportFormat;
+  const multiple = Array.isArray(requested) && requested.length > 1;
+  const hasOutput = isSet(flags.output);
+  const hasDest = isSet(flags.dest);
+  if (multiple && hasOutput) {
+    throw new Error(
+      '-o/--output is not supported with several formats; use -d/--dest <dir> (files are named after the audit)',
+    );
+  }
+  if (!multiple && hasDest) {
+    throw new Error(
+      '-d/--dest is only for several formats (--formats); use -o/--output <path> for a single report',
+    );
+  }
+  if (!multiple && hasOutput) {
+    assertOutputExtension(requested, flags.output ?? '');
+  }
+}
+
+function isSet(value: string | undefined): boolean {
+  return value != null && value !== '';
+}
+
+function assertOutputExtension(
+  requested: string | string[] | undefined,
+  output: string,
+): void {
+  const format = Array.isArray(requested)
+    ? (requested[0] ?? 'html')
+    : (requested ?? 'html');
+  const expected = `.${format}`;
+  const actual = extname(output).toLowerCase();
+  if (actual !== expected) {
+    throw new Error(
+      `-o/--output must end with "${expected}" for the "${format}" format (got "${actual === '' ? 'no extension' : actual}")`,
+    );
+  }
+}
+
 function parseAndValidate(
   input: string,
-  formatOverride?: string,
+  flags: { format?: string; formats?: string } = {},
 ): ValidatedJourneyRequest {
+  const formatOverride = resolveFormatOverride(flags);
   let payload: unknown;
   try {
     payload = JSON.parse(input);
@@ -260,20 +372,17 @@ function parseAndValidate(
   }
 
   if (
-    formatOverride != null &&
-    formatOverride !== '' &&
+    formatOverride !== undefined &&
     typeof payload === 'object' &&
     payload !== null
   ) {
-    // reportFormat lives under `options` in the v3 contract; "html,json" asks
-    // for one report per format.
-    const formats = formatOverride.split(',').map((f) => f.trim());
+    // reportFormat lives under `options` in the v3 contract.
     const p = payload as Record<string, unknown>;
     const opts =
       typeof p['options'] === 'object' && p['options'] !== null
         ? (p['options'] as Record<string, unknown>)
         : {};
-    opts['reportFormat'] = formats.length > 1 ? formats : formats[0];
+    opts['reportFormat'] = formatOverride;
     p['options'] = opts;
   }
 
@@ -349,33 +458,34 @@ async function executeAudit(
   }
 }
 
-/** Report extensions the CLI may swap when a run produces several files. */
-const REPORT_EXTENSIONS = new Set(['.html', '.json', '.csv']);
-
 /**
  * Target path of one report. A single report honours `-o` as given; a
- * multi-format run treats `-o` as a base path whose extension is swapped
- * (`-o report.html` -> report.html + report.json).
+ * multi-format run writes `<audit name>.<ext>` files into `-d` (or the cwd).
  */
 function targetPathFor(
   report: IJourneyReport,
   outputPath: string | undefined,
+  destDir: string | undefined,
   multiple: boolean,
 ): string {
   const filename = report.filename ?? 'rapport-journey.html';
-  if (outputPath == null || outputPath === '') return filename;
-  if (!multiple) return outputPath;
-
-  const currentExt = extname(outputPath).toLowerCase();
-  const stem = REPORT_EXTENSIONS.has(currentExt)
-    ? outputPath.slice(0, -currentExt.length)
-    : outputPath;
-  return `${stem}${extname(filename)}`;
+  if (!multiple) {
+    return outputPath != null && outputPath !== '' ? outputPath : filename;
+  }
+  return destDir != null && destDir !== '' ? join(destDir, filename) : filename;
 }
 
-function writeOutput(reports: JourneyReports, outputPath?: string): void {
+function writeOutput(
+  reports: JourneyReports,
+  outputPath?: string,
+  destDir?: string,
+): void {
   const hasOutput = outputPath != null && outputPath !== '';
   const multiple = reports.length > 1;
+
+  if (multiple && destDir != null && destDir !== '') {
+    mkdirSync(resolve(destDir), { recursive: true });
+  }
 
   for (const report of reports) {
     // stdout carries a single payload: a multi-format run always writes files.
@@ -383,7 +493,7 @@ function writeOutput(reports: JourneyReports, outputPath?: string): void {
       process.stdout.write(report.content);
       continue;
     }
-    const path = targetPathFor(report, outputPath, multiple);
+    const path = targetPathFor(report, outputPath, destDir, multiple);
     writeFileSync(resolve(path), report.content, 'utf-8');
     process.stderr.write(`Report written to ${path}\n`);
   }

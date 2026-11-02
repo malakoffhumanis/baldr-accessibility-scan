@@ -366,14 +366,20 @@ baldr run [fichier] [options]
 
 - La requête est lue depuis `[fichier]`, ou depuis **stdin** s'il est omis.
 - Le rapport part sur **stdout**, ou dans un fichier avec `-o`.
-- Une **liste de formats** (`["html", "json"]`) produit **un rapport par
-  format** : ils sont toujours écrits dans des fichiers (jamais sur stdout),
-  `-o` servant de chemin de base dont l'extension est adaptée.
+- Une **liste de formats** (`--formats html,json` ou `["html", "json"]` dans
+  le fichier) produit **un rapport par format** : ils sont toujours écrits
+  dans des fichiers (jamais sur stdout), nommés `<nom de l'audit>.<ext>`.
+  `-d` choisit le dossier de destination (optionnel, créé si besoin, défaut :
+  dossier courant). `-o` est refusé dans ce cas.
+- `--format` = **un seul** rapport (avec `-o`) ; `--formats` = **plusieurs**
+  rapports (avec `-d`). Les deux ne se combinent pas.
 
 | Option                   | Description                                              |
 | ------------------------ | -------------------------------------------------------- |
-| `-o, --output <path>`    | Écrit le rapport dans un fichier au lieu de stdout.      |
-| `--format <formats>`     | Force `reportFormat` pour ce run (prime sur le fichier) : `html`, `json`, `csv`, ou plusieurs séparés par une virgule (`html,json`). |
+| `-o, --output <path>`    | Un seul rapport : l'écrit dans un fichier au lieu de stdout. L'extension doit correspondre au format (`.html`, `.json`, `.csv`). |
+| `-d, --dest <dir>`       | Plusieurs rapports : dossier de destination (défaut : dossier courant). |
+| `--format <format>`      | Un seul rapport : force `reportFormat` (`html`, `json` ou `csv`), prime sur le fichier. |
+| `--formats <formats>`    | Plusieurs rapports : formats séparés par une virgule, sans espace (`html,json`, `html,json,csv`). |
 | `--llm-model <model>`    | Voir [Surcharge des paramètres](#surcharge-des-paramètres). |
 | `--llm-endpoint <url>`   | idem                                                     |
 | `--llm-api-key <key>`    | idem                                                     |
@@ -387,11 +393,21 @@ baldr run request.json -o rapport.html
 cat request.json | baldr run
 baldr run < request.json
 
-# Forcer le format quel que soit options.reportFormat du fichier
+# Un seul rapport : forcer le format (--format) et nommer le fichier (-o)
 baldr run request.json --format json -o rapport.json
+baldr run request.json --format csv -o rapport.csv
 
-# Les deux rapports en une seule exécution -> rapport.html + rapport.json
-baldr run request.json --format html,json -o rapport.html
+# Plusieurs rapports (--formats) -> ./<nom de l'audit>.html + .json
+baldr run request.json --formats html,json
+
+# Plusieurs rapports dans un dossier (-d) -> ./rapports/<nom de l'audit>.{html,json,csv}
+baldr run request.json --formats html,json,csv -d ./rapports
+
+# Combinaisons refusées (erreur explicite)
+#   --formats html,json -o rapport.html   -> utiliser -d
+#   --format html,json                    -> utiliser --formats
+#   --format json -d ./rapports           -> utiliser -o
+#   --format json -o rapport.html         -> l'extension doit être .json
 ```
 
 ## Surcharge des paramètres
