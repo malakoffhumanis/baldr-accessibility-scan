@@ -508,6 +508,24 @@ describe('LLMActionPlannerService.planInitial', () => {
     >;
     expect(params['response_format']).toBeUndefined();
   });
+
+  // Bedrock rejects `seed` for Claude (400 UnsupportedParamsError), so it is
+  // not sent to any model.
+  it.each(['gpt-4o', 'claude-opus-4-5-20251101-v1'])(
+    'does not send seed (%s)',
+    async (model) => {
+      const openai = makeOpenAI();
+      openai.getModel.mockReturnValue(model);
+      const { service } = build({ openai });
+      await service.planInitial(makePage() as never, 'cliquer', noTarget);
+      const params = openai.chatCompletion.mock.calls[0][1] as Record<
+        string,
+        unknown
+      >;
+      expect(params).not.toHaveProperty('seed');
+      expect(params['temperature']).toBe(0);
+    },
+  );
 });
 
 describe('LLMActionPlannerService.planRetry', () => {
@@ -703,6 +721,31 @@ describe('LLMActionPlannerService.planRetry', () => {
     >;
     expect(params['response_format']).toBeDefined();
   });
+
+  it.each(['gpt-4o', 'claude-opus-4-5-20251101-v1'])(
+    'does not send seed in replan (%s)',
+    async (model) => {
+      const openai = makeOpenAI();
+      openai.getModel.mockReturnValue(model);
+      const { service } = build({ openai });
+      await service.planRetry(makePage() as never, {
+        originalActionStr: 'go',
+        previousAction: {
+          type: 'click',
+          selector: '#a',
+          confidenceScore: 80,
+          reasoning: '',
+        },
+        urlBefore: 'https://x.com',
+      });
+      const params = openai.chatCompletion.mock.calls[0][1] as Record<
+        string,
+        unknown
+      >;
+      expect(params).not.toHaveProperty('seed');
+      expect(params['temperature']).toBe(0);
+    },
+  );
 
   it('omits image when screenshot capture fails in replan', async () => {
     const { service, openai } = build({ screenshot: makeScreenshot(null) });

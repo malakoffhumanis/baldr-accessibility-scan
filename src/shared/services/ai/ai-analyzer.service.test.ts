@@ -930,6 +930,41 @@ describe('AIAnalyzerService', () => {
       expect(generationParams?.response_format).toBeUndefined();
     });
 
+    // Bedrock rejects `seed` for Claude (400 UnsupportedParamsError), so it is
+    // not sent to any model.
+    it.each(['gpt-4o', 'claude-opus-4-5-20251101-v1'])(
+      'should not send seed (%s)',
+      async (model) => {
+        mockOpenAIClient.getModel.mockReturnValue(model);
+
+        mockOpenAIClient.chatCompletion.mockResolvedValueOnce({
+          response: JSON.stringify({
+            analyses: [
+              {
+                ruleId: 'image-alt',
+                compliant: true,
+                severity: 'minor',
+                summary: 'OK',
+                findings: [],
+              },
+            ],
+          }),
+          model,
+        });
+
+        await service.analyzeWithAI(
+          createMockPage() as never,
+          createMockAxeResults(),
+          [createMockRule()],
+        );
+
+        const chatArgs = mockOpenAIClient.chatCompletion.mock.calls[0];
+        const generationParams = chatArgs?.[1] as Record<string, unknown>;
+        expect(generationParams).not.toHaveProperty('seed');
+        expect(generationParams?.temperature).toBe(0);
+      },
+    );
+
     it('should use 180s timeout for batch analysis', async () => {
       const rules = [createMockRule()];
 

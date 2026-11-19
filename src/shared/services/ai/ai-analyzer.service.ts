@@ -340,7 +340,6 @@ export class AIAnalyzerService {
     const generationParams: Record<string, unknown> = {
       temperature: 0,
       max_tokens: maxTokensForOutput,
-      seed: 42,
     };
     if (isOpenAIModel) {
       generationParams['response_format'] = {

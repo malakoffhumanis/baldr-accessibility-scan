@@ -551,6 +551,40 @@ describe('OpenAIClientService', () => {
       expect(body?.presence_penalty).toBe(0);
     });
 
+    // Bedrock rejects `seed` for Claude (400 UnsupportedParamsError): the
+    // client must never add it on its own, whatever the model.
+    it.each(['claude-opus-4-5-20251101-v1', 'gpt-4o'])(
+      'should not add seed to the request (%s)',
+      async (model) => {
+        service = new OpenAIClientService({
+          llmProvider: {
+            apiKey: 'sk-test-key-123456',
+            endpoint: 'https://test.example.com',
+            model,
+          },
+          env: 'test',
+        });
+
+        vi.mocked(axios.post).mockResolvedValueOnce({
+          data: {
+            choices: [{ message: { content: 'ok' } }],
+            model,
+          },
+        });
+
+        await service.chatCompletion([{ role: 'user', content: 'test' }], {
+          temperature: 0,
+          max_tokens: 700,
+        });
+
+        const body = vi.mocked(axios.post).mock.calls[0]?.[1] as Record<
+          string,
+          unknown
+        >;
+        expect(body).not.toHaveProperty('seed');
+      },
+    );
+
     it('should add OpenAI-specific params for gpt- prefixed models', async () => {
       service = new OpenAIClientService({
         llmProvider: {

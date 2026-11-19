@@ -477,7 +477,6 @@ Propose the corrective action. Return ONLY the JSON.`;
     const generationParams: Record<string, unknown> = {
       temperature: 0,
       max_tokens: 700,
-      seed: 42,
     };
     if (isOpenAI) {
       generationParams['response_format'] = {
@@ -582,7 +581,6 @@ Propose the corrective action. Return ONLY the JSON.`;
     const generationParams: Record<string, unknown> = {
       temperature: 0,
       max_tokens: 700,
-      seed: 42,
     };
     if (isOpenAI) {
       generationParams['response_format'] = {
